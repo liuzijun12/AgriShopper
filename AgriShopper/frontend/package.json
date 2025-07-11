@@ -1,0 +1,15 @@
+{
+  "name": "agrishopper-frontend",
+  "version": "1.0.0",
+  "description": "AgriShopper Frontend",
+  "scripts": {
+    "dev": "uni -p mp-weixin",
+    "build": "uni build -p mp-weixin"
+  },
+  "dependencies": {
+    "@dcloudio/uni-app": "^3.0.0",
+    "@dcloudio/uni-mp-vue": "^3.0.0",
+    "@dcloudio/uni-mp-weixin": "^3.0.0",
+    "vue": "^3.0.0"
+  }
+} 

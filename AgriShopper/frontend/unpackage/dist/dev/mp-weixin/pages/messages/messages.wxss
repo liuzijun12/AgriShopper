@@ -1,0 +1,241 @@
+
+page {
+  background-color: #f5f5f5;
+  height: 100%;
+}
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-bottom: 120rpx; /* 增加底部padding，为导航栏留出空间 */
+  box-sizing: border-box;
+}
+
+/* 顶部标题栏 */
+.header {
+  padding: 20rpx 30rpx;
+  background-color: #ffffff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1rpx solid #eee;
+}
+.header-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+.mark-all-read {
+  display: flex;
+  align-items: center;
+  font-size: 28rpx;
+  color: #666;
+  padding: 10rpx 20rpx;
+  background-color: #f5f5f5;
+  border-radius: 30rpx;
+}
+
+/* 消息分类标签 */
+.message-tabs {
+  background-color: #ffffff;
+  padding: 20rpx 0;
+  white-space: nowrap;
+  border-bottom: 1rpx solid #eee;
+}
+.tabs-container {
+  display: inline-flex;
+  height: 88rpx;
+  padding: 0 20rpx;
+}
+.tab-item {
+  position: relative;
+  padding: 0 30rpx;
+  margin-right: 20rpx;
+  font-size: 28rpx;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+.tab-active {
+  color: #4CAF50;
+  font-weight: 500;
+}
+.tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -10rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40rpx;
+  height: 4rpx;
+  background-color: #4CAF50;
+  border-radius: 2rpx;
+}
+.unread-badge {
+  position: absolute;
+  top: 7rpx;
+  right: 10rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 6rpx;
+  background-color: #ff4d4f;
+  border-radius: 16rpx;
+  color: #fff;
+  font-size: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 消息列表 */
+.message-list {
+  flex: 1;
+  background-color: #f5f5f5;
+  padding-bottom: 20rpx;
+}
+.message-group {
+  margin-bottom: 20rpx;
+}
+.date-divider {
+  padding: 20rpx 30rpx;
+  font-size: 24rpx;
+  color: #999;
+}
+.message-item {
+  background-color: #ffffff;
+  padding: 30rpx;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+  border-bottom: 1rpx solid #eee;
+}
+.message-icon {
+  margin-right: 20rpx;
+}
+.message-content {
+  flex: 1;
+  margin-right: 20rpx;
+}
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10rpx;
+}
+.message-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+.message-time {
+  font-size: 24rpx;
+  color: #999;
+}
+.message-summary {
+  font-size: 28rpx;
+  color: #666;
+  line-height: 1.5;
+}
+.unread-dot {
+  width: 16rpx;
+  height: 16rpx;
+  background-color: #ff4d4f;
+  border-radius: 50%;
+  position: absolute;
+  right: 30rpx;
+  top: 30rpx;
+}
+
+/* 订单消息样式 */
+.order-image {
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 10rpx;
+  margin-right: 20rpx;
+}
+.order-info {
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+}
+.order-status {
+  font-size: 24rpx;
+  color: #4CAF50;
+  background-color: rgba(76, 175, 80, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  margin-right: 20rpx;
+}
+.order-id {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 活动消息样式 */
+.promotion-image {
+  width: 200rpx;
+  height: 100rpx;
+  border-radius: 10rpx;
+  margin-right: 20rpx;
+}
+.promotion-info {
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+}
+.promotion-tag {
+  font-size: 24rpx;
+  color: #ff4d4f;
+  background-color: rgba(255, 77, 79, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 4rpx;
+  margin-right: 20rpx;
+}
+.promotion-date {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 客服消息样式 */
+.service-item {
+  background-color: #ffffff;
+  padding: 30rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #eee;
+}
+.service-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 40rpx;
+  margin-right: 20rpx;
+}
+.service-name {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+}
+.unread-count {
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 10rpx;
+  background-color: #ff4d4f;
+  border-radius: 20rpx;
+  color: #fff;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 加载更多 */
+.loading-more {
+  padding: 30rpx 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
