@@ -7,8 +7,7 @@ const __default__ = {
     common_vendor.index.$emit("tabPageShow");
   }
 };
-const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
-  ...__default__,
+const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
   setup(__props) {
     const cartItems = common_vendor.ref([
       {

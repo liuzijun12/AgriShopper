@@ -2541,15 +2541,6 @@ function inject(key, defaultValue, treatDefaultAsFactory = false) {
     warn$1(`inject() can only be used inside setup() or functional components.`);
   }
 }
-/*! #__NO_SIDE_EFFECTS__ */
-// @__NO_SIDE_EFFECTS__
-function defineComponent(options, extraOptions) {
-  return isFunction(options) ? (
-    // #8326: extend call and options.name access are considered side-effects
-    // by Rollup, so we have to wrap it in a pure-annotated IIFE.
-    /* @__PURE__ */ (() => extend({ name: options.name }, extraOptions, { setup: options }))()
-  ) : options;
-}
 const isKeepAlive = (vnode) => vnode.type.__isKeepAlive;
 function onActivated(hook, target) {
   registerKeepAliveHook(hook, "a", target);
@@ -6871,7 +6862,7 @@ function initOnError() {
   };
 }
 function initRuntimeSocketService() {
-  const hosts = "172.20.10.2,127.0.0.1,172.27.64.1,172.21.96.1";
+  const hosts = "172.27.64.1,172.21.96.1,192.168.1.8,127.0.0.1";
   const port = "8090";
   const id = "mp-weixin__8U4xO";
   const lazy = typeof swan !== "undefined";
@@ -7800,7 +7791,6 @@ const createSubpackageApp = initCreateSubpackageApp();
 }
 exports.computed = computed;
 exports.createSSRApp = createSSRApp;
-exports.defineComponent = defineComponent;
 exports.e = e;
 exports.f = f;
 exports.index = index;

@@ -60,7 +60,7 @@
   </view>
 </template>
 
-<script lang="ts" setup>
+<script setup>
 import { ref } from 'vue';
 
 // 当前选中的分类
@@ -133,7 +133,7 @@ const products = ref([
 ]);
 
 // 切换分类
-const changeCategory = (index: number) => {
+const changeCategory = (index) => {
   currentCategory.value = index;
 };
 </script>

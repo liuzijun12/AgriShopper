@@ -76,7 +76,7 @@
   </view>
 </template>
 
-<script lang="ts">
+<script>
 export default {
   name: 'ShoppingCart',
   onShow() {
@@ -85,21 +85,11 @@ export default {
 }
 </script>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed } from 'vue'
 
 // 购物车数据
-interface CartItem {
-  id: number
-  name: string
-  image: string
-  price: number
-  quantity: number
-  selected: boolean
-  specification: string
-}
-
-const cartItems = ref<CartItem[]>([
+const cartItems = ref([
   {
     id: 1,
     name: '新鲜西红柿',
@@ -127,7 +117,7 @@ const toggleEditMode = () => {
 }
 
 // 商品选择
-const handleItemSelect = (e: any, item: CartItem) => {
+const handleItemSelect = (e, item) => {
   item.selected = e.detail.value.length > 0
 }
 
@@ -135,7 +125,7 @@ const isAllSelected = computed(() => {
   return cartItems.value.length > 0 && cartItems.value.every(item => item.selected)
 })
 
-const handleSelectAll = (e: any) => {
+const handleSelectAll = (e) => {
   const selected = e.detail.value.length > 0
   cartItems.value.forEach(item => {
     item.selected = selected
@@ -143,19 +133,19 @@ const handleSelectAll = (e: any) => {
 }
 
 // 数量控制
-const decreaseQuantity = (item: CartItem) => {
+const decreaseQuantity = (item) => {
   if (item.quantity > 1) {
     item.quantity--
   }
 }
 
-const increaseQuantity = (item: CartItem) => {
+const increaseQuantity = (item) => {
   if (item.quantity < 99) {
     item.quantity++
   }
 }
 
-const validateQuantity = (item: CartItem) => {
+const validateQuantity = (item) => {
   const quantity = parseInt(item.quantity.toString())
   if (isNaN(quantity) || quantity < 1) {
     item.quantity = 1
@@ -188,7 +178,7 @@ const goShopping = () => {
   })
 }
 
-const viewProduct = (item: CartItem) => {
+const viewProduct = (item) => {
   uni.navigateTo({
     url: `/pages/productDetail/productDetail?id=${item.id}`
   })

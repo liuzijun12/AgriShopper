@@ -141,7 +141,7 @@
   </view>
 </template>
 
-<script lang="ts">
+<script>
 export default {
   name: 'Messages',
   onShow() {
@@ -157,7 +157,7 @@ export default {
 }
 </script>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed } from 'vue';
 
 // 头像图片
@@ -269,8 +269,8 @@ const groupedPromotionMessages = computed(() => {
 });
 
 // 分组消息的辅助函数
-const groupMessagesByDate = (messages: any[]) => {
-  const groups: { [key: string]: any[] } = {};
+const groupMessagesByDate = (messages) => {
+  const groups = {};
   messages.forEach(message => {
     if (!groups[message.date]) {
       groups[message.date] = [];
@@ -285,7 +285,7 @@ const hasMore = ref(false);
 const loading = ref(false);
 
 // 切换标签
-const switchTab = (index: number) => {
+const switchTab = (index) => {
   currentTab.value = index;
 };
 
@@ -298,7 +298,7 @@ const markAllAsRead = () => {
 };
 
 // 打开消息详情
-const openMessage = (message: any) => {
+const openMessage = (message) => {
   message.read = true;
   // 更新未读数
   updateUnreadCount();
@@ -310,7 +310,7 @@ const openMessage = (message: any) => {
 };
 
 // 进入聊天界面
-const enterChat = (service: any) => {
+const enterChat = (service) => {
   // TODO: 跳转到聊天界面
   uni.navigateTo({
     url: `/pages/chat/chat?id=${service.id}`

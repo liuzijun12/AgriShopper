@@ -60,7 +60,7 @@
     </view>
   </view>
 </template>
-<script lang="ts" setup>
+<script setup>
 import { ref } from 'vue';
 
 // 轮播图数据
@@ -120,7 +120,7 @@ const currentSwiper = ref(0);
 const currentCategory = ref(1); // 默认选中农产品
 
 // 轮播图切换
-const onSwiperChange = (e: any) => {
+const onSwiperChange = (e) => {
   currentSwiper.value = e.detail.current;
 };
 
@@ -143,7 +143,7 @@ const nextSwiper = () => {
 };
 
 // 切换分类
-const changeCategory = (index: number) => {
+const changeCategory = (index) => {
   currentCategory.value = index;
 };
 </script>

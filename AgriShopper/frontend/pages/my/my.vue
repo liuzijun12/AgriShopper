@@ -57,7 +57,7 @@
     </view>
   </view>
 </template>
-<script lang="ts" setup>
+<script setup>
 import { ref } from 'vue';
 
 // 用户信息
@@ -96,7 +96,7 @@ const addresses = ref([
 ]);
 
 // 设置默认地址
-const setDefaultAddress = (index: number) => {
+const setDefaultAddress = (index) => {
   addresses.value.forEach((address, i) => {
     address.isDefault = i === index;
   });

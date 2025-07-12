@@ -13,8 +13,7 @@ const __default__ = {
     this.loadMore();
   }
 };
-const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
-  ...__default__,
+const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
   setup(__props) {
     const messageTabs = common_vendor.ref([
       { name: "系统通知", unread: 2 },
