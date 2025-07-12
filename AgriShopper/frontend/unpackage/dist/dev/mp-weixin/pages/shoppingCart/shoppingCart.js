@@ -1,10 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
-if (!Math) {
-  BottomTabBar();
-}
-const BottomTabBar = () => "../../components/BottomTabBar.js";
 const __default__ = {
   name: "ShoppingCart",
   onShow() {

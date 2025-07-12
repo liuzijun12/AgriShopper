@@ -57,14 +57,11 @@
       </scroll-view>
     </view>
 
-    <!-- 底部导航栏 -->
-    <BottomTabBar />
   </view>
 </template>
 
 <script lang="ts" setup>
 import { ref } from 'vue';
-import BottomTabBar from '@/components/BottomTabBar.vue';
 
 // 当前选中的分类
 const currentCategory = ref(0);

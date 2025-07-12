@@ -1,7 +1,5 @@
 {
   "navigationBarTitleText": "商品列表",
   "enablePullDownRefresh": false,
-  "usingComponents": {
-    "bottom-tab-bar": "../../components/BottomTabBar"
-  }
+  "usingComponents": {}
 }

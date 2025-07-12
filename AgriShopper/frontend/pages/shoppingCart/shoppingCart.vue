@@ -73,8 +73,6 @@
       </view>
     </view>
 
-    <!-- 底部导航栏 -->
-    <BottomTabBar />
   </view>
 </template>
 
@@ -89,7 +87,6 @@ export default {
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import BottomTabBar from '@/components/BottomTabBar.vue'
 
 // 购物车数据
 interface CartItem {

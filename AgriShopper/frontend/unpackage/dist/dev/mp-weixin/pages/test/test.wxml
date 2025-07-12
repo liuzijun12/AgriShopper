@@ -1,0 +1,1 @@
+<view class="test-page"><text class="test-text">测试页面 - TabBar应该显示在底部</text><view class="test-content"><text>如果你能看到这个页面，说明页面路由正常</text><text>底部应该有一个导航栏</text></view></view>

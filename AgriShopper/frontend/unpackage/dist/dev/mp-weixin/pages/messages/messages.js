@@ -1,9 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-if (!Math) {
-  BottomTabBar();
-}
-const BottomTabBar = () => "../../components/BottomTabBar.js";
 const __default__ = {
   name: "Messages",
   onShow() {

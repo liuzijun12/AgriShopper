@@ -56,12 +56,9 @@
       </view>
     </view>
   </view>
-  <!-- 底部导航栏 -->
-  <BottomTabBar />
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
-import BottomTabBar from '@/components/BottomTabBar.vue';
 
 // 用户信息
 const username = ref('张先生');

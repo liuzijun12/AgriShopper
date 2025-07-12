@@ -1,68 +1,67 @@
 <template>
-  <view class="container">
-	  <!-- 搜索栏 -->
-	  <view class="search-container">
-	    <view class="search-box">
-	      <uni-icons type="search" size="24" color="#999"></uni-icons>
-	      <input type="text" placeholder="搜索您想要的产品名称" class="search-input" />
-	      <view class="search-btn cursor-pointer">搜索</view>
-	    </view>
-	  </view>
-	  
-    <!-- 顶部轮播图 -->
-    <view class="swiper-container">
-      <swiper class="swiper" circular autoplay interval="3000" duration="500" @change="onSwiperChange">
-        <swiper-item v-for="(item, index) in bannerList" :key="index">
-          <image :src="item.imageUrl" mode="aspectFill" class="swiper-image" />
-        </swiper-item>
-      </swiper>
-      <view class="swiper-dots">
-        <view 
-          v-for="(item, index) in bannerList" 
-          :key="index" 
-          :class="['dot', currentSwiper === index ? 'active' : '']"
-        ></view>
+  <view class="page-container">
+    <view class="content-container">
+      <!-- 搜索栏 -->
+      <view class="search-container">
+        <view class="search-box">
+          <uni-icons type="search" size="24" color="#999"></uni-icons>
+          <input type="text" placeholder="搜索您想要的产品名称" class="search-input" />
+          <view class="search-btn cursor-pointer">搜索</view>
+        </view>
       </view>
-      <view class="swiper-arrow left cursor-pointer" @click="prevSwiper">
-        <uni-icons type="left" size="24" color="#333"></uni-icons>
+      
+      <!-- 顶部轮播图 -->
+      <view class="swiper-container">
+        <swiper class="swiper" circular autoplay interval="3000" duration="500" @change="onSwiperChange">
+          <swiper-item v-for="(item, index) in bannerList" :key="index">
+            <image :src="item.imageUrl" mode="aspectFill" class="swiper-image" />
+          </swiper-item>
+        </swiper>
+        <view class="swiper-dots">
+          <view 
+            v-for="(item, index) in bannerList" 
+            :key="index" 
+            :class="['dot', currentSwiper === index ? 'active' : '']"
+          ></view>
+        </view>
+        <view class="swiper-arrow left cursor-pointer" @click="prevSwiper">
+          <uni-icons type="left" size="24" color="#333"></uni-icons>
+        </view>
+        <view class="swiper-arrow right cursor-pointer" @click="nextSwiper">
+          <uni-icons type="right" size="24" color="#333"></uni-icons>
+        </view>
       </view>
-      <view class="swiper-arrow right cursor-pointer" @click="nextSwiper">
-        <uni-icons type="right" size="24" color="#333"></uni-icons>
-      </view>
-    </view>
 
-    <!-- 推荐商品区域 -->
-    <view class="recommend-title">
-      <text>推荐商品</text>
-    </view>
-    
-    <view class="product-grid">
-      <view 
-        v-for="(product, index) in products" 
-        :key="index" 
-        class="product-card cursor-pointer"
-      >
-        <image :src="product.imageUrl" mode="aspectFill" class="product-image" />
-        <view class="product-info">
-          <text class="product-name">{{ product.name }}</text>
-          <text class="product-desc">{{ product.description }}</text>
-          <view class="product-bottom">
-            <view class="price-container">
-              <text class="product-price">¥{{ product.price }}</text>
-              <text class="product-original" v-if="product.originalPrice">¥{{ product.originalPrice }}</text>
+      <!-- 推荐商品区域 -->
+      <view class="recommend-title">
+        <text>推荐商品</text>
+      </view>
+      
+      <view class="product-grid">
+        <view 
+          v-for="(product, index) in products" 
+          :key="index" 
+          class="product-card cursor-pointer"
+        >
+          <image :src="product.imageUrl" mode="aspectFill" class="product-image" />
+          <view class="product-info">
+            <text class="product-name">{{ product.name }}</text>
+            <text class="product-desc">{{ product.description }}</text>
+            <view class="product-bottom">
+              <view class="price-container">
+                <text class="product-price">¥{{ product.price }}</text>
+                <text class="product-original" v-if="product.originalPrice">¥{{ product.originalPrice }}</text>
+              </view>
+              <view class="buy-btn cursor-pointer">购买</view>
             </view>
-            <view class="buy-btn cursor-pointer">购买</view>
           </view>
         </view>
       </view>
     </view>
   </view>
-  <!-- 底部导航栏 -->
-  <BottomTabBar />
 </template>
 <script lang="ts" setup>
 import { ref } from 'vue';
-import BottomTabBar from '@/components/BottomTabBar.vue';
 
 // 轮播图数据
 const bannerList = ref([
@@ -149,16 +148,19 @@ const changeCategory = (index: number) => {
 };
 </script>
 <style>
-page {
-  height: 100%;
-}
-
-.container {
+.page-container {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  min-height: 100vh;
   background-color: #F5F5F5;
   font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  padding-bottom: 100rpx; /* 为底部导航栏留出空间 */
+}
+
+.content-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 轮播图样式 */

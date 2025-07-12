@@ -4,10 +4,6 @@ if (!Array) {
   const _component_uni_icons = common_vendor.resolveComponent("uni-icons");
   _component_uni_icons();
 }
-if (!Math) {
-  BottomTabBar();
-}
-const BottomTabBar = () => "../../components/BottomTabBar.js";
 const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
   __name: "productList",
   setup(__props) {

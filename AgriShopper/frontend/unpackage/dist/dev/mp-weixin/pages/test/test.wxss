@@ -1,0 +1,21 @@
+
+.test-page {
+  padding: 40rpx;
+  text-align: center;
+  min-height: 100vh;
+  background-color: #f0f0f0;
+}
+.test-text {
+  font-size: 36rpx;
+  color: #333;
+  margin-bottom: 40rpx;
+}
+.test-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+.test-content text {
+  font-size: 28rpx;
+  color: #666;
+}

@@ -1,9 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-if (!Math) {
-  BottomTabBar();
-}
-const BottomTabBar = () => "../../components/BottomTabBar.js";
 const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
   __name: "my",
   setup(__props) {

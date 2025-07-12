@@ -138,8 +138,6 @@
       </view>
     </scroll-view>
 
-    <!-- 底部导航栏 -->
-    <BottomTabBar />
   </view>
 </template>
 
@@ -161,7 +159,6 @@ export default {
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import BottomTabBar from '@/components/BottomTabBar.vue';
 
 // 头像图片
 const aiAvatar = 'https://readdy.ai/api/search-image?query=3D%20cartoon%2C%20AI%20assistant%20robot%20with%20friendly%20face%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look&width=100&height=100&seq=1001&orientation=squarish';
