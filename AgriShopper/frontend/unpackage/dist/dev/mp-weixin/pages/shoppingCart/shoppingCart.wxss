@@ -1,183 +1,231 @@
 
+/* 基础样式调整 */
 .cart-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding-bottom: 220rpx;
-  box-sizing: border-box;
-  background-color: #f5f5f5;
+  font-size: 32rpx;
+  background-color: #f7f7f7;
+  padding-bottom: 120rpx;
 }
-.empty-cart {
+
+/* 搜索栏样式 */
+.search-bar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 100rpx 0;
+  padding: 20rpx 25rpx;
+  background-color: #fff;
+  border-bottom: 1rpx solid #f0f0f0;
 }
-.empty-cart-image {
-  width: 240rpx;
-  height: 240rpx;
-  margin-bottom: 30rpx;
+.search-icon {
+  margin-right: 15rpx;
+  font-size: 36rpx;
 }
-.empty-cart-text {
+.search-text {
   color: #999;
-  font-size: 28rpx;
-  margin-bottom: 40rpx;
+  font-size: 30rpx;
 }
-.go-shopping-btn {
-  width: 240rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  text-align: center;
-  background-color: #4CAF50;
-  color: #fff;
-  border-radius: 40rpx;
-  font-size: 28rpx;
+
+/* 地址栏 */
+.address-bar {
+  display: flex;
+  align-items: center;
+  padding: 25rpx;
+  background-color: #fff;
+  margin-bottom: 20rpx;
+  font-size: 34rpx;
 }
-.cart-list {
+.address-icon {
+  margin-right: 15rpx;
+  font-size: 40rpx;
+}
+.address-text {
   flex: 1;
 }
-.edit-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx 30rpx;
-  background-color: #fff;
-  font-size: 28rpx;
-  color: #333;
+.arrow {
+  font-size: 50rpx;
+  color: #999;
 }
-.edit-btn {
-  color: #4CAF50;
-}
-.cart-items {
-  padding: 20rpx;
-}
-.cart-item {
+
+/* 促销栏 */
+.promotion-bar {
   display: flex;
   align-items: center;
   padding: 20rpx;
-  background-color: #fff;
-  border-radius: 12rpx;
+  background-color: #fff8e6;
   margin-bottom: 20rpx;
 }
-.item-image {
-  width: 160rpx;
-  height: 160rpx;
-  border-radius: 8rpx;
-  margin: 0 20rpx;
+.promotion-tag {
+  background-color: #e93b3d;
+  color: white;
+  padding: 5rpx 15rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  margin-right: 15rpx;
+}
+
+/* 店铺分组 */
+.shop-group {
+  background-color: #fff;
+  margin-bottom: 20rpx;
+  border-radius: 15rpx;
+  overflow: hidden;
+}
+.shop-header {
+  display: flex;
+  align-items: center;
+  padding: 25rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+.shop-name {
+  flex: 1;
+  font-size: 34rpx;
+  font-weight: bold;
+  margin-left: 15rpx;
+}
+.coupon-tag {
+  color: #e93b3d;
+  border: 1rpx solid #e93b3d;
+  padding: 5rpx 15rpx;
+  border-radius: 30rpx;
+  font-size: 26rpx;
+}
+
+/* 商品项 */
+.cart-item {
+  display: flex;
+  padding: 25rpx;
+  align-items: center;
+}
+.item-icon {
+  width: 180rpx;
+  height: 180rpx;
+  border-radius: 10rpx;
+  margin: 0 25rpx;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80rpx;
 }
 .item-info {
   flex: 1;
+}
+.item-header {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  margin-bottom: 15rpx;
 }
 .item-name {
-  font-size: 28rpx;
+  font-size: 32rpx;
   color: #333;
-  margin-bottom: 10rpx;
+  margin-right: 15rpx;
+}
+.item-tag {
+  font-size: 24rpx;
+  padding: 3rpx 10rpx;
+  border-radius: 6rpx;
 }
 .item-spec {
-  font-size: 24rpx;
   color: #999;
+  font-size: 28rpx;
   margin-bottom: 20rpx;
 }
-.item-price-row {
+.price-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  margin-bottom: 20rpx;
 }
 .item-price {
-  color: #ff6b6b;
-  font-size: 32rpx;
+  color: #e93b3d;
+  font-size: 36rpx;
   font-weight: bold;
+  margin-right: 15rpx;
 }
+.original-price {
+  color: #999;
+  font-size: 28rpx;
+  text-decoration: line-through;
+}
+.item-footer {
+  display: flex;
+  justify-content: space-between;
+}
+.stock {
+  color: #e93b3d;
+  font-size: 26rpx;
+}
+
+/* 数量选择器 */
 .quantity-control {
   display: flex;
   align-items: center;
-  border: 1rpx solid #eee;
-  border-radius: 8rpx;
+  border: 1rpx solid #ddd;
+  border-radius: 10rpx;
 }
 .quantity-btn {
-  width: 60rpx;
-  height: 60rpx;
-  line-height: 60rpx;
+  width: 70rpx;
+  height: 70rpx;
+  line-height: 70rpx;
   text-align: center;
-  font-size: 28rpx;
-  color: #333;
-  background-color: #f5f5f5;
+  font-size: 36rpx;
+  color: #666;
+  background-color: #f7f7f7;
 }
 .quantity-input {
-  width: 80rpx;
-  height: 60rpx;
-  line-height: 60rpx;
+  width: 90rpx;
+  height: 70rpx;
   text-align: center;
-  font-size: 28rpx;
-  border-left: 1rpx solid #eee;
-  border-right: 1rpx solid #eee;
+  font-size: 32rpx;
+  border-left: 1rpx solid #ddd;
+  border-right: 1rpx solid #ddd;
 }
+
+/* 底部结算栏 */
 .cart-footer {
   position: fixed;
-  bottom: 100rpx;
+  bottom: 0;
   left: 0;
   right: 0;
-  height: 100rpx;
+  height: 120rpx;
   background-color: #fff;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 0 30rpx;
-  border-top: 1rpx solid #eee;
-  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.05);
-  z-index: 98;
+  padding: 0 25rpx;
+  border-top: 1rpx solid #f0f0f0;
 }
 .select-all {
   display: flex;
   align-items: center;
+  margin-right: 30rpx;
 }
 .select-all text {
-  font-size: 28rpx;
-  margin-left: 10rpx;
+  margin-left: 15rpx;
+  font-size: 32rpx;
 }
-.total-section {
-  display: flex;
-  align-items: center;
+.price-section {
+  flex: 1;
+}
+.total-text {
+  font-size: 32rpx;
 }
 .total-price {
-  margin-right: 20rpx;
-  font-size: 28rpx;
-}
-.price {
-  color: #ff6b6b;
-  font-size: 36rpx;
+  color: #e93b3d;
+  font-size: 38rpx;
   font-weight: bold;
 }
+.saved-price {
+  color: #999;
+  font-size: 26rpx;
+  margin-left: 15rpx;
+}
 .checkout-btn {
-  width: 200rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  text-align: center;
-  background-color: #4CAF50;
-  color: #fff;
-  border-radius: 40rpx;
-  font-size: 28rpx;
+  width: 250rpx;
+  height: 90rpx;
+  line-height: 90rpx;
+  background-color: #e93b3d;
+  color: white;
+  border-radius: 45rpx;
+  font-size: 32rpx;
+  font-weight: bold;
 }
-.checkout-btn[disabled] {
-  background-color: #ccc;
-}
-.delete-section {
-  display: flex;
-  align-items: center;
-}
-.delete-btn {
-  width: 200rpx;
-  height: 80rpx;
-  line-height: 80rpx;
-  text-align: center;
-  background-color: #ff6b6b;
-  color: #fff;
-  border-radius: 40rpx;
-  font-size: 28rpx;
-}
-.delete-btn[disabled] {
+.checkout-btn.disabled {
   background-color: #ccc;
 }

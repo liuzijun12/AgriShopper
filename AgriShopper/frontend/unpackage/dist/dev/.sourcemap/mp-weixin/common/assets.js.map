@@ -1,1 +1,1 @@
-{"version":3,"file":"assets.js","sources":["../../../../static/empty-cart.png"],"sourcesContent":["export default \"/static/empty-cart.png\""],"names":[],"mappings":";AAAA,MAAe,aAAA;;"}
+{"version":3,"file":"assets.js","sources":["../../../static/empty-cart.png"],"sourcesContent":["export default \"/static/empty-cart.png\""],"names":[],"mappings":";AAAA,MAAe,aAAA;;"}

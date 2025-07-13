@@ -1,47 +1,144 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const common_assets = require("../../common/assets.js");
-const __default__ = {
-  name: "ShoppingCart",
-  onShow() {
-    common_vendor.index.$emit("tabPageShow");
-  }
-};
-const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
+const _sfc_main = {
+  __name: "shoppingCart",
   setup(__props) {
-    const cartItems = common_vendor.ref([
+    common_vendor.ref("河北张家口市");
+    common_vendor.ref(true);
+    const tagColors = {
+      "热卖": "#ffeeee",
+      "特惠": "#fff8e6",
+      "新品": "#e6f7ff",
+      "促销": "#ffebee"
+    };
+    const farmProducts = common_vendor.ref([
       {
         id: 1,
-        name: "新鲜西红柿",
-        image: "/static/products/tomato.jpg",
+        name: "有机西红柿",
         price: 5.99,
+        originalPrice: 7.99,
         quantity: 1,
         selected: false,
-        specification: "500g/份"
+        specification: "500g/份",
+        stock: 8,
+        tag: "热卖",
+        shopId: 1
       },
       {
         id: 2,
-        name: "有机生菜",
-        image: "/static/products/lettuce.jpg",
-        price: 3.99,
+        name: "农家土鸡蛋",
+        price: 15.8,
         quantity: 2,
         selected: false,
-        specification: "300g/份"
+        specification: "30枚/盒",
+        stock: 15,
+        tag: "特惠",
+        shopId: 1
+      },
+      {
+        id: 3,
+        name: "新鲜菠菜",
+        price: 3.5,
+        quantity: 1,
+        selected: false,
+        specification: "250g/捆",
+        stock: 20,
+        tag: "新品",
+        shopId: 1
+      },
+      {
+        id: 4,
+        name: "优质西红柿",
+        price: 4.5,
+        originalPrice: 6,
+        quantity: 1,
+        selected: false,
+        specification: "400g/份",
+        stock: 12,
+        tag: "促销",
+        shopId: 1
+      },
+      {
+        id: 5,
+        name: "新鲜土豆",
+        price: 2.8,
+        quantity: 3,
+        selected: false,
+        specification: "1kg/袋",
+        stock: 25,
+        tag: "热卖",
+        shopId: 1
+      },
+      {
+        id: 6,
+        name: "有机白菜",
+        price: 3.2,
+        originalPrice: 4,
+        quantity: 1,
+        selected: false,
+        specification: "800g/颗",
+        stock: 18,
+        tag: "特惠",
+        shopId: 1
+      },
+      {
+        id: 7,
+        name: "红富士苹果",
+        price: 8.8,
+        originalPrice: 10,
+        quantity: 1,
+        selected: false,
+        specification: "1kg/袋",
+        stock: 15,
+        tag: "促销",
+        shopId: 1
       }
     ]);
-    const isEditMode = common_vendor.ref(false);
-    const toggleEditMode = () => {
-      isEditMode.value = !isEditMode.value;
+    const goToSearch = () => {
+      common_vendor.index.navigateTo({
+        url: "/pages/search/search"
+      });
+    };
+    const getProductIcon = (name) => {
+      const icons = {
+        "西红柿": "🍅",
+        "鸡蛋": "🥚",
+        "菠菜": "🥬",
+        "苹果": "🍎",
+        "香蕉": "🍌",
+        "土豆": "🥔",
+        "白菜": "🥬"
+      };
+      return icons[name.replace(/有机|农家|新鲜|优质|红富士/g, "")] || "🛒";
+    };
+    common_vendor.computed(() => {
+      const currentTotal = totalPrice.value;
+      return currentTotal < 300 ? (300 - currentTotal).toFixed(2) : 0;
+    });
+    const totalSaved = common_vendor.computed(() => {
+      return farmProducts.value.filter((item) => item.selected && item.originalPrice).reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0);
+    });
+    const isShopAllSelected = (shopId) => {
+      const shopItems = farmProducts.value.filter((item) => item.shopId === shopId);
+      return shopItems.length > 0 && shopItems.every((item) => item.selected);
+    };
+    const toggleShopSelect = (shopId) => {
+      const shouldSelect = !isShopAllSelected(shopId);
+      farmProducts.value.forEach((item) => {
+        if (item.shopId === shopId) {
+          item.selected = shouldSelect;
+        }
+      });
     };
     const handleItemSelect = (e, item) => {
       item.selected = e.detail.value.length > 0;
     };
     const isAllSelected = common_vendor.computed(() => {
-      return cartItems.value.length > 0 && cartItems.value.every((item) => item.selected);
+      return farmProducts.value.length > 0 && farmProducts.value.every((item) => item.selected);
     });
     const handleSelectAll = (e) => {
       const selected = e.detail.value.length > 0;
-      cartItems.value.forEach((item) => {
+      farmProducts.value.forEach((item) => {
         item.selected = selected;
       });
     };
@@ -55,51 +152,14 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         item.quantity++;
       }
     };
-    const validateQuantity = (item) => {
-      const quantity = parseInt(item.quantity.toString());
-      if (isNaN(quantity) || quantity < 1) {
-        item.quantity = 1;
-      } else if (quantity > 99) {
-        item.quantity = 99;
-      } else {
-        item.quantity = quantity;
-      }
-    };
-    const totalItems = common_vendor.computed(() => {
-      return cartItems.value.reduce((sum, item) => sum + item.quantity, 0);
+    const totalPrice = common_vendor.computed(() => {
+      return farmProducts.value.filter((item) => item.selected).reduce((sum, item) => sum + item.price * item.quantity, 0);
     });
     const selectedCount = common_vendor.computed(() => {
-      return cartItems.value.filter((item) => item.selected).length;
+      return farmProducts.value.filter((item) => item.selected).length;
     });
-    const totalPrice = common_vendor.computed(() => {
-      return cartItems.value.filter((item) => item.selected).reduce((sum, item) => sum + item.price * item.quantity, 0);
-    });
-    const goShopping = () => {
-      common_vendor.index.switchTab({
-        url: "/pages/index/index"
-      });
-    };
-    const viewProduct = (item) => {
-      common_vendor.index.navigateTo({
-        url: `/pages/productDetail/productDetail?id=${item.id}`
-      });
-    };
-    const deleteSelected = () => {
-      common_vendor.index.showModal({
-        title: "提示",
-        content: "确定要删除选中的商品吗？",
-        success: (res) => {
-          if (res.confirm) {
-            cartItems.value = cartItems.value.filter((item) => !item.selected);
-            if (cartItems.value.length === 0) {
-              isEditMode.value = false;
-            }
-          }
-        }
-      });
-    };
     const checkout = () => {
-      const selectedItems = cartItems.value.filter((item) => item.selected);
+      const selectedItems = farmProducts.value.filter((item) => item.selected);
       if (selectedItems.length === 0) {
         common_vendor.index.showToast({
           title: "请选择要结算的商品",
@@ -113,47 +173,51 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: cartItems.value.length === 0
-      }, cartItems.value.length === 0 ? {
-        b: common_assets._imports_0,
-        c: common_vendor.o(goShopping)
-      } : {
-        d: common_vendor.t(totalItems.value),
-        e: common_vendor.t(isEditMode.value ? "完成" : "编辑"),
-        f: common_vendor.o(toggleEditMode),
-        g: common_vendor.f(cartItems.value, (item, index, i0) => {
-          return {
+        a: common_vendor.o(goToSearch),
+        b: common_vendor.o((...args) => _ctx.selectAddress && _ctx.selectAddress(...args)),
+        c: isShopAllSelected(1),
+        d: common_vendor.o(($event) => toggleShopSelect(1)),
+        e: common_vendor.f(farmProducts.value, (item, index, i0) => {
+          return common_vendor.e({
             a: item.selected,
             b: common_vendor.o((e) => handleItemSelect(e, item), index),
-            c: item.image,
-            d: common_vendor.o(($event) => viewProduct(item), index),
-            e: common_vendor.t(item.name),
-            f: common_vendor.t(item.specification),
-            g: common_vendor.t(item.price.toFixed(2)),
-            h: common_vendor.o(($event) => decreaseQuantity(item), index),
-            i: common_vendor.o(($event) => validateQuantity(item), index),
-            j: item.quantity,
-            k: common_vendor.o(($event) => item.quantity = $event.detail.value, index),
-            l: common_vendor.o(($event) => increaseQuantity(item), index),
-            m: index
-          };
-        })
-      }, {
-        h: isAllSelected.value,
-        i: common_vendor.o(handleSelectAll),
-        j: !isEditMode.value
-      }, !isEditMode.value ? {
-        k: common_vendor.t(totalPrice.value.toFixed(2)),
-        l: common_vendor.t(selectedCount.value),
-        m: selectedCount.value === 0,
-        n: common_vendor.o(checkout)
-      } : {
-        o: common_vendor.t(selectedCount.value),
-        p: selectedCount.value === 0,
-        q: common_vendor.o(deleteSelected)
+            c: common_vendor.t(getProductIcon(item.name)),
+            d: common_vendor.t(item.name),
+            e: item.tag
+          }, item.tag ? {
+            f: common_vendor.t(item.tag),
+            g: tagColors[item.tag]
+          } : {}, {
+            h: common_vendor.t(item.specification),
+            i: common_vendor.t(item.price.toFixed(2)),
+            j: item.originalPrice
+          }, item.originalPrice ? {
+            k: common_vendor.t(item.originalPrice.toFixed(2))
+          } : {}, {
+            l: item.stock < 10
+          }, item.stock < 10 ? {
+            m: common_vendor.t(item.stock)
+          } : {}, {
+            n: common_vendor.o(($event) => decreaseQuantity(item), index),
+            o: item.quantity,
+            p: common_vendor.o(($event) => item.quantity = $event.detail.value, index),
+            q: common_vendor.o(($event) => increaseQuantity(item), index),
+            r: index
+          });
+        }),
+        f: isAllSelected.value,
+        g: common_vendor.o(handleSelectAll),
+        h: common_vendor.t(totalPrice.value.toFixed(2)),
+        i: totalSaved.value > 0
+      }, totalSaved.value > 0 ? {
+        j: common_vendor.t(totalSaved.value.toFixed(2))
+      } : {}, {
+        k: common_vendor.t(selectedCount.value),
+        l: selectedCount.value === 0 ? 1 : "",
+        m: common_vendor.o(checkout)
       });
     };
   }
-});
+};
 wx.createPage(_sfc_main);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/shoppingCart/shoppingCart.js.map
