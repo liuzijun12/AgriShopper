@@ -1,11 +1,11 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const common_assets = require("../../common/assets.js");
 const __default__ = {
   name: "Messages",
   onShow() {
     common_vendor.index.$emit("tabPageShow");
   },
-  // 页面配置
   onPullDownRefresh() {
     this.onRefresh();
   },
@@ -16,10 +16,10 @@ const __default__ = {
 const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
   setup(__props) {
     const messageTabs = common_vendor.ref([
-      { name: "系统通知", unread: 2 },
-      { name: "订单消息", unread: 3 },
-      { name: "活动消息", unread: 1 },
-      { name: "客服消息", unread: 5 }
+      { name: "系统通知", unread: 2, icon: "/static/messages/system_notification.png" },
+      { name: "订单消息", unread: 3, icon: "/static/messages/order_message.png" },
+      { name: "活动消息", unread: 1, icon: "/static/messages/activity_message.png" },
+      { name: "客服消息", unread: 5, icon: "/static/messages/customer_service_message.png" }
     ]);
     const currentTab = common_vendor.ref(0);
     const systemMessages = common_vendor.ref([
@@ -37,7 +37,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         content: "系统将于今晚22:00-23:00进行例行维护升级，期间可能影响部分功能使用。",
         time: "09:30",
         date: "2024-06-18",
-        read: false
+        read: true
       }
     ]);
     const orderMessages = common_vendor.ref([
@@ -49,7 +49,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         date: "2024-06-18",
         status: "已发货",
         orderId: "202406180001",
-        image: "https://readdy.ai/api/search-image?query=Fresh%20organic%20vegetables%20package%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=100&height=100",
+        image: "https://placehold.co/100x100/cccccc/ffffff?text=Order1",
         read: false
       },
       {
@@ -60,7 +60,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         date: "2024-06-18",
         status: "已完成",
         orderId: "202406170002",
-        image: "https://readdy.ai/api/search-image?query=Delivered%20package%20with%20check%20mark%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=100&height=100",
+        image: "https://placehold.co/100x100/cccccc/ffffff?text=Order2",
         read: true
       }
     ]);
@@ -73,7 +73,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         date: "2024-06-18",
         tag: "限时特惠",
         validDate: "2024.6.18-6.20",
-        image: "https://readdy.ai/api/search-image?query=Fresh%20fruits%20sale%20promotion%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=200&height=100",
+        image: "https://placehold.co/200x100/cccccc/ffffff?text=Promo",
         read: false
       }
     ]);
@@ -81,7 +81,8 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       {
         id: 1,
         name: "在线客服",
-        avatar: "/static/robot.png",
+        // 请将 'cs_online_en.png' 替换为您实际的文件名
+        avatar: "/static/messages/cs_online_en.png",
         lastMessage: "您好，请问有什么可以帮您？",
         time: "16:30",
         unread: 1
@@ -89,7 +90,8 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       {
         id: 2,
         name: "售后客服",
-        avatar: "/static/service.png",
+        // 请将 'cs_aftersales_en.png' 替换为您实际的文件名
+        avatar: "/static/messages/cs_aftersales_en.png",
         lastMessage: "您的退款申请已处理完成",
         time: "15:45",
         unread: 0
@@ -123,10 +125,16 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       systemMessages.value.forEach((msg) => msg.read = true);
       orderMessages.value.forEach((msg) => msg.read = true);
       promotionMessages.value.forEach((msg) => msg.read = true);
-      messageTabs.value.forEach((tab) => tab.unread = 0);
+      serviceMessages.value.forEach((msg) => msg.unread = 0);
+      updateUnreadCount();
     };
     const openMessage = (message) => {
-      message.read = true;
+      if (message.read !== void 0) {
+        message.read = true;
+      }
+      if (message.unread !== void 0) {
+        message.unread = 0;
+      }
       updateUnreadCount();
       common_vendor.index.showToast({
         title: "查看消息详情：" + message.title,
@@ -134,6 +142,8 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       });
     };
     const enterChat = (service) => {
+      service.unread = 0;
+      updateUnreadCount();
       common_vendor.index.navigateTo({
         url: `/pages/chat/chat?id=${service.id}`
       });
@@ -143,6 +153,14 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       messageTabs.value[1].unread = orderMessages.value.filter((msg) => !msg.read).length;
       messageTabs.value[2].unread = promotionMessages.value.filter((msg) => !msg.read).length;
       messageTabs.value[3].unread = serviceMessages.value.reduce((total, service) => total + service.unread, 0);
+    };
+    const onImageError = (type, item) => {
+      common_vendor.index.__f__("error", "at pages/messages/messages.vue:310", `Failed to load ${type} image for item:`, item);
+      if (type === "order" || type === "promotion") {
+        item.image = "https://placehold.co/100x100/ff0000/ffffff?text=Error";
+      } else if (type === "service") {
+        item.avatar = "/static/messages/cs_error_fallback.png";
+      }
     };
     const loadMore = () => {
       if (loading.value || !hasMore.value)
@@ -159,109 +177,99 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.o(markAllAsRead),
-        b: common_vendor.f(messageTabs.value, (tab, index, i0) => {
+        a: common_assets._imports_0,
+        b: common_vendor.o(markAllAsRead),
+        c: common_vendor.f(messageTabs.value, (tab, index, i0) => {
           return common_vendor.e({
-            a: common_vendor.t(tab.name),
-            b: tab.unread > 0
+            a: tab.icon,
+            b: common_vendor.t(tab.name),
+            c: tab.unread > 0
           }, tab.unread > 0 ? {
-            c: common_vendor.t(tab.unread)
+            d: common_vendor.t(tab.unread)
           } : {}, {
-            d: index,
-            e: common_vendor.n(currentTab.value === index ? "tab-active" : ""),
-            f: common_vendor.o(($event) => switchTab(index), index)
+            e: index,
+            f: common_vendor.n(currentTab.value === index ? "tab-active" : ""),
+            g: common_vendor.o(($event) => switchTab(index), index)
           });
         }),
-        c: currentTab.value === 0
+        d: currentTab.value === 0
       }, currentTab.value === 0 ? {
-        d: common_vendor.f(groupedSystemMessages.value, (group, date, i0) => {
+        e: common_vendor.f(groupedSystemMessages.value, (group, date, i0) => {
           return {
             a: common_vendor.t(date),
             b: common_vendor.f(group, (message, index, i1) => {
-              return common_vendor.e({
+              return {
                 a: common_vendor.t(message.title),
                 b: common_vendor.t(message.time),
                 c: common_vendor.t(message.content),
-                d: !message.read
-              }, !message.read ? {} : {}, {
-                e: index,
-                f: !message.read ? 1 : "",
-                g: common_vendor.o(($event) => openMessage(message), index)
-              });
+                d: index,
+                e: common_vendor.o(($event) => openMessage(message), index)
+              };
             }),
             c: date
           };
         })
       } : {}, {
-        e: currentTab.value === 1
+        f: currentTab.value === 1
       }, currentTab.value === 1 ? {
-        f: common_vendor.f(groupedOrderMessages.value, (group, date, i0) => {
+        g: common_vendor.f(groupedOrderMessages.value, (group, date, i0) => {
           return {
             a: common_vendor.t(date),
             b: common_vendor.f(group, (message, index, i1) => {
-              return common_vendor.e({
-                a: message.image,
-                b: common_vendor.t(message.title),
-                c: common_vendor.t(message.time),
-                d: common_vendor.t(message.content),
-                e: common_vendor.t(message.status),
-                f: common_vendor.t(message.orderId),
-                g: !message.read
-              }, !message.read ? {} : {}, {
-                h: index,
-                i: !message.read ? 1 : "",
-                j: common_vendor.o(($event) => openMessage(message), index)
-              });
+              return {
+                a: common_vendor.t(message.title),
+                b: common_vendor.t(message.time),
+                c: common_vendor.t(message.content),
+                d: common_vendor.t(message.status),
+                e: common_vendor.t(message.orderId),
+                f: index,
+                g: common_vendor.o(($event) => openMessage(message), index)
+              };
             }),
             c: date
           };
         })
       } : {}, {
-        g: currentTab.value === 2
+        h: currentTab.value === 2
       }, currentTab.value === 2 ? {
-        h: common_vendor.f(groupedPromotionMessages.value, (group, date, i0) => {
+        i: common_vendor.f(groupedPromotionMessages.value, (group, date, i0) => {
           return {
             a: common_vendor.t(date),
             b: common_vendor.f(group, (message, index, i1) => {
-              return common_vendor.e({
+              return {
                 a: message.image,
-                b: common_vendor.t(message.title),
-                c: common_vendor.t(message.time),
-                d: common_vendor.t(message.content),
-                e: common_vendor.t(message.tag),
-                f: common_vendor.t(message.validDate),
-                g: !message.read
-              }, !message.read ? {} : {}, {
+                b: common_vendor.o(($event) => onImageError("promotion", message), index),
+                c: common_vendor.t(message.title),
+                d: common_vendor.t(message.time),
+                e: common_vendor.t(message.content),
+                f: common_vendor.t(message.tag),
+                g: common_vendor.t(message.validDate),
                 h: index,
-                i: !message.read ? 1 : "",
-                j: common_vendor.o(($event) => openMessage(message), index)
-              });
+                i: common_vendor.o(($event) => openMessage(message), index)
+              };
             }),
             c: date
           };
         })
       } : {}, {
-        i: currentTab.value === 3
+        j: currentTab.value === 3
       }, currentTab.value === 3 ? {
-        j: common_vendor.f(serviceMessages.value, (message, index, i0) => {
-          return common_vendor.e({
+        k: common_vendor.f(serviceMessages.value, (message, index, i0) => {
+          return {
             a: message.avatar,
-            b: common_vendor.t(message.name),
-            c: common_vendor.t(message.time),
-            d: common_vendor.t(message.lastMessage),
-            e: message.unread > 0
-          }, message.unread > 0 ? {
-            f: common_vendor.t(message.unread)
-          } : {}, {
-            g: index,
-            h: common_vendor.o(($event) => enterChat(message), index)
-          });
+            b: common_vendor.o(($event) => onImageError("service", message), index),
+            c: common_vendor.t(message.name),
+            d: common_vendor.t(message.time),
+            e: common_vendor.t(message.lastMessage),
+            f: index,
+            g: common_vendor.o(($event) => enterChat(message), index)
+          };
         })
       } : {}, {
-        k: hasMore.value
+        l: hasMore.value
       }, hasMore.value ? {} : {}, {
-        l: common_vendor.o(loadMore),
-        m: common_vendor.o(onRefresh)
+        m: common_vendor.o(loadMore),
+        n: common_vendor.o(onRefresh)
       });
     };
   }

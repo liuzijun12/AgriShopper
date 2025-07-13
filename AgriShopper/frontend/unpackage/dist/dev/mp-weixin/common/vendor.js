@@ -6096,7 +6096,7 @@ function populateParameters(fromRes, toRes) {
   let _SDKVersion = SDKVersion;
   const hostLanguage = (language || "").replace(/_/g, "-");
   const parameters = {
-    appId: "",
+    appId: "__UNI__17EA8DA",
     appName: "AgriShopper",
     appVersion: "1.0.0",
     appVersionCode: "100",
@@ -6245,7 +6245,7 @@ const getAppBaseInfo = {
       hostName: _hostName,
       hostSDKVersion: SDKVersion,
       hostTheme: theme,
-      appId: "",
+      appId: "__UNI__17EA8DA",
       appName: "AgriShopper",
       appVersion: "1.0.0",
       appVersionCode: "100",
@@ -6994,9 +6994,9 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "192.168.1.101,127.0.0.1";
+  const hosts = "172.24.208.1,192.168.1.34,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_x1HeYj";
+  const id = "mp-weixin_6vcY8o";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();

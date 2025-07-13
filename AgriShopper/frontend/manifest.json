@@ -1,6 +1,6 @@
 {
     "name" : "AgriShopper",
-    "appid" : "",
+    "appid" : "__UNI__17EA8DA",
     "description" : "农产品购物平台",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -47,23 +47,23 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wx8c6d69b835a8a621",
         "setting" : {
             "urlCheck" : false,
-            "es6": true,
-            "postcss": true,
-            "minified": true
+            "es6" : true,
+            "postcss" : true,
+            "minified" : true
         },
         "usingComponents" : true,
-        "optimization": {
-            "subPackages": true
+        "optimization" : {
+            "subPackages" : true
         },
-        "permission": {
-            "scope.userLocation": {
-                "desc": "你的位置信息将用于获取附近的商家信息"
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "你的位置信息将用于获取附近的商家信息"
             }
         },
-        "lazyCodeLoading": "requiredComponents"
+        "lazyCodeLoading" : "requiredComponents"
     },
     "mp-alipay" : {
         "usingComponents" : true
@@ -78,21 +78,21 @@
         "enable" : false
     },
     "vueVersion" : "3",
-    "h5": {
-        "title": "AgriShopper",
-        "router": {
-            "mode": "hash",
-            "base": "/"
+    "h5" : {
+        "title" : "AgriShopper",
+        "router" : {
+            "mode" : "hash",
+            "base" : "/"
         },
-        "optimization": {
-            "treeShaking": {
-                "enable": true
+        "optimization" : {
+            "treeShaking" : {
+                "enable" : true
             }
         },
-        "devServer": {
-            "https": false,
-            "port": 8080,
-            "disableHostCheck": true
+        "devServer" : {
+            "https" : false,
+            "port" : 8080,
+            "disableHostCheck" : true
         }
     }
 }

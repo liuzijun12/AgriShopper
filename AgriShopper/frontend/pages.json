@@ -1,5 +1,5 @@
 {
-	"pages": [ 
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
@@ -60,7 +60,8 @@
 				"text": "商品",
 				"iconPath": "static/tabbar/list.png",
 				"selectedIconPath": "static/tabbar/list-active.png"
-			},
+			}
+			,
 			{
 				"pagePath": "pages/messages/messages",
 				"text": "消息",

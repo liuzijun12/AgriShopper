@@ -1,143 +1,135 @@
 <template>
   <view class="page-container">
-    <!-- 顶部标题栏 -->
     <view class="header">
       <text class="header-title">消息</text>
       <view class="header-actions">
         <view class="mark-all-read" @tap="markAllAsRead">
-          <text>全部已读</text>
+          <image src="/static/messages/clear_icon.png" class="action-icon" mode="aspectFit"></image>
         </view>
       </view>
     </view>
 
-    <!-- 消息分类标签 -->
-    <scroll-view class="message-tabs" scroll-x>
+    <scroll-view class="message-tabs-scroll" scroll-x>
       <view class="tabs-container">
-        <view 
-          v-for="(tab, index) in messageTabs" 
+        <view
+          v-for="(tab, index) in messageTabs"
           :key="index"
           :class="['tab-item', currentTab === index ? 'tab-active' : '']"
           @tap="switchTab(index)"
         >
+          <image
+            :src="tab.icon"
+            class="tab-icon"
+            mode="aspectFit"
+          ></image>
           <text>{{ tab.name }}</text>
           <view v-if="tab.unread > 0" class="unread-badge">{{ tab.unread }}</view>
         </view>
       </view>
     </scroll-view>
 
-    <!-- 消息列表 -->
-    <scroll-view 
-      class="message-list" 
-      scroll-y 
+    <scroll-view
+      class="message-list-scroll"
+      scroll-y
       @scrolltolower="loadMore"
       :refresher-enabled="true"
       @refresherrefresh="onRefresh"
     >
-      <!-- 系统通知 -->
-      <view v-if="currentTab === 0">
+      <view v-if="currentTab === 0" class="message-section">
         <view class="message-group" v-for="(group, date) in groupedSystemMessages" :key="date">
           <view class="date-divider">{{ date }}</view>
-          <view 
-            class="message-item" 
-            v-for="(message, index) in group" 
+          <view
+            class="message-card system-card"
+            v-for="(message, index) in group"
             :key="index"
-            :class="{'unread': !message.read}"
             @tap="openMessage(message)"
           >
-            <view class="message-content">
-              <view class="message-header">
-                <text class="message-title">{{ message.title }}</text>
-                <text class="message-time">{{ message.time }}</text>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="card-title">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
               </view>
-              <text class="message-summary">{{ message.content }}</text>
+              <text class="card-summary">{{ message.content }}</text>
             </view>
-            <view v-if="!message.read" class="unread-dot"></view>
+            <view class="unread-dot"></view>
           </view>
         </view>
       </view>
 
-      <!-- 订单消息 -->
-      <view v-if="currentTab === 1">
+      <view v-if="currentTab === 1" class="message-section">
         <view class="message-group" v-for="(group, date) in groupedOrderMessages" :key="date">
           <view class="date-divider">{{ date }}</view>
-          <view 
-            class="message-item" 
-            v-for="(message, index) in group" 
+          <view
+            class="message-card order-card"
+            v-for="(message, index) in group"
             :key="index"
-            :class="{'unread': !message.read}"
             @tap="openMessage(message)"
           >
-            <image class="order-image" :src="message.image" mode="aspectFill"></image>
-            <view class="message-content">
-              <view class="message-header">
-                <text class="message-title">{{ message.title }}</text>
-                <text class="message-time">{{ message.time }}</text>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="card-title">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
               </view>
-              <text class="message-summary">{{ message.content }}</text>
-              <view class="order-info">
-                <text class="order-status">{{ message.status }}</text>
-                <text class="order-id">订单号：{{ message.orderId }}</text>
+              <text class="card-summary">{{ message.content }}</text>
+              <view class="card-info order-info">
+                <text class="status-tag order-status-tag">{{ message.status }}</text>
+                <text class="card-id">订单号：{{ message.orderId }}</text>
               </view>
             </view>
-            <view v-if="!message.read" class="unread-dot"></view>
+            <view class="unread-dot"></view>
           </view>
         </view>
       </view>
 
-      <!-- 活动消息 -->
-      <view v-if="currentTab === 2">
+      <view v-if="currentTab === 2" class="message-section">
         <view class="message-group" v-for="(group, date) in groupedPromotionMessages" :key="date">
           <view class="date-divider">{{ date }}</view>
-          <view 
-            class="message-item promotion-item" 
-            v-for="(message, index) in group" 
+          <view
+            class="message-card promotion-card"
+            v-for="(message, index) in group"
             :key="index"
-            :class="{'unread': !message.read}"
             @tap="openMessage(message)"
           >
-            <image class="promotion-image" :src="message.image" mode="aspectFill"></image>
-            <view class="message-content">
-              <view class="message-header">
-                <text class="message-title">{{ message.title }}</text>
-                <text class="message-time">{{ message.time }}</text>
+            <image class="card-image promotion-image" :src="message.image" mode="aspectFill" @error="onImageError('promotion', message)"></image>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="card-title">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
               </view>
-              <text class="message-summary">{{ message.content }}</text>
-              <view class="promotion-info">
-                <text class="promotion-tag">{{ message.tag }}</text>
-                <text class="promotion-date">{{ message.validDate }}</text>
+              <text class="card-summary">{{ message.content }}</text>
+              <view class="card-info promotion-info">
+                <text class="status-tag promotion-tag">{{ message.tag }}</text>
+                <text class="card-date">{{ message.validDate }}</text>
               </view>
             </view>
-            <view v-if="!message.read" class="unread-dot"></view>
+            <view class="unread-dot"></view>
           </view>
         </view>
       </view>
 
-      <!-- 客服消息 -->
-      <view v-if="currentTab === 3">
-        <view 
-          class="service-item" 
-          v-for="(message, index) in serviceMessages" 
+      <view v-if="currentTab === 3" class="message-section">
+        <view
+          class="message-card service-card"
+          v-for="(message, index) in serviceMessages"
           :key="index"
           @tap="enterChat(message)"
         >
-          <image class="service-avatar" :src="message.avatar" mode="aspectFill"></image>
-          <view class="message-content">
-            <view class="message-header">
+          <image class="service-avatar" :src="message.avatar" mode="aspectFill" @error="onImageError('service', message)"></image>
+          <view class="card-content">
+            <view class="card-header">
               <text class="service-name">{{ message.name }}</text>
-              <text class="message-time">{{ message.time }}</text>
+              <text class="card-time">{{ message.time }}</text>
             </view>
-            <text class="message-summary">{{ message.lastMessage }}</text>
+            <text class="card-summary">{{ message.lastMessage }}</text>
           </view>
-          <view v-if="message.unread > 0" class="unread-count">{{ message.unread }}</view>
+          <view class="unread-dot"></view>
         </view>
       </view>
 
-      <!-- 加载更多 -->
       <view v-if="hasMore" class="loading-more">
         <text>加载中...</text>
       </view>
     </scroll-view>
-
   </view>
 </template>
 
@@ -147,7 +139,6 @@ export default {
   onShow() {
     uni.$emit('tabPageShow')
   },
-  // 页面配置
   onPullDownRefresh() {
     this.onRefresh();
   },
@@ -160,21 +151,15 @@ export default {
 <script setup>
 import { ref, computed } from 'vue';
 
-// 头像图片
-const aiAvatar = 'https://readdy.ai/api/search-image?query=3D%20cartoon%2C%20AI%20assistant%20robot%20with%20friendly%20face%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look&width=100&height=100&seq=1001&orientation=squarish';
-const userAvatar = 'https://readdy.ai/api/search-image?query=3D%20cartoon%2C%20simple%20user%20avatar%20icon%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20vibrant%20colors%20with%20soft%20gradients%2C%20minimalist%20design%2C%20smooth%20rounded%20shapes%2C%20subtle%20shading%2C%20no%20outlines%2C%20centered%20composition%2C%20isolated%20on%20white%20background%2C%20playful%20and%20friendly%20aesthetic%2C%20high%20detail%20quality%2C%20clean%20and%20modern%20look&width=100&height=100&seq=1002&orientation=squarish';
-
-// 消息分类标签
 const messageTabs = ref([
-  { name: '系统通知', unread: 2 },
-  { name: '订单消息', unread: 3 },
-  { name: '活动消息', unread: 1 },
-  { name: '客服消息', unread: 5 }
+  { name: '系统通知', unread: 2, icon: '/static/messages/system_notification.png' },
+  { name: '订单消息', unread: 3, icon: '/static/messages/order_message.png' },
+  { name: '活动消息', unread: 1, icon: '/static/messages/activity_message.png' },
+  { name: '客服消息', unread: 5, icon: '/static/messages/customer_service_message.png' }
 ]);
 
 const currentTab = ref(0);
 
-// 系统消息数据
 const systemMessages = ref([
   {
     id: 1,
@@ -190,11 +175,10 @@ const systemMessages = ref([
     content: '系统将于今晚22:00-23:00进行例行维护升级，期间可能影响部分功能使用。',
     time: '09:30',
     date: '2024-06-18',
-    read: false
+    read: true
   }
 ]);
 
-// 订单消息数据
 const orderMessages = ref([
   {
     id: 1,
@@ -204,7 +188,7 @@ const orderMessages = ref([
     date: '2024-06-18',
     status: '已发货',
     orderId: '202406180001',
-    image: 'https://readdy.ai/api/search-image?query=Fresh%20organic%20vegetables%20package%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=100&height=100',
+    image: 'https://placehold.co/100x100/cccccc/ffffff?text=Order1',
     read: false
   },
   {
@@ -215,12 +199,11 @@ const orderMessages = ref([
     date: '2024-06-18',
     status: '已完成',
     orderId: '202406170002',
-    image: 'https://readdy.ai/api/search-image?query=Delivered%20package%20with%20check%20mark%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=100&height=100',
+    image: 'https://placehold.co/100x100/cccccc/ffffff?text=Order2',
     read: true
   }
 ]);
 
-// 活动消息数据
 const promotionMessages = ref([
   {
     id: 1,
@@ -230,17 +213,17 @@ const promotionMessages = ref([
     date: '2024-06-18',
     tag: '限时特惠',
     validDate: '2024.6.18-6.20',
-    image: 'https://readdy.ai/api/search-image?query=Fresh%20fruits%20sale%20promotion%2C%20high-quality%20details%2C%20clear%20and%20sharp%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20no%20shadows%2C%20no%20text.&width=200&height=100',
+    image: 'https://placehold.co/200x100/cccccc/ffffff?text=Promo',
     read: false
   }
 ]);
 
-// 客服消息数据
 const serviceMessages = ref([
   {
     id: 1,
     name: '在线客服',
-    avatar: '/static/robot.png',
+    // 请将 'cs_online_en.png' 替换为您实际的文件名
+    avatar: '/static/messages/cs_online_en.png',
     lastMessage: '您好，请问有什么可以帮您？',
     time: '16:30',
     unread: 1
@@ -248,14 +231,14 @@ const serviceMessages = ref([
   {
     id: 2,
     name: '售后客服',
-    avatar: '/static/service.png',
+    // 请将 'cs_aftersales_en.png' 替换为您实际的文件名
+    avatar: '/static/messages/cs_aftersales_en.png',
     lastMessage: '您的退款申请已处理完成',
     time: '15:45',
     unread: 0
   }
 ]);
 
-// 按日期分组的消息
 const groupedSystemMessages = computed(() => {
   return groupMessagesByDate(systemMessages.value);
 });
@@ -268,7 +251,6 @@ const groupedPromotionMessages = computed(() => {
   return groupMessagesByDate(promotionMessages.value);
 });
 
-// 分组消息的辅助函数
 const groupMessagesByDate = (messages) => {
   const groups = {};
   messages.forEach(message => {
@@ -280,44 +262,43 @@ const groupMessagesByDate = (messages) => {
   return groups;
 };
 
-// 加载状态
 const hasMore = ref(false);
 const loading = ref(false);
 
-// 切换标签
 const switchTab = (index) => {
   currentTab.value = index;
 };
 
-// 标记所有消息为已读
 const markAllAsRead = () => {
   systemMessages.value.forEach(msg => msg.read = true);
   orderMessages.value.forEach(msg => msg.read = true);
   promotionMessages.value.forEach(msg => msg.read = true);
-  messageTabs.value.forEach(tab => tab.unread = 0);
+  serviceMessages.value.forEach(msg => msg.unread = 0);
+  updateUnreadCount();
 };
 
-// 打开消息详情
 const openMessage = (message) => {
-  message.read = true;
-  // 更新未读数
+  if (message.read !== undefined) {
+    message.read = true;
+  }
+  if (message.unread !== undefined) {
+    message.unread = 0;
+  }
   updateUnreadCount();
-  // TODO: 跳转到消息详情页
   uni.showToast({
     title: '查看消息详情：' + message.title,
     icon: 'none'
   });
 };
 
-// 进入聊天界面
 const enterChat = (service) => {
-  // TODO: 跳转到聊天界面
+  service.unread = 0;
+  updateUnreadCount();
   uni.navigateTo({
     url: `/pages/chat/chat?id=${service.id}`
   });
 };
 
-// 更新未读消息数
 const updateUnreadCount = () => {
   messageTabs.value[0].unread = systemMessages.value.filter(msg => !msg.read).length;
   messageTabs.value[1].unread = orderMessages.value.filter(msg => !msg.read).length;
@@ -325,19 +306,25 @@ const updateUnreadCount = () => {
   messageTabs.value[3].unread = serviceMessages.value.reduce((total, service) => total + service.unread, 0);
 };
 
-// 加载更多消息
+const onImageError = (type, item) => {
+  console.error(`Failed to load ${type} image for item:`, item);
+  if (type === 'order' || type === 'promotion') {
+    item.image = 'https://placehold.co/100x100/ff0000/ffffff?text=Error';
+  } else if (type === 'service') {
+    // 假设当原始头像加载失败时，也 fallback 到您提供的错误头像图片
+    item.avatar = '/static/messages/cs_error_fallback.png'; // 可以为错误头像准备一个通用的 fallback 图片
+  }
+};
+
 const loadMore = () => {
   if (loading.value || !hasMore.value) return;
   loading.value = true;
-  // TODO: 实现加载更多逻辑
   setTimeout(() => {
     loading.value = false;
   }, 1000);
 };
 
-// 下拉刷新
 const onRefresh = () => {
-  // TODO: 实现刷新逻辑
   setTimeout(() => {
     uni.stopPullDownRefresh();
   }, 1000);
@@ -346,7 +333,7 @@ const onRefresh = () => {
 
 <style>
 page {
-  background-color: #f5f5f5;
+  background-color: #f0f2f5;
   height: 100%;
 }
 
@@ -354,24 +341,25 @@ page {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  padding-bottom: 120rpx; /* 增加底部padding，为导航栏留出空间 */
+  padding-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
 }
 
-/* 顶部标题栏 */
+/* Header */
 .header {
-  padding: 20rpx 30rpx;
+  padding: 24rpx 32rpx;
   background-color: #ffffff;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1rpx solid #eee;
+  border-bottom: 1rpx solid #eeeeee;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
 }
 
 .header-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #333;
+  font-size: 38rpx;
+  font-weight: 700;
+  color: #222222;
 }
 
 .header-actions {
@@ -382,235 +370,262 @@ page {
 .mark-all-read {
   display: flex;
   align-items: center;
-  font-size: 28rpx;
-  color: #666;
-  padding: 10rpx 20rpx;
-  background-color: #f5f5f5;
-  border-radius: 30rpx;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  background-color: #f0f2f5;
+  border-radius: 50%;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease;
 }
 
-/* 消息分类标签 */
-.message-tabs {
+.mark-all-read:active {
+  background-color: #e0e2e5;
+}
+
+.action-icon {
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
+}
+
+/* Message category tabs */
+.message-tabs-scroll {
   background-color: #ffffff;
   padding: 20rpx 0;
+  border-bottom: 1rpx solid #eeeeee;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.03);
   white-space: nowrap;
-  border-bottom: 1rpx solid #eee;
 }
 
 .tabs-container {
-  display: inline-flex;
-  height: 88rpx;
+  display: flex;
+  width: 100%;
+  height: 96rpx;
   padding: 0 20rpx;
+  box-sizing: border-box;
+  justify-content: space-around;
+  align-items: center;
 }
 
 .tab-item {
   position: relative;
-  padding: 0 30rpx;
-  margin-right: 20rpx;
   font-size: 28rpx;
-  color: #666;
+  color: #666666;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  padding: 0 10rpx;
+}
+
+.tab-icon {
+  width: 56rpx;
+  height: 56rpx;
+  margin-bottom: 6rpx;
 }
 
 .tab-active {
-  color: #4CAF50;
-  font-weight: 500;
-}
-
-.tab-active::after {
-  content: '';
-  position: absolute;
-  bottom: -10rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40rpx;
-  height: 4rpx;
-  background-color: #4CAF50;
-  border-radius: 2rpx;
+  color: #007bff;
+  font-weight: 600;
 }
 
 .unread-badge {
   position: absolute;
-  top: 7rpx;
-  right: 10rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  padding: 0 6rpx;
+  top: 4rpx;
+  right: 12rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 8rpx;
   background-color: #ff4d4f;
-  border-radius: 16rpx;
+  border-radius: 18rpx;
   color: #fff;
-  font-size: 20rpx;
+  font-size: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
 }
 
-/* 消息列表 */
-.message-list {
+/* Message List - scroll area */
+.message-list-scroll {
   flex: 1;
-  background-color: #f5f5f5;
-  padding-bottom: 20rpx;
+  background-color: #f0f2f5;
+  padding: 20rpx 0;
+  box-sizing: border-box;
+}
+
+.message-section {
+  padding: 0 20rpx;
 }
 
 .message-group {
-  margin-bottom: 20rpx;
+  margin-bottom: 30rpx;
 }
 
 .date-divider {
-  padding: 20rpx 30rpx;
-  font-size: 24rpx;
-  color: #999;
+  padding: 20rpx 0;
+  font-size: 26rpx;
+  color: #999999;
+  font-weight: 500;
+  text-align: left;
+  margin-left: 10rpx;
 }
 
-.message-item {
+/* Unified Card Style - 蓝色边框现在是默认样式 */
+.message-card {
   background-color: #ffffff;
+  border-radius: 16rpx;
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.08);
+  margin-bottom: 24rpx;
   padding: 30rpx;
   display: flex;
   align-items: flex-start;
   position: relative;
-  border-bottom: 1rpx solid #eee;
+  overflow: hidden;
+  border-left: 10rpx solid #007bff; /* 蓝色左边框现在无条件显示 */
+  padding-left: 20rpx; /* 调整内边距以适应边框 */
 }
 
-.message-icon {
-  margin-right: 20rpx;
-}
-
-.message-content {
+/* Common card content styling */
+.card-content {
   flex: 1;
-  margin-right: 20rpx;
+  min-width: 0;
 }
 
-.message-header {
+.card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 12rpx;
+}
+
+.card-title {
+  font-size: 32rpx;
+  color: #333333;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  max-width: 80%;
+}
+
+.card-time {
+  font-size: 26rpx;
+  color: #999999;
+  flex-shrink: 0;
+  margin-left: 10rpx;
+}
+
+.card-summary {
+  font-size: 28rpx;
+  color: #666666;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
   margin-bottom: 10rpx;
 }
 
-.message-title {
-  font-size: 30rpx;
-  color: #333;
-  font-weight: 500;
-}
-
-.message-time {
-  font-size: 24rpx;
-  color: #999;
-}
-
-.message-summary {
-  font-size: 28rpx;
-  color: #666;
-  line-height: 1.5;
-}
-
+/* Unread dot style (现在无条件显示) */
 .unread-dot {
-  width: 16rpx;
-  height: 16rpx;
+  width: 18rpx;
+  height: 18rpx;
   background-color: #ff4d4f;
   border-radius: 50%;
   position: absolute;
   right: 30rpx;
   top: 30rpx;
+  z-index: 2;
 }
 
-/* 订单消息样式 */
+/* Image styles for Order and Promotion Cards */
+.card-image {
+  border-radius: 8rpx;
+  flex-shrink: 0;
+  background-color: #f5f5f5;
+}
+
 .order-image {
-  width: 100rpx;
-  height: 100rpx;
-  border-radius: 10rpx;
-  margin-right: 20rpx;
+  width: 140rpx;
+  height: 140rpx;
+  margin-right: 24rpx;
 }
 
-.order-info {
-  margin-top: 16rpx;
-  display: flex;
-  align-items: center;
-}
-
-.order-status {
-  font-size: 24rpx;
-  color: #4CAF50;
-  background-color: rgba(76, 175, 80, 0.1);
-  padding: 4rpx 12rpx;
-  border-radius: 4rpx;
-  margin-right: 20rpx;
-}
-
-.order-id {
-  font-size: 24rpx;
-  color: #999;
-}
-
-/* 活动消息样式 */
 .promotion-image {
-  width: 200rpx;
-  height: 100rpx;
-  border-radius: 10rpx;
-  margin-right: 20rpx;
+  width: 240rpx;
+  height: 140rpx;
+  margin-right: 24rpx;
 }
 
-.promotion-info {
+/* Information sections (order, promotion) */
+.card-info {
   margin-top: 16rpx;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Unified Status Tag Style */
+.status-tag {
+  font-size: 24rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 8rpx;
+  font-weight: 500;
+  margin-right: 16rpx;
+  white-space: nowrap;
+}
+
+.order-status-tag {
+  color: #28a745;
+  background-color: rgba(40, 167, 69, 0.1);
 }
 
 .promotion-tag {
-  font-size: 24rpx;
-  color: #ff4d4f;
-  background-color: rgba(255, 77, 79, 0.1);
-  padding: 4rpx 12rpx;
-  border-radius: 4rpx;
-  margin-right: 20rpx;
+  color: #dc3545;
+  background-color: rgba(220, 53, 69, 0.1);
 }
 
-.promotion-date {
+.card-id, .card-date {
   font-size: 24rpx;
-  color: #999;
+  color: #999999;
 }
 
-/* 客服消息样式 */
-.service-item {
-  background-color: #ffffff;
-  padding: 30rpx;
-  display: flex;
+/* Customer Service Card specific styles */
+.service-card {
   align-items: center;
-  border-bottom: 1rpx solid #eee;
 }
 
 .service-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 40rpx;
-  margin-right: 20rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  margin-right: 24rpx;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.05);
 }
 
 .service-name {
-  font-size: 30rpx;
-  color: #333;
-  font-weight: 500;
+  font-size: 32rpx;
+  color: #333333;
+  font-weight: 600;
 }
 
-.unread-count {
-  min-width: 40rpx;
-  height: 40rpx;
-  padding: 0 10rpx;
-  background-color: #ff4d4f;
-  border-radius: 20rpx;
-  color: #fff;
-  font-size: 24rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 加载更多 */
+/* Load More */
 .loading-more {
   padding: 30rpx 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 28rpx;
+  color: #999999;
 }
 </style>
