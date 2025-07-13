@@ -3,9 +3,9 @@
     <view class="content-container">
       <!-- 搜索栏 -->
       <view class="search-container">
-        <view class="search-box">
+        <view class="search-box" @click="goToSearch">
           <uni-icons type="search" size="24" color="#999"></uni-icons>
-          <input type="text" placeholder="搜索您想要的产品名称" class="search-input" />
+          <input type="text" placeholder="搜索您想要的产品名称" class="search-input" disabled />
           <view class="search-btn cursor-pointer">搜索</view>
         </view>
       </view>
@@ -146,161 +146,180 @@ const nextSwiper = () => {
 const changeCategory = (index) => {
   currentCategory.value = index;
 };
+
+// 跳转到搜索页面
+const goToSearch = () => {
+  uni.navigateTo({
+    url: '/pages/searchProduct/searchProduct'
+  });
+};
 </script>
 <style>
 .page-container {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #F5F5F5;
+  background-color: #f6f8fa;
   font-family: "PingFang SC", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  padding-bottom: 100rpx; /* 为底部导航栏留出空间 */
+  padding-bottom: 100rpx;
 }
 
 .content-container {
   flex: 1;
   display: flex;
   flex-direction: column;
+  padding: 0 0 20rpx 0;
 }
 
-/* 轮播图样式 */
+/* 搜索栏样式优化 */
+.search-container {
+  padding: 40rpx 30rpx 20rpx 30rpx;
+  background: #fff;
+  border-bottom-left-radius: 32rpx;
+  border-bottom-right-radius: 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.03);
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  height: 80rpx;
+  background-color: #f3f5f7;
+  border-radius: 40rpx;
+  padding: 0 20rpx;
+  box-shadow: none;
+}
+.search-input {
+  flex: 1;
+  height: 80rpx;
+  font-size: 32rpx;
+  margin-left: 20rpx;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.search-btn {
+  padding: 0 36rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
+  color: #fff;
+  border-radius: 30rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  margin-left: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
+}
+
+/* 轮播图样式优化 */
 .swiper-container {
   position: relative;
   width: 100%;
-  height: 400rpx;
-  border-radius: 24rpx;
+  height: 420rpx;
+  border-radius: 32rpx;
   overflow: hidden;
-  margin-bottom: 20rpx;
+  margin: 32rpx 0 28rpx 0;
+  box-shadow: 0 4rpx 24rpx rgba(76,175,80,0.06);
+  background: #fff;
 }
-
 .swiper {
   width: 100%;
   height: 100%;
 }
-
 .swiper-image {
   width: 100%;
   height: 100%;
+  object-fit: cover;
 }
-
 .swiper-dots {
   position: absolute;
-  bottom: 20rpx;
+  bottom: 24rpx;
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   z-index: 10;
 }
-
 .dot {
   width: 16rpx;
   height: 16rpx;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: rgba(76,175,80,0.18);
   margin: 0 8rpx;
+  transition: all 0.2s;
 }
-
 .dot.active {
-  width: 24rpx;
-  background-color: #FFFFFF;
+  width: 32rpx;
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
 }
-
 .swiper-arrow {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   width: 60rpx;
   height: 60rpx;
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.8);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 10;
+  box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
 }
-
 .swiper-arrow.left {
   left: 20rpx;
 }
-
 .swiper-arrow.right {
   right: 20rpx;
 }
 
-/* 搜索栏样式 */
-.search-container {
-  padding: 20rpx 30rpx;
-}
-
-.search-box {
-  display: flex;
-  align-items: center;
-  height: 80rpx;
-  background-color: #FFFFFF;
-  border-radius: 40rpx;
-  padding: 0 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
-}
-
-.search-input {
-  flex: 1;
-  height: 80rpx;
-  font-size: 32rpx;
-  margin-left: 20rpx;
-}
-
-.search-btn {
-  padding: 0 30rpx;
-  height: 60rpx;
-  line-height: 60rpx;
-  background-color: #4CAF50;
-  color: #FFFFFF;
-  border-radius: 30rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-}
-
-/* 推荐商品标题 */
+/* 推荐商品标题优化 */
 .recommend-title {
-  padding: 20rpx 30rpx;
-  font-size: 36rpx;
+  padding: 30rpx 30rpx 10rpx 30rpx;
+  font-size: 38rpx;
   font-weight: bold;
-  color: #333333;
-  background-color: #FFFFFF;
+  color: #222;
+  background: transparent;
+  letter-spacing: 2rpx;
 }
 
-/* 商品网格样式 */
+/* 商品网格样式优化 */
 .product-grid {
   display: flex;
   flex-wrap: wrap;
-  padding: 0 20rpx 120rpx;
-  background-color: #FFFFFF;
+  padding: 0 10rpx 120rpx 10rpx;
+  background: transparent;
+  justify-content: space-between;
 }
-
 .product-card {
-  width: calc(50% - 20rpx);
-  margin: 10rpx;
-  background-color: #FFFFFF;
-  border-radius: 16rpx;
+  width: calc(50% - 16rpx);
+  margin: 10rpx 0;
+  background: #fff;
+  border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2rpx 12rpx rgba(76,175,80,0.06);
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s;
 }
-
+.product-card:hover {
+  box-shadow: 0 8rpx 32rpx rgba(76,175,80,0.12);
+}
 .product-image {
   width: 100%;
   height: 300rpx;
-  background-color: #F8F8F8;
+  background: #f8f8f8;
+  object-fit: cover;
 }
-
 .product-info {
-  padding: 20rpx;
+  padding: 24rpx 18rpx 18rpx 18rpx;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
-
 .product-name {
   font-size: 32rpx;
-  font-weight: 500;
-  color: #333333;
+  font-weight: 600;
+  color: #222;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -308,50 +327,49 @@ const changeCategory = (index) => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-
 .product-desc {
-  font-size: 28rpx;
-  color: #999999;
-  margin-top: 10rpx;
+  font-size: 26rpx;
+  color: #8e8e8e;
+  margin-top: 8rpx;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 .product-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 20rpx;
+  margin-top: 18rpx;
 }
-
 .price-container {
   display: flex;
   flex-direction: column;
 }
-
 .product-price {
   font-size: 36rpx;
   font-weight: bold;
-  color: #FF5722;
+  color: #4CAF50;
 }
-
 .product-original {
   font-size: 24rpx;
-  color: #999999;
+  color: #bdbdbd;
   text-decoration: line-through;
   margin-top: 4rpx;
 }
-
 .buy-btn {
-  padding: 10rpx 20rpx;
-  background-color: #4CAF50;
-  color: #FFFFFF;
+  padding: 10rpx 28rpx;
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
+  color: #fff;
   border-radius: 30rpx;
-  font-size: 24rpx;
+  font-size: 26rpx;
+  font-weight: 500;
+  box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
+  transition: background 0.2s;
 }
-
+.buy-btn:active {
+  background: #388e3c;
+}
 .cursor-pointer {
   cursor: pointer;
 }

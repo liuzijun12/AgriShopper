@@ -3,7 +3,7 @@ import { ElMessage } from 'element-plus'
 
 // 创建axios实例
 const service = axios.create({
-  baseURL: process.env.VUE_APP_BASE_API || '',
+  baseURL: 'http://localhost:8080',
   timeout: 15000
 })
 
@@ -23,15 +23,25 @@ service.interceptors.response.use(
   response => {
     const res = response.data
 
-    if (res.code !== 200) {
-      ElMessage({
-        message: res.message || '请求失败',
-        type: 'error',
-        duration: 5 * 1000
-      })
-      return Promise.reject(new Error(res.message || '请求失败'))
+    // 如果后端返回的是标准的API响应格式
+    if (res.code !== undefined) {
+      if (res.code !== 200) {
+        ElMessage({
+          message: res.message || '请求失败',
+          type: 'error',
+          duration: 5 * 1000
+        })
+        return Promise.reject(new Error(res.message || '请求失败'))
+      } else {
+        return res
+      }
     } else {
-      return res.data
+      // 如果后端直接返回数据，包装成标准格式
+      return {
+        code: 200,
+        message: 'success',
+        data: res
+      }
     }
   },
   error => {

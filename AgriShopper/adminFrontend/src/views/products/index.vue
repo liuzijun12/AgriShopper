@@ -205,12 +205,12 @@
         
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form-item label="热销商品" prop="isHotProduct">
+            <el-form-item label="是否热销" prop="isHotProduct">
               <el-switch v-model="formData.isHotProduct" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="新品" prop="isNewProduct">
+            <el-form-item label="是否新品" prop="isNewProduct">
               <el-switch v-model="formData.isNewProduct" />
             </el-form-item>
           </el-col>
@@ -218,17 +218,16 @@
         
         <el-form-item label="商品图片" prop="mainImageUrl">
           <el-upload
-            class="image-uploader"
-            action="/api/upload/image"
+            class="avatar-uploader"
+            :action="uploadUrl"
             :show-file-list="false"
             :on-success="handleImageSuccess"
             :before-upload="beforeImageUpload"
-            :on-error="handleImageError"
+            :headers="uploadHeaders"
           >
-            <img v-if="formData.mainImageUrl" :src="formData.mainImageUrl" class="uploaded-image" />
-            <el-icon v-else class="image-uploader-icon"><Plus /></el-icon>
+            <img v-if="formData.mainImageUrl" :src="formData.mainImageUrl" class="avatar" />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
-          <div class="image-tip">支持 JPG、PNG、GIF 格式，文件大小不超过 5MB</div>
         </el-form-item>
       </el-form>
       
@@ -243,33 +242,36 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Plus, Search, Refresh } from '@element-plus/icons-vue'
 import { getProducts, createProduct, updateProduct, deleteProduct } from '@/api/products'
 
 export default {
-  name: 'ProductManage',
+  name: 'ProductsManagement',
+  components: {
+    Plus,
+    Search,
+    Refresh
+  },
   setup() {
-    // 搜索表单
-    const searchForm = ref({
+    const loading = ref(false)
+    const productList = ref([])
+    const currentPage = ref(1)
+    const pageSize = ref(10)
+    const total = ref(0)
+    const dialogVisible = ref(false)
+    const dialogType = ref('add')
+    const formRef = ref()
+
+    const searchForm = reactive({
       productName: '',
       productCode: ''
     })
 
-    // 列表数据
-    const loading = ref(false)
-    const currentPage = ref(1)
-    const pageSize = ref(10)
-    const total = ref(0)
-    const productList = ref([])
-
-    // 表单相关
-    const dialogVisible = ref(false)
-    const dialogType = ref('add')
-    const formRef = ref()
-    const formData = ref({
-      productCode: '',
+    const formData = reactive({
       productName: '',
+      productCode: '',
       productDescription: '',
       categoryId: 1,
       subCategoryId: null,
@@ -286,23 +288,15 @@ export default {
       mainImageUrl: ''
     })
 
-    // 表单验证规则
     const rules = {
       productName: [
-        { required: true, message: '请输入商品名称', trigger: 'blur' },
-        { min: 2, max: 50, message: '长度在 2 到 50 个字符', trigger: 'blur' }
+        { required: true, message: '请输入商品名称', trigger: 'blur' }
       ],
       productCode: [
-        { required: true, message: '请输入商品编码', trigger: 'blur' },
-        { pattern: /^[A-Za-z0-9]+$/, message: '商品编码只能包含字母和数字', trigger: 'blur' }
+        { required: true, message: '请输入商品编码', trigger: 'blur' }
       ],
       productPrice: [
-        { required: true, message: '请输入销售价', trigger: 'blur' },
-        { type: 'number', min: 0, message: '销售价必须大于0', trigger: 'blur' }
-      ],
-      stockQuantity: [
-        { required: true, message: '请输入库存数量', trigger: 'blur' },
-        { type: 'number', min: 0, message: '库存数量必须大于等于0', trigger: 'blur' }
+        { required: true, message: '请输入销售价', trigger: 'blur' }
       ],
       categoryId: [
         { required: true, message: '请输入分类ID', trigger: 'blur' }
@@ -312,18 +306,23 @@ export default {
       ]
     }
 
-    // 获取商品列表
+    const uploadUrl = 'http://localhost:8080/api/upload'
+    const uploadHeaders = {
+      'Content-Type': 'multipart/form-data'
+    }
+
     const fetchProducts = async () => {
       loading.value = true
       try {
         const params = {
-          page: currentPage.value,
-          pageSize: pageSize.value,
-          ...searchForm.value
+          page: currentPage.value - 1,
+          size: pageSize.value,
+          productName: searchForm.productName,
+          productCode: searchForm.productCode
         }
-        const res = await getProducts(params)
-        productList.value = res || []
-        total.value = res ? res.length : 0
+        const response = await getProducts(params)
+        productList.value = response.data.content
+        total.value = response.data.totalElements
       } catch (error) {
         ElMessage.error('获取商品列表失败')
       } finally {
@@ -331,21 +330,18 @@ export default {
       }
     }
 
-    // 搜索
     const handleSearch = () => {
       currentPage.value = 1
       fetchProducts()
     }
 
     const resetSearch = () => {
-      searchForm.value = {
-        productName: '',
-        productCode: ''
-      }
-      handleSearch()
+      searchForm.productName = ''
+      searchForm.productCode = ''
+      currentPage.value = 1
+      fetchProducts()
     }
 
-    // 分页
     const handleSizeChange = (val) => {
       pageSize.value = val
       fetchProducts()
@@ -356,12 +352,11 @@ export default {
       fetchProducts()
     }
 
-    // 添加商品
     const handleAdd = () => {
       dialogType.value = 'add'
-      formData.value = {
-        productCode: '',
+      Object.assign(formData, {
         productName: '',
+        productCode: '',
         productDescription: '',
         categoryId: 1,
         subCategoryId: null,
@@ -376,23 +371,19 @@ export default {
         isNewProduct: false,
         productStatus: 1,
         mainImageUrl: ''
-      }
+      })
       dialogVisible.value = true
     }
 
-    // 编辑商品
     const handleEdit = (row) => {
       dialogType.value = 'edit'
-      formData.value = { ...row }
+      Object.assign(formData, row)
       dialogVisible.value = true
     }
 
-    // 删除商品
     const handleDelete = async (row) => {
-      if (!row.id) return
-      
       try {
-        await ElMessageBox.confirm('确定要删除该商品吗？', '提示', {
+        await ElMessageBox.confirm('确定要删除这个商品吗？', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -402,63 +393,49 @@ export default {
         ElMessage.success('删除成功')
         fetchProducts()
       } catch (error) {
-        // 用户取消操作或请求失败
+        if (error !== 'cancel') {
+          ElMessage.error('删除失败')
+        }
       }
     }
 
-    // 图片上传成功
+    const handleSubmit = async () => {
+      try {
+        await formRef.value.validate()
+        
+        if (dialogType.value === 'add') {
+          await createProduct(formData)
+          ElMessage.success('添加成功')
+        } else {
+          await updateProduct(formData.id, formData)
+          ElMessage.success('更新成功')
+        }
+        
+        dialogVisible.value = false
+        fetchProducts()
+      } catch (error) {
+        ElMessage.error(dialogType.value === 'add' ? '添加失败' : '更新失败')
+      }
+    }
+
     const handleImageSuccess = (response) => {
-      if (response.code === 200) {
-        formData.value.mainImageUrl = response.data.url
-        ElMessage.success('图片上传成功')
-      } else {
-        ElMessage.error(response.message || '图片上传失败')
-      }
+      formData.mainImageUrl = response.data
+      ElMessage.success('图片上传成功')
     }
 
-    // 图片上传前验证
     const beforeImageUpload = (file) => {
       const isImage = file.type.startsWith('image/')
-      const isLt5M = file.size / 1024 / 1024 < 5
+      const isLt2M = file.size / 1024 / 1024 < 2
 
       if (!isImage) {
         ElMessage.error('只能上传图片文件!')
         return false
       }
-      if (!isLt5M) {
-        ElMessage.error('图片大小不能超过 5MB!')
+      if (!isLt2M) {
+        ElMessage.error('图片大小不能超过 2MB!')
         return false
       }
       return true
-    }
-
-    // 图片上传失败
-    const handleImageError = () => {
-      ElMessage.error('图片上传失败')
-    }
-
-    // 提交表单
-    const handleSubmit = async () => {
-      if (!formRef.value) return
-      
-      await formRef.value.validate(async (valid) => {
-        if (valid) {
-          try {
-            if (dialogType.value === 'add') {
-              await createProduct(formData.value)
-              ElMessage.success('添加成功')
-            } else {
-              if (!formData.value.id) return
-              await updateProduct(formData.value.id, formData.value)
-              ElMessage.success('更新成功')
-            }
-            dialogVisible.value = false
-            fetchProducts()
-          } catch (error) {
-            ElMessage.error(dialogType.value === 'add' ? '添加失败' : '更新失败')
-          }
-        }
-      })
     }
 
     onMounted(() => {
@@ -466,17 +443,19 @@ export default {
     })
 
     return {
-      searchForm,
       loading,
+      productList,
       currentPage,
       pageSize,
       total,
-      productList,
       dialogVisible,
       dialogType,
       formRef,
+      searchForm,
       formData,
       rules,
+      uploadUrl,
+      uploadHeaders,
       handleSearch,
       resetSearch,
       handleSizeChange,
@@ -486,77 +465,80 @@ export default {
       handleDelete,
       handleSubmit,
       handleImageSuccess,
-      beforeImageUpload,
-      handleImageError
+      beforeImageUpload
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style scoped>
 .products-container {
+  background: #fff;
+  border-radius: 8px;
   padding: 20px;
-  
-  .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    
-    h1 {
-      margin: 0;
-      font-size: 24px;
-      color: #303133;
-    }
-  }
-  
-  .search-card {
-    margin-bottom: 20px;
-  }
-  
-  .product-list-card {
-    .pagination-container {
-      margin-top: 20px;
-      display: flex;
-      justify-content: flex-end;
-    }
-  }
+}
 
-  .image-uploader {
-    :deep(.el-upload) {
-      border: 1px dashed #d9d9d9;
-      border-radius: 6px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: var(--el-transition-duration-fast);
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
 
-      &:hover {
-        border-color: var(--el-color-primary);
-      }
-    }
-  }
+.page-header h1 {
+  font-size: 24px;
+  color: #303133;
+  margin: 0;
+}
 
-  .image-uploader-icon {
-    font-size: 28px;
-    color: #8c939d;
-    width: 178px;
-    height: 178px;
-    text-align: center;
-    line-height: 178px;
-  }
+.search-card {
+  margin-bottom: 20px;
+}
 
-  .uploaded-image {
-    width: 178px;
-    height: 178px;
-    display: block;
-    object-fit: cover;
-  }
+.product-list-card {
+  margin-bottom: 20px;
+}
 
-  .image-tip {
-    font-size: 12px;
-    color: #909399;
-    margin-top: 8px;
-  }
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.avatar-uploader {
+  text-align: center;
+}
+
+.avatar-uploader .avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: #409EFF;
+}
+
+.avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 100px;
+  height: 100px;
+  line-height: 100px;
+  text-align: center;
 }
 </style> 

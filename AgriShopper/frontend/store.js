@@ -11,6 +11,40 @@ export const store = {
   
   setUserInfo(userInfo) {
     this.state.userInfo = userInfo
+    // 持久化存储用户信息
+    try {
+      uni.setStorageSync('userInfo', userInfo)
+    } catch (error) {
+      console.error('保存用户信息失败:', error)
+    }
+  },
+  
+  getUserInfo() {
+    // 优先从内存获取，如果没有则从本地存储获取
+    if (this.state.userInfo) {
+      return this.state.userInfo
+    }
+    
+    try {
+      const userInfo = uni.getStorageSync('userInfo')
+      if (userInfo) {
+        this.state.userInfo = userInfo
+        return userInfo
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+    
+    return null
+  },
+  
+  clearUserInfo() {
+    this.state.userInfo = null
+    try {
+      uni.removeStorageSync('userInfo')
+    } catch (error) {
+      console.error('清除用户信息失败:', error)
+    }
   },
   
   setAppReady(ready) {

@@ -72,6 +72,11 @@ const _sfc_main = {
         currentSwiper.value++;
       }
     };
+    const goToSearch = () => {
+      common_vendor.index.navigateTo({
+        url: "/pages/searchProduct/searchProduct"
+      });
+    };
     return (_ctx, _cache) => {
       return {
         a: common_vendor.p({
@@ -79,32 +84,33 @@ const _sfc_main = {
           size: "24",
           color: "#999"
         }),
-        b: common_vendor.f(bannerList.value, (item, index, i0) => {
+        b: common_vendor.o(goToSearch),
+        c: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: item.imageUrl,
             b: index
           };
         }),
-        c: common_vendor.o(onSwiperChange),
-        d: common_vendor.f(bannerList.value, (item, index, i0) => {
+        d: common_vendor.o(onSwiperChange),
+        e: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: index,
             b: common_vendor.n(currentSwiper.value === index ? "active" : "")
           };
         }),
-        e: common_vendor.p({
+        f: common_vendor.p({
           type: "left",
           size: "24",
           color: "#333"
         }),
-        f: common_vendor.o(prevSwiper),
-        g: common_vendor.p({
+        g: common_vendor.o(prevSwiper),
+        h: common_vendor.p({
           type: "right",
           size: "24",
           color: "#333"
         }),
-        h: common_vendor.o(nextSwiper),
-        i: common_vendor.f(products.value, (product, index, i0) => {
+        i: common_vendor.o(nextSwiper),
+        j: common_vendor.f(products.value, (product, index, i0) => {
           return common_vendor.e({
             a: product.imageUrl,
             b: common_vendor.t(product.name),

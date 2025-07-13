@@ -177,7 +177,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_assets._imports_0,
+        a: common_assets._imports_0$1,
         b: common_vendor.o(markAllAsRead),
         c: common_vendor.f(messageTabs.value, (tab, index, i0) => {
           return common_vendor.e({

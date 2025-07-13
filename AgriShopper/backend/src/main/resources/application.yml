@@ -10,6 +10,8 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     show-sql: true
     properties:
       hibernate:
@@ -26,3 +28,10 @@ logging:
   level:
     org.springframework: INFO
     com.agrishopper: DEBUG 
+
+# 微信小程序登录相关配置
+wx:
+  appid: wx8c6d69b835a8a621
+  secret: 00922f26bdf3fdc9517b3fa865f10c05
+  login-url: https://api.weixin.qq.com/sns/jscode2session  # 微信官方登录接口
+  grant-type: authorization_code                            # 固定值 

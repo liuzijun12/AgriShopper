@@ -13,6 +13,9 @@ export default {
 		// 初始化全局状态
 		this.globalData.isAppReady = true
 		store.setAppReady(true)
+		
+		// 检查用户登录状态
+		this.checkUserLogin()
 	},
 	
 	onShow: function() {
@@ -24,6 +27,23 @@ export default {
 	},
 	
 	methods: {
+		// 检查用户登录状态
+		checkUserLogin() {
+			try {
+				const userInfo = store.getUserInfo()
+				if (userInfo && userInfo.openid) {
+					// 用户已登录，跳转到首页
+					setTimeout(() => {
+						uni.switchTab({
+							url: '/pages/index/index'
+						})
+					}, 1000)
+				}
+			} catch (error) {
+				console.log('检查用户登录状态失败:', error)
+			}
+		},
+		
 		// 获取用户信息的方法，需要在页面中通过按钮点击调用
 		getUserProfile() {
 			return new Promise((resolve, reject) => {

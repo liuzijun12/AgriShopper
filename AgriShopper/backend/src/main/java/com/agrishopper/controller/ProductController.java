@@ -27,13 +27,45 @@ public class ProductController {
         this.productService = productService;
     }
 
-    @Operation(summary = "获取所有商品", description = "获取系统中的所有商品信息")
+    @Operation(summary = "获取所有商品", description = "获取系统中的所有商品信息，支持分页和搜索")
     @ApiResponse(responseCode = "200", description = "成功获取商品列表")
     @GetMapping
-    public ResponseEntity<?> getAllProducts() {
+    public ResponseEntity<?> getAllProducts(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "每页大小") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "商品名称") @RequestParam(required = false) String productName,
+            @Parameter(description = "商品编码") @RequestParam(required = false) String productCode) {
         try {
             List<Product> products = productService.getAllProducts();
-            return ResponseEntity.ok(createSuccessResponse(products));
+            
+            // 简单的搜索过滤
+            if (productName != null && !productName.trim().isEmpty()) {
+                products = products.stream()
+                    .filter(p -> p.getProductName().toLowerCase().contains(productName.toLowerCase()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            if (productCode != null && !productCode.trim().isEmpty()) {
+                products = products.stream()
+                    .filter(p -> p.getProductCode().toLowerCase().contains(productCode.toLowerCase()))
+                    .collect(java.util.stream.Collectors.toList());
+            }
+            
+            // 简单的分页
+            int total = products.size();
+            int start = page * size;
+            int end = Math.min(start + size, total);
+            
+            List<Product> pagedProducts = products.subList(start, end);
+            
+            Map<String, Object> pageData = new HashMap<>();
+            pageData.put("content", pagedProducts);
+            pageData.put("totalElements", total);
+            pageData.put("totalPages", (int) Math.ceil((double) total / size));
+            pageData.put("currentPage", page);
+            pageData.put("size", size);
+            
+            return ResponseEntity.ok(createSuccessResponse(pageData));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse(e.getMessage()));

@@ -3,13 +3,31 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
-    redirect: '/products'
+    redirect: '/dashboard'
+  },
+  {
+    path: '/dashboard',
+    name: 'Dashboard',
+    component: () => import('../views/dashboard/index.vue'),
+    meta: { title: '仪表盘' }
   },
   {
     path: '/products',
     name: 'Products',
-    component: () => import('../views/index.vue'),
+    component: () => import('../views/products/index.vue'),
     meta: { title: '商品管理' }
+  },
+  {
+    path: '/orders',
+    name: 'Orders',
+    component: () => import('../views/orders/index.vue'),
+    meta: { title: '订单管理' }
+  },
+  {
+    path: '/users',
+    name: 'Users',
+    component: () => import('../views/users/index.vue'),
+    meta: { title: '用户管理' }
   }
 ]
 

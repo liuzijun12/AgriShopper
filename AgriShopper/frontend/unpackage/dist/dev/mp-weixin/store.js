@@ -10,6 +10,34 @@ const store = {
   }),
   setUserInfo(userInfo) {
     this.state.userInfo = userInfo;
+    try {
+      common_vendor.index.setStorageSync("userInfo", userInfo);
+    } catch (error) {
+      common_vendor.index.__f__("error", "at store.js:18", "保存用户信息失败:", error);
+    }
+  },
+  getUserInfo() {
+    if (this.state.userInfo) {
+      return this.state.userInfo;
+    }
+    try {
+      const userInfo = common_vendor.index.getStorageSync("userInfo");
+      if (userInfo) {
+        this.state.userInfo = userInfo;
+        return userInfo;
+      }
+    } catch (error) {
+      common_vendor.index.__f__("error", "at store.js:35", "获取用户信息失败:", error);
+    }
+    return null;
+  },
+  clearUserInfo() {
+    this.state.userInfo = null;
+    try {
+      common_vendor.index.removeStorageSync("userInfo");
+    } catch (error) {
+      common_vendor.index.__f__("error", "at store.js:46", "清除用户信息失败:", error);
+    }
   },
   setAppReady(ready) {
     this.state.isAppReady = ready;

@@ -10,5 +10,8 @@ module.exports = defineConfig({
         changeOrigin: true
       }
     }
-  }
+  },
+  // 配置静态资源目录
+  publicPath: '/',
+  assetsDir: 'static'
 }) 
