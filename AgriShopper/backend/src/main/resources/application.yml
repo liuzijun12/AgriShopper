@@ -16,6 +16,12 @@ spring:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
 
+# 文件上传配置
+file:
+  upload:
+    path: uploads/
+    url-prefix: /uploads/
+
 logging:
   level:
     org.springframework: INFO

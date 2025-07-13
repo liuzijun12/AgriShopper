@@ -11,8 +11,8 @@ import java.util.Optional;
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 可以自定义查询方法，例如通过商品名称查询
-    Optional<Product> findByName(String name);
+    Optional<Product> findByProductName(String productName);
 
-    // 可以自定义查询方法，例如通过商品类别查询
-    List<Product> findByCategory(String category);
+    // 可以自定义查询方法，例如通过商品类别ID查询
+    List<Product> findByCategoryId(Long categoryId);
 }

@@ -1,9 +1,12 @@
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\controller\ProductController.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\AgriShopperApplication.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\common\ApiResponse.java
+E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\config\CorsConfig.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\repository\ProductRepository.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\model\Product.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\service\impl\ProductServiceImpl.java
+E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\controller\UploadController.java
+E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\config\WebConfig.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\config\OpenAPIConfig.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\config\SwaggerConfig.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\service\ProductService.java
