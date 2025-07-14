@@ -1,12 +1,18 @@
 <template>
   <view class="page-container">
     <view class="content-container">
-      <!-- 搜索栏 -->
+      <!-- 搜索栏和用户入口 -->
       <view class="search-container">
-        <view class="search-box" @click="goToSearch">
-          <uni-icons type="search" size="24" color="#999"></uni-icons>
-          <input type="text" placeholder="搜索您想要的产品名称" class="search-input" disabled />
-          <view class="search-btn cursor-pointer">搜索</view>
+        <view class="search-header">
+          <view class="search-box" @click="goToSearch">
+            <uni-icons type="search" size="24" color="#999"></uni-icons>
+            <input type="text" placeholder="搜索您想要的产品名称" class="search-input" disabled />
+            <view class="search-btn cursor-pointer">搜索</view>
+          </view>
+          <view class="user-avatar" @click="handleUserClick">
+            <image :src="userAvatar" mode="aspectFill" class="avatar-img" />
+            <view v-if="!isLoggedIn" class="login-badge">登录</view>
+          </view>
         </view>
       </view>
       
@@ -58,10 +64,19 @@
         </view>
       </view>
     </view>
+    
+    <!-- 微信登录弹窗 -->
+    <WxLoginModal 
+      :visible="showLoginModal" 
+      @close="handleCloseLogin"
+      @login-success="handleLoginSuccess"
+    />
   </view>
 </template>
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { store } from '../../store.js';
+import WxLoginModal from '../../components/WxLoginModal.vue';
 
 // 轮播图数据
 const bannerList = ref([
@@ -119,6 +134,11 @@ const products = ref([
 const currentSwiper = ref(0);
 const currentCategory = ref(1); // 默认选中农产品
 
+// 登录状态
+const isLoggedIn = ref(false);
+const showLoginModal = ref(false);
+const userAvatar = ref('/static/tabbar/user.png');
+
 // 轮播图切换
 const onSwiperChange = (e) => {
   currentSwiper.value = e.detail.current;
@@ -153,6 +173,54 @@ const goToSearch = () => {
     url: '/pages/searchProduct/searchProduct'
   });
 };
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (userInfo && userInfo.openid) {
+      isLoggedIn.value = true;
+      if (userInfo.avatar) {
+        userAvatar.value = userInfo.avatar;
+      }
+    } else {
+      isLoggedIn.value = false;
+    }
+  } catch (error) {
+    console.log('检查登录状态失败:', error);
+    isLoggedIn.value = false;
+  }
+};
+
+// 处理用户点击
+const handleUserClick = () => {
+  if (isLoggedIn.value) {
+    // 已登录，跳转到个人中心
+    uni.switchTab({
+      url: '/pages/my/my'
+    });
+  } else {
+    // 未登录，显示登录弹窗
+    showLoginModal.value = true;
+  }
+};
+
+// 关闭登录弹窗
+const handleCloseLogin = () => {
+  showLoginModal.value = false;
+};
+
+// 登录成功处理
+const handleLoginSuccess = (userInfo) => {
+  console.log('登录成功:', userInfo);
+  checkLoginStatus();
+  showLoginModal.value = false;
+};
+
+// 页面加载时检查登录状态
+onMounted(() => {
+  checkLoginStatus();
+});
 </script>
 <style>
 .page-container {
@@ -179,7 +247,44 @@ const goToSearch = () => {
   border-bottom-right-radius: 32rpx;
   box-shadow: 0 2rpx 12rpx rgba(0,0,0,0.03);
 }
+
+.search-header {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+}
+
+.user-avatar {
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.login-badge {
+  position: absolute;
+  bottom: -5rpx;
+  right: -5rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 20rpx;
+  padding: 4rpx 8rpx;
+  border-radius: 10rpx;
+  white-space: nowrap;
+}
 .search-box {
+  flex: 1;
   display: flex;
   align-items: center;
   height: 80rpx;

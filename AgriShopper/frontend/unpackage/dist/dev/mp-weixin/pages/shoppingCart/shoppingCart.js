@@ -1,10 +1,14 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+require("../../store.js");
 const _sfc_main = {
   __name: "shoppingCart",
   setup(__props) {
     common_vendor.ref("河北张家口市");
     common_vendor.ref(true);
+    common_vendor.ref(false);
+    common_vendor.ref(false);
+    common_vendor.ref("/static/tabbar/user.png");
     const tagColors = {
       "热卖": "#ffeeee",
       "特惠": "#fff8e6",
@@ -171,6 +175,8 @@ const _sfc_main = {
         url: "/pages/checkout/checkout"
       });
     };
+    common_vendor.onMounted(() => {
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_vendor.o(goToSearch),

@@ -43,6 +43,13 @@ page {
   font-size: 16px;
   font-weight: 600;
   color: #333;
+  display: block;
+  margin-bottom: 8rpx;
+}
+.user-status {
+  font-size: 12px;
+  color: #999;
+  display: block;
 }
 
 /* 订单快捷入口 */
@@ -88,6 +95,38 @@ page {
   margin-left: 16rpx;
   font-size: 14px;
   color: #333;
+}
+
+/* 退出登录区域 */
+.logout-section {
+  margin: 24rpx 30rpx;
+  padding: 20rpx;
+  background-color: #fff;
+  border-radius: 24rpx;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.logout-button {
+  padding: 24rpx 40rpx;
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  border-radius: 16rpx;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+.logout-button:active {
+  transform: scale(0.98);
+  background: linear-gradient(135deg, #ee5a52, #d63031);
+}
+.logout-text {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 500;
+}
+.logout-icon {
+  font-size: 24px;
+  margin-right: 10rpx;
 }
 
 /* 地址管理区域 */

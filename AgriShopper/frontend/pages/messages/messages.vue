@@ -130,6 +130,9 @@
         <text>加载中...</text>
       </view>
     </scroll-view>
+    
+    <!-- 微信登录弹窗 -->
+    <!-- 已移除WxLoginModal相关内容 -->
   </view>
 </template>
 
@@ -149,7 +152,9 @@ export default {
 </script>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { store } from '../../store.js';
+// 移除登录相关的ref、方法、import WxLoginModal
 
 const messageTabs = ref([
   { name: '系统通知', unread: 2, icon: '/static/messages/system_notification.png' },
@@ -159,6 +164,11 @@ const messageTabs = ref([
 ]);
 
 const currentTab = ref(0);
+
+// 登录状态
+const isLoggedIn = ref(false);
+const showLoginModal = ref(false);
+const userAvatar = ref('/static/tabbar/user.png');
 
 const systemMessages = ref([
   {
@@ -329,6 +339,54 @@ const onRefresh = () => {
     uni.stopPullDownRefresh();
   }, 1000);
 };
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (userInfo && userInfo.openid) {
+      isLoggedIn.value = true;
+      if (userInfo.avatar) {
+        userAvatar.value = userInfo.avatar;
+      }
+    } else {
+      isLoggedIn.value = false;
+    }
+  } catch (error) {
+    console.log('检查登录状态失败:', error);
+    isLoggedIn.value = false;
+  }
+};
+
+// 处理用户点击
+const handleUserClick = () => {
+  if (isLoggedIn.value) {
+    // 已登录，跳转到个人中心
+    uni.switchTab({
+      url: '/pages/my/my'
+    });
+  } else {
+    // 未登录，显示登录弹窗
+    showLoginModal.value = true;
+  }
+};
+
+// 关闭登录弹窗
+const handleCloseLogin = () => {
+  showLoginModal.value = false;
+};
+
+// 登录成功处理
+const handleLoginSuccess = (userInfo) => {
+  console.log('登录成功:', userInfo);
+  checkLoginStatus();
+  showLoginModal.value = false;
+};
+
+// 页面加载时检查登录状态
+onMounted(() => {
+  checkLoginStatus();
+});
 </script>
 
 <style>
@@ -365,6 +423,38 @@ page {
 .header-actions {
   display: flex;
   align-items: center;
+  gap: 20rpx;
+}
+
+.user-avatar {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.login-badge {
+  position: absolute;
+  bottom: -5rpx;
+  right: -5rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 18rpx;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
 }
 
 .mark-all-read {

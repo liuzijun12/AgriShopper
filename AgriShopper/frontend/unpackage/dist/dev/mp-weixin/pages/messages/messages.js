@@ -1,6 +1,7 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
+const store = require("../../store.js");
 const __default__ = {
   name: "Messages",
   onShow() {
@@ -22,6 +23,9 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       { name: "客服消息", unread: 5, icon: "/static/messages/customer_service_message.png" }
     ]);
     const currentTab = common_vendor.ref(0);
+    const isLoggedIn = common_vendor.ref(false);
+    common_vendor.ref(false);
+    const userAvatar = common_vendor.ref("/static/tabbar/user.png");
     const systemMessages = common_vendor.ref([
       {
         id: 1,
@@ -155,7 +159,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       messageTabs.value[3].unread = serviceMessages.value.reduce((total, service) => total + service.unread, 0);
     };
     const onImageError = (type, item) => {
-      common_vendor.index.__f__("error", "at pages/messages/messages.vue:310", `Failed to load ${type} image for item:`, item);
+      common_vendor.index.__f__("error", "at pages/messages/messages.vue:320", `Failed to load ${type} image for item:`, item);
       if (type === "order" || type === "promotion") {
         item.image = "https://placehold.co/100x100/ff0000/ffffff?text=Error";
       } else if (type === "service") {
@@ -175,6 +179,25 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         common_vendor.index.stopPullDownRefresh();
       }, 1e3);
     };
+    const checkLoginStatus = () => {
+      try {
+        const userInfo = store.store.getUserInfo();
+        if (userInfo && userInfo.openid) {
+          isLoggedIn.value = true;
+          if (userInfo.avatar) {
+            userAvatar.value = userInfo.avatar;
+          }
+        } else {
+          isLoggedIn.value = false;
+        }
+      } catch (error) {
+        common_vendor.index.__f__("log", "at pages/messages/messages.vue:356", "检查登录状态失败:", error);
+        isLoggedIn.value = false;
+      }
+    };
+    common_vendor.onMounted(() => {
+      checkLoginStatus();
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: common_assets._imports_0$1,

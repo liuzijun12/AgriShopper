@@ -1,5 +1,6 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+require("../../store.js");
 if (!Array) {
   const _component_uni_icons = common_vendor.resolveComponent("uni-icons");
   _component_uni_icons();
@@ -72,6 +73,13 @@ const _sfc_main = {
     const changeCategory = (index) => {
       currentCategory.value = index;
     };
+    const goToSearch = () => {
+      common_vendor.index.navigateTo({
+        url: "/pages/searchProduct/searchProduct"
+      });
+    };
+    common_vendor.onMounted(() => {
+    });
     return (_ctx, _cache) => {
       return {
         a: common_vendor.p({
@@ -79,7 +87,8 @@ const _sfc_main = {
           size: "18",
           color: "#999999"
         }),
-        b: common_vendor.f(categories.value, (category, index, i0) => {
+        b: common_vendor.o(goToSearch),
+        c: common_vendor.f(categories.value, (category, index, i0) => {
           return {
             a: common_vendor.t(category.name),
             b: index,
@@ -87,7 +96,7 @@ const _sfc_main = {
             d: common_vendor.o(($event) => changeCategory(index), index)
           };
         }),
-        c: common_vendor.f(products.value, (product, index, i0) => {
+        d: common_vendor.f(products.value, (product, index, i0) => {
           return {
             a: product.image,
             b: common_vendor.t(product.name),

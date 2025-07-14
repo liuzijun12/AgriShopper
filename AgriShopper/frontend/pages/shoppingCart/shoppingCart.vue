@@ -1,9 +1,11 @@
 <template>
   <view class="cart-container">
     <!-- 搜索栏 -->
-    <view class="search-bar" @click="goToSearch">
-      <text class="search-icon">🔍</text>
-      <text class="search-text">搜索购物车商品</text>
+    <view class="search-header">
+      <view class="search-bar" @click="goToSearch">
+        <text class="search-icon">🔍</text>
+        <text class="search-text">搜索购物车商品</text>
+      </view>
     </view>
 
     <!-- 地址栏 -->
@@ -94,15 +96,24 @@
         去结算({{ selectedCount }})
       </button>
     </view>
+    
+    <!-- 微信登录弹窗 -->
+    <!-- 已移除WxLoginModal相关内容 -->
   </view>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { store } from '../../store.js';
 
 // 示例数据
 const currentAddress = ref('河北张家口市')
 const showPromotionTip = ref(true)
+
+// 登录状态
+const isLoggedIn = ref(false);
+const showLoginModal = ref(false);
+const userAvatar = ref('/static/tabbar/user.png');
 
 const tagColors = {
   '热卖': '#ffeeee',
@@ -303,6 +314,11 @@ const checkout = () => {
     url: '/pages/checkout/checkout'
   })
 }
+
+// 页面加载时检查登录状态
+onMounted(() => {
+  // 移除登录相关的onMounted调用
+});
 </script>
 
 <style>
@@ -314,12 +330,50 @@ const checkout = () => {
 }
 
 /* 搜索栏样式 */
-.search-bar {
+.search-header {
   display: flex;
   align-items: center;
+  gap: 20rpx;
   padding: 20rpx 25rpx;
   background-color: #fff;
   border-bottom: 1rpx solid #f0f0f0;
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.login-badge {
+  position: absolute;
+  bottom: -5rpx;
+  right: -5rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 18rpx;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
 }
 
 .search-icon {

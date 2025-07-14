@@ -7,12 +7,46 @@
 }
 
 /* 搜索栏样式 */
-.search-bar {
+.search-header {
   display: flex;
   align-items: center;
+  gap: 20rpx;
   padding: 20rpx 25rpx;
   background-color: #fff;
   border-bottom: 1rpx solid #f0f0f0;
+}
+.search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.user-avatar {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+.login-badge {
+  position: absolute;
+  bottom: -5rpx;
+  right: -5rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 18rpx;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
 }
 .search-icon {
   margin-right: 15rpx;

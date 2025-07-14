@@ -3,7 +3,7 @@
 
     <!-- 顶部搜索栏 -->
     <view class="search-bar">
-      <view class="search-input">
+      <view class="search-input" @click="goToSearch">
         <uni-icons type="search" size="18" color="#999999"></uni-icons>
         <text class="search-placeholder">搜索商品名称</text>
       </view>
@@ -56,16 +56,18 @@
 
       </scroll-view>
     </view>
-
+    
+    <!-- 微信登录弹窗 -->
+    <!-- 已移除WxLoginModal相关内容 -->
   </view>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { store } from '../../store.js';
 
 // 当前选中的分类
 const currentCategory = ref(0);
-
 
 // 主分类列表
 const categories = ref([
@@ -136,6 +138,18 @@ const products = ref([
 const changeCategory = (index) => {
   currentCategory.value = index;
 };
+
+// 跳转到搜索页面
+const goToSearch = () => {
+  uni.navigateTo({
+    url: '/pages/searchProduct/searchProduct'
+  });
+};
+
+// 页面加载时检查登录状态
+onMounted(() => {
+  // 移除登录相关的逻辑
+});
 </script>
 <style>
 page {
@@ -160,18 +174,50 @@ page {
   background-color: #ffffff;
   display: flex;
   align-items: center;
+  gap: 20rpx;
   flex-shrink: 0;
   border-bottom: 1px solid #f0f0f0;
 }
 
+.user-avatar {
+  position: relative;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.login-badge {
+  position: absolute;
+  bottom: -5rpx;
+  right: -5rpx;
+  background: #07c160;
+  color: #fff;
+  font-size: 18rpx;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  white-space: nowrap;
+}
+
 .search-input {
+  flex: 1;
   height: 80rpx;
   background-color: #f5f5f5;
   border-radius: 40rpx;
   display: flex;
   align-items: center;
   padding: 0 30rpx;
-  width: 100%;
 }
 
 .search-placeholder {

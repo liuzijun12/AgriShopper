@@ -1,18 +1,18 @@
 {
 	"pages": [
 		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "首页",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/wxLogin/wxLogin",
 			"style": {
 				"navigationBarTitleText": "微信登录",
 				"enablePullDownRefresh": false,
 				"navigationStyle": "custom"
-			}
-		},
-		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "首页",
-				"enablePullDownRefresh": false
 			}
 		},
 		{
@@ -55,15 +55,19 @@
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "AgriShopper",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "农康优选",
+		"navigationBarBackgroundColor": "#ffffff",
+		"backgroundColor": "#f6f8fa",
+		"app-plus": {
+			"background": "#f6f8fa"
+		}
 	},
 	"tabBar": {
 		"color": "#999999",
 		"selectedColor": "#4CAF50",
 		"backgroundColor": "#ffffff",
 		"borderStyle": "black",
+		"height": "50px",
 		"list": [
 			{
 				"pagePath": "pages/index/index",

@@ -1,9 +1,14 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const store = require("../../store.js");
 if (!Array) {
   const _component_uni_icons = common_vendor.resolveComponent("uni-icons");
   _component_uni_icons();
 }
+if (!Math) {
+  WxLoginModal();
+}
+const WxLoginModal = () => "../../components/WxLoginModal.js";
 const _sfc_main = {
   __name: "index",
   setup(__props) {
@@ -55,6 +60,9 @@ const _sfc_main = {
     ]);
     const currentSwiper = common_vendor.ref(0);
     common_vendor.ref(1);
+    const isLoggedIn = common_vendor.ref(false);
+    const showLoginModal = common_vendor.ref(false);
+    const userAvatar = common_vendor.ref("/static/tabbar/user.png");
     const onSwiperChange = (e) => {
       currentSwiper.value = e.detail.current;
     };
@@ -77,40 +85,80 @@ const _sfc_main = {
         url: "/pages/searchProduct/searchProduct"
       });
     };
+    const checkLoginStatus = () => {
+      try {
+        const userInfo = store.store.getUserInfo();
+        if (userInfo && userInfo.openid) {
+          isLoggedIn.value = true;
+          if (userInfo.avatar) {
+            userAvatar.value = userInfo.avatar;
+          }
+        } else {
+          isLoggedIn.value = false;
+        }
+      } catch (error) {
+        common_vendor.index.__f__("log", "at pages/index/index.vue:190", "检查登录状态失败:", error);
+        isLoggedIn.value = false;
+      }
+    };
+    const handleUserClick = () => {
+      if (isLoggedIn.value) {
+        common_vendor.index.switchTab({
+          url: "/pages/my/my"
+        });
+      } else {
+        showLoginModal.value = true;
+      }
+    };
+    const handleCloseLogin = () => {
+      showLoginModal.value = false;
+    };
+    const handleLoginSuccess = (userInfo) => {
+      common_vendor.index.__f__("log", "at pages/index/index.vue:215", "登录成功:", userInfo);
+      checkLoginStatus();
+      showLoginModal.value = false;
+    };
+    common_vendor.onMounted(() => {
+      checkLoginStatus();
+    });
     return (_ctx, _cache) => {
-      return {
+      return common_vendor.e({
         a: common_vendor.p({
           type: "search",
           size: "24",
           color: "#999"
         }),
         b: common_vendor.o(goToSearch),
-        c: common_vendor.f(bannerList.value, (item, index, i0) => {
+        c: userAvatar.value,
+        d: !isLoggedIn.value
+      }, !isLoggedIn.value ? {} : {}, {
+        e: common_vendor.o(handleUserClick),
+        f: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: item.imageUrl,
             b: index
           };
         }),
-        d: common_vendor.o(onSwiperChange),
-        e: common_vendor.f(bannerList.value, (item, index, i0) => {
+        g: common_vendor.o(onSwiperChange),
+        h: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: index,
             b: common_vendor.n(currentSwiper.value === index ? "active" : "")
           };
         }),
-        f: common_vendor.p({
+        i: common_vendor.p({
           type: "left",
           size: "24",
           color: "#333"
         }),
-        g: common_vendor.o(prevSwiper),
-        h: common_vendor.p({
+        j: common_vendor.o(prevSwiper),
+        k: common_vendor.p({
           type: "right",
           size: "24",
           color: "#333"
         }),
-        i: common_vendor.o(nextSwiper),
-        j: common_vendor.f(products.value, (product, index, i0) => {
+        l: common_vendor.o(nextSwiper),
+        m: common_vendor.f(products.value, (product, index, i0) => {
           return common_vendor.e({
             a: product.imageUrl,
             b: common_vendor.t(product.name),
@@ -122,8 +170,13 @@ const _sfc_main = {
           } : {}, {
             g: index
           });
+        }),
+        n: common_vendor.o(handleCloseLogin),
+        o: common_vendor.o(handleLoginSuccess),
+        p: common_vendor.p({
+          visible: showLoginModal.value
         })
-      };
+      });
     };
   }
 };

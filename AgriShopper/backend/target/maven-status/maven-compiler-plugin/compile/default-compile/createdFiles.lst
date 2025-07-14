@@ -6,4 +6,3 @@ com\agrishopper\repository\ProductRepository.class
 com\agrishopper\model\Product.class
 com\agrishopper\controller\ProductController.class
 com\agrishopper\config\OpenAPIConfig.class
-com\agrishopper\config\SwaggerConfig.class

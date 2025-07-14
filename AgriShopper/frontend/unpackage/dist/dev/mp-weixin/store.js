@@ -39,6 +39,16 @@ const store = {
       common_vendor.index.__f__("error", "at store.js:46", "清除用户信息失败:", error);
     }
   },
+  clearAllData() {
+    this.state.userInfo = null;
+    this.state.cartItems = [];
+    this.state.favorites = [];
+    try {
+      common_vendor.index.clearStorageSync();
+    } catch (error) {
+      common_vendor.index.__f__("error", "at store.js:60", "清除所有数据失败:", error);
+    }
+  },
   setAppReady(ready) {
     this.state.isAppReady = ready;
   },

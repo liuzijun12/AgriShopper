@@ -1,7 +1,7 @@
 {
   "pages": [
-    "pages/wxLogin/wxLogin",
     "pages/index/index",
+    "pages/wxLogin/wxLogin",
     "pages/productList/productList",
     "pages/messages/messages",
     "pages/shoppingCart/shoppingCart",
@@ -10,9 +10,9 @@
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "AgriShopper",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "navigationBarTitleText": "农康优选",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f6f8fa"
   },
   "tabBar": {
     "color": "#999999",

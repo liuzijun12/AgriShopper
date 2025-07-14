@@ -20,7 +20,7 @@ export class WxLogin {
     })
   }
   
-  // 获取用户信息
+  // 获取用户信息（新版本API）
   static getUserProfile() {
     return new Promise((resolve, reject) => {
       uni.getUserProfile({
@@ -37,33 +37,106 @@ export class WxLogin {
   
   // 检查微信环境
   static checkWxEnvironment() {
-    const systemInfo = uni.getSystemInfoSync()
-    return systemInfo.platform.includes('mp-weixin')
+    try {
+      const systemInfo = uni.getSystemInfoSync()
+      console.log('系统信息:', systemInfo)
+      console.log('平台信息:', systemInfo.platform)
+      
+      // 检查多种可能的微信环境标识
+      const isWx = systemInfo.platform === 'mp-weixin' || 
+                  systemInfo.platform.includes('weixin') ||
+                  systemInfo.platform.includes('mp-weixin') ||
+                  systemInfo.uniPlatform === 'mp-weixin'
+      
+      console.log('是否为微信环境:', isWx)
+      return isWx
+    } catch (error) {
+      console.error('获取系统信息失败:', error)
+      // 如果获取系统信息失败，尝试其他方式检测
+      return WxLogin.checkWxEnvironmentAlternative()
+    }
   }
   
-  // 获取用户授权设置
+  // 备用环境检测方法
+  static checkWxEnvironmentAlternative() {
+    try {
+      // 检查是否存在微信特有的API
+      if (typeof wx !== 'undefined' && wx.login) {
+        console.log('检测到wx对象，可能是微信环境')
+        return true
+      }
+      
+      // 检查uni对象
+      if (typeof uni !== 'undefined' && uni.login) {
+        console.log('检测到uni对象，可能是微信环境')
+        return true
+      }
+      
+      console.log('未检测到微信环境')
+      return false
+    } catch (error) {
+      console.error('备用环境检测失败:', error)
+      return false
+    }
+  }
+  
+  // 获取用户授权设置（对应wx.getSetting）
   static getSetting() {
     return new Promise((resolve, reject) => {
       uni.getSetting({
         success: (res) => {
+          console.log('获取授权设置成功:', res.authSetting)
           resolve(res.authSetting)
         },
         fail: (err) => {
+          console.error('获取授权设置失败:', err)
           reject(new Error('获取授权设置失败: ' + err.errMsg))
         }
       })
     })
   }
   
-  // 打开授权设置页面
+  // 打开授权设置页面（对应wx.openSetting）
   static openSetting() {
     return new Promise((resolve, reject) => {
       uni.openSetting({
         success: (res) => {
+          console.log('设置页面返回:', res.authSetting)
           resolve(res.authSetting)
         },
         fail: (err) => {
+          console.error('打开设置页面失败:', err)
           reject(new Error('打开设置页面失败: ' + err.errMsg))
+        }
+      })
+    })
+  }
+  
+  // 检查用户是否已授权
+  static async checkUserAuth() {
+    try {
+      const authSetting = await this.getSetting()
+      return authSetting
+    } catch (error) {
+      throw error
+    }
+  }
+  
+  // 引导用户授权
+  static async guideUserAuth() {
+    return new Promise((resolve, reject) => {
+      uni.showModal({
+        title: '需要授权',
+        content: '为了提供更好的服务，需要获取您的微信授权',
+        confirmText: '去授权',
+        cancelText: '取消',
+        success: (res) => {
+          if (res.confirm) {
+            // 用户点击确定，打开设置页面
+            this.openSetting().then(resolve).catch(reject)
+          } else {
+            reject(new Error('用户取消授权'))
+          }
         }
       })
     })
@@ -221,7 +294,7 @@ export class WxLoginManager {
       uni.removeStorageSync('userInfo')
       return true
     } catch (error) {
-              console.error('清除登录信息失败:', error)
+      console.error('清除登录信息失败:', error)
       return false
     }
   }

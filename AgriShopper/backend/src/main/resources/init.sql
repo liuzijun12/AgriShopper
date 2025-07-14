@@ -61,6 +61,29 @@ INSERT INTO products (
 ('P004', 'Organic Sweet Potato', 'Farm-grown, sweet taste, rich in dietary fiber', 2, 1, 'jin', '1kg/piece', 15.90, 80, FALSE, TRUE, 1, 'https://example.com/images/sweet-potato.jpg'),
 ('P005', 'Fresh Corn', 'Seasonal harvest, plump kernels, moderate sweetness', 2, 1, 'piece', 'about 300g per piece', 9.90, 60, TRUE, FALSE, 1, 'https://example.com/images/corn.jpg');
 
+-- 创建微信用户表
+CREATE TABLE IF NOT EXISTS wxuser (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '用户ID',
+    openid VARCHAR(100) NOT NULL UNIQUE COMMENT '微信openid',
+    unionid VARCHAR(100) COMMENT '微信unionid',
+    nickname VARCHAR(100) COMMENT '用户昵称',
+    avatar VARCHAR(500) COMMENT '用户头像',
+    gender INT COMMENT '性别：0-未知，1-男，2-女',
+    phone VARCHAR(20) COMMENT '手机号',
+    country VARCHAR(50) COMMENT '国家',
+    province VARCHAR(50) COMMENT '省份',
+    city VARCHAR(50) COMMENT '城市',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    
+    -- 添加索引
+    INDEX idx_openid (openid),
+    INDEX idx_unionid (unionid),
+    INDEX idx_phone (phone),
+    INDEX idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='微信用户表';
+
 -- 显示创建结果
 SELECT 'Database and tables created successfully!' as message;
-SELECT COUNT(*) as product_count FROM products; 
+SELECT COUNT(*) as product_count FROM products;
+SELECT COUNT(*) as wxuser_count FROM wxuser; 

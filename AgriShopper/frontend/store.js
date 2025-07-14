@@ -47,6 +47,20 @@ export const store = {
     }
   },
   
+  clearAllData() {
+    // 清除所有用户相关数据
+    this.state.userInfo = null
+    this.state.cartItems = []
+    this.state.favorites = []
+    
+    try {
+      // 清除所有本地存储
+      uni.clearStorageSync()
+    } catch (error) {
+      console.error('清除所有数据失败:', error)
+    }
+  },
+  
   setAppReady(ready) {
     this.state.isAppReady = ready
   },
