@@ -4,7 +4,7 @@
       <text class="header-title">消息</text>
       <view class="header-actions">
         <view class="mark-all-read" @tap="markAllAsRead">
-          <image src="/static/messages/clear_icon.png" class="action-icon" mode="aspectFit"></image>
+          <image :src="getImageUrl('messages/clear_icon.png')" class="action-icon" mode="aspectFit"></image>
         </view>
       </view>
     </view>
@@ -18,7 +18,7 @@
           @tap="switchTab(index)"
         >
           <image
-            :src="tab.icon"
+            :src="getImageUrl(tab.icon)"
             class="tab-icon"
             mode="aspectFit"
           ></image>
@@ -114,7 +114,7 @@
           :key="index"
           @tap="enterChat(message)"
         >
-          <image class="service-avatar" :src="message.avatar" mode="aspectFill" @error="onImageError('service', message)"></image>
+          <image class="service-avatar" :src="getImageUrl(message.avatar)" mode="aspectFill" @error="onImageError('service', message)"></image>
           <view class="card-content">
             <view class="card-header">
               <text class="service-name">{{ message.name }}</text>
@@ -157,10 +157,10 @@ import { store } from '../../store.js';
 // 移除登录相关的ref、方法、import WxLoginModal
 
 const messageTabs = ref([
-  { name: '系统通知', unread: 2, icon: '/static/messages/system_notification.png' },
-  { name: '订单消息', unread: 3, icon: '/static/messages/order_message.png' },
-  { name: '活动消息', unread: 1, icon: '/static/messages/activity_message.png' },
-  { name: '客服消息', unread: 5, icon: '/static/messages/customer_service_message.png' }
+  { name: '系统通知', unread: 2, icon: 'messages/system_notification.png' },
+  { name: '订单消息', unread: 3, icon: 'messages/order_message.png' },
+  { name: '活动消息', unread: 1, icon: 'messages/activity_message.png' },
+  { name: '客服消息', unread: 5, icon: 'messages/customer_service_message.png' }
 ]);
 
 const currentTab = ref(0);
@@ -233,7 +233,7 @@ const serviceMessages = ref([
     id: 1,
     name: '在线客服',
     // 请将 'cs_online_en.png' 替换为您实际的文件名
-    avatar: '/static/messages/cs_online_en.png',
+    avatar: 'messages/cs_online_en.png',
     lastMessage: '您好，请问有什么可以帮您？',
     time: '16:30',
     unread: 1
@@ -242,7 +242,7 @@ const serviceMessages = ref([
     id: 2,
     name: '售后客服',
     // 请将 'cs_aftersales_en.png' 替换为您实际的文件名
-    avatar: '/static/messages/cs_aftersales_en.png',
+    avatar: 'messages/cs_aftersales_en.png',
     lastMessage: '您的退款申请已处理完成',
     time: '15:45',
     unread: 0
@@ -322,7 +322,7 @@ const onImageError = (type, item) => {
     item.image = 'https://placehold.co/100x100/ff0000/ffffff?text=Error';
   } else if (type === 'service') {
     // 假设当原始头像加载失败时，也 fallback 到您提供的错误头像图片
-    item.avatar = '/static/messages/cs_error_fallback.png'; // 可以为错误头像准备一个通用的 fallback 图片
+    item.avatar = getImageUrl('messages/cs_error_fallback.png'); // 可以为错误头像准备一个通用的 fallback 图片
   }
 };
 
@@ -381,6 +381,24 @@ const handleLoginSuccess = (userInfo) => {
   console.log('登录成功:', userInfo);
   checkLoginStatus();
   showLoginModal.value = false;
+};
+
+// 图片URL处理函数
+const getImageUrl = (path) => {
+  if (!path) return '';
+  
+  // 如果是完整URL，直接返回
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // 如果是tabbar图片，直接拼接后端地址
+  if (path.startsWith('tabbar/')) {
+    return 'http://localhost:8080/' + path;
+  }
+  
+  // 如果是相对路径，拼接后端地址
+  return `http://localhost:8080/${path}`;
 };
 
 // 页面加载时检查登录状态

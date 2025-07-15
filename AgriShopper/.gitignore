@@ -63,11 +63,6 @@ coverage/
 config.local.js
 config.local.json
 
-# 数据库文件
-*.db
-*.sqlite
-*.sqlite3
-
 # 压缩文件
 *.zip
 *.tar.gz
@@ -108,20 +103,17 @@ gradlew.bat
 
 # 后端特定
 *.class
-*.jar
-*.war
-*.ear
 hs_err_pid*
 
-# 数据库
+# 数据库文件
 *.db
 *.sqlite
 *.sqlite3
 
 # 上传文件
-uploads/
 public/uploads/
+/backend/static/uploads/
 
 # 其他
 *.orig
-*.rej 
+*.rej

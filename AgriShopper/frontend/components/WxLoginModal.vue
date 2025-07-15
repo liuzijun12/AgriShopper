@@ -64,6 +64,16 @@ export default {
 		}
 	},
 	methods: {
+		// 图片URL处理函数
+		getImageUrl(path) {
+			// 如果是完整URL，直接返回
+			if (path.startsWith('http://') || path.startsWith('https://')) {
+				return path;
+			}
+			// 如果是相对路径，拼接后端地址
+			return `http://localhost:8080/${path}`;
+		},
+		
 		// 处理遮罩点击
 		handleOverlayClick() {
 			if (!this.isLoading) {

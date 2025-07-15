@@ -2,10 +2,6 @@
 const common_vendor = require("../../common/vendor.js");
 const store = require("../../store.js");
 const config_env = require("../../config/env.js");
-if (!Array) {
-  const _component_uni_icons = common_vendor.resolveComponent("uni-icons");
-  _component_uni_icons();
-}
 if (!Math) {
   WxLoginModal();
 }
@@ -70,7 +66,7 @@ const _sfc_main = {
           isLoggedIn.value = false;
         }
       } catch (error) {
-        common_vendor.index.__f__("log", "at pages/index/index.vue:187", "检查登录状态失败:", error);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:191", "检查登录状态失败:", error);
         isLoggedIn.value = false;
       }
     };
@@ -87,7 +83,7 @@ const _sfc_main = {
       showLoginModal.value = false;
     };
     const handleLoginSuccess = (userInfo) => {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:212", "登录成功:", userInfo);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:216", "登录成功:", userInfo);
       checkLoginStatus();
       showLoginModal.value = false;
     };
@@ -123,13 +119,13 @@ const _sfc_main = {
             isHotProduct: product.isHotProduct,
             isNewProduct: product.isNewProduct
           }));
-          common_vendor.index.__f__("log", "at pages/index/index.vue:255", "推荐商品加载成功:", products.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:259", "推荐商品加载成功:", products.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/index/index.vue:257", "获取推荐商品失败:", response.data);
+          common_vendor.index.__f__("error", "at pages/index/index.vue:261", "获取推荐商品失败:", response.data);
           loadDefaultProducts();
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:262", "获取推荐商品出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:266", "获取推荐商品出错:", error);
         loadDefaultProducts();
       } finally {
         productsLoading.value = false;
@@ -140,6 +136,12 @@ const _sfc_main = {
         return "/static/default-product.png";
       if (url.startsWith("http://") || url.startsWith("https://")) {
         return url;
+      }
+      if (url.startsWith("icon/")) {
+        return "http://localhost:8080/" + url;
+      }
+      if (url.startsWith("tabbar/")) {
+        return "http://localhost:8080/" + url;
       }
       if (url.startsWith("/static/uploads/")) {
         return "http://localhost:8080" + url;
@@ -201,11 +203,7 @@ const _sfc_main = {
     });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.p({
-          type: "search",
-          size: "24",
-          color: "#999"
-        }),
+        a: getImageUrl("icon/4.png"),
         b: common_vendor.o(goToSearch),
         c: userAvatar.value,
         d: !isLoggedIn.value
@@ -224,17 +222,9 @@ const _sfc_main = {
             b: common_vendor.n(currentSwiper.value === index ? "active" : "")
           };
         }),
-        i: common_vendor.p({
-          type: "left",
-          size: "24",
-          color: "#333"
-        }),
+        i: getImageUrl("icon/1.png"),
         j: common_vendor.o(prevSwiper),
-        k: common_vendor.p({
-          type: "right",
-          size: "24",
-          color: "#333"
-        }),
+        k: getImageUrl("icon/3.png"),
         l: common_vendor.o(nextSwiper),
         m: productsLoading.value
       }, productsLoading.value ? {} : {}, {

@@ -4,7 +4,7 @@
     <view class="search-header">
       <view class="search-bar">
         <view class="search-input-wrapper">
-          <text class="search-icon">🔍</text>
+          <image :src="getImageUrl('icon/4.png')" class="search-icon" mode="aspectFit"></image>
           <input 
             class="search-input" 
             type="text" 
@@ -23,17 +23,27 @@
     <view class="search-history" v-if="!keyword && searchHistory.length > 0">
       <view class="history-header">
         <text class="history-title">搜索历史</text>
-        <text class="clear-history" @click="clearHistory">清空</text>
+        <view class="clear-history" @click="clearHistory">
+          <image :src="getImageUrl('icon/4.png')" class="clear-icon" mode="aspectFit"></image>
+          <text>清空</text>
+        </view>
       </view>
       <view class="history-tags">
-        <text 
-          class="history-tag" 
+        <view 
+          class="history-tag-wrapper" 
           v-for="(item, index) in searchHistory" 
           :key="index"
-          @click="selectHistory(item)"
         >
-          {{ item }}
-        </text>
+          <text 
+            class="history-tag" 
+            @click="selectHistory(item)"
+          >
+            {{ item }}
+          </text>
+          <view class="delete-btn" @click.stop="deleteHistoryItem(index)">
+            <image :src="getImageUrl('icon/6.png')" class="delete-icon" mode="aspectFit"></image>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -113,6 +123,8 @@
 </template>
 
 <script>
+import productsApi from '../../api/products.js';
+
 export default {
   name: "searchProduct",
   data() {
@@ -129,9 +141,22 @@ export default {
     // 加载搜索历史
     this.loadSearchHistory();
     // 加载推荐商品
-    this.loadRecommendProducts();
+    this.fetchRecommendProducts();
   },
   methods: {
+    // 图片URL处理函数
+    getImageUrl(path) {
+      if (!path) return '';
+      
+      // 如果是完整URL，直接返回
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+      }
+      
+      // 如果是相对路径，拼接后端地址
+      return `http://localhost:8080/${path}`;
+    },
+    
     // 执行搜索
     onSearch() {
       if (!this.keyword.trim()) {
@@ -150,30 +175,42 @@ export default {
     },
 
     // 搜索商品
-    searchProducts() {
+    async searchProducts() {
       this.hasSearched = true;
-      // 这里应该调用后端API
-      // 暂时用模拟数据
-      setTimeout(() => {
-        this.searchResults = [
-          {
-            id: 1,
-            name: this.keyword + " - 新鲜水果",
-            description: "产地直供，新鲜美味",
-            price: "9.9",
-            originalPrice: "15.8",
-            image: "/static/logo.png"
-          },
-          {
-            id: 2,
-            name: this.keyword + " - 有机认证",
-            description: "无农药，健康安全",
-            price: "12.8",
-            originalPrice: "18.5",
-            image: "/static/logo.png"
-          }
-        ];
-      }, 500);
+      
+      try {
+        // 调用后端API搜索商品
+        const response = await productsApi.searchProducts(this.keyword, {
+          page: 0,
+          size: 20
+        });
+        
+        if (response.code === 200 && response.data) {
+          // 转换数据格式以适配前端显示
+          const productList = response.data.content || [];
+          this.searchResults = productList.map(product => ({
+            id: product.id,
+            name: product.productName,
+            description: product.productDescription || '暂无描述',
+            price: product.productPrice,
+            originalPrice: product.originalPrice || null,
+            image: this.getImageUrl(product.mainImageUrl)
+          }));
+          
+          console.log('搜索结果:', this.searchResults);
+        } else {
+          console.error('搜索失败:', response);
+          this.searchResults = [];
+        }
+      } catch (error) {
+        console.error('搜索出错:', error);
+        this.searchResults = [];
+        uni.showToast({
+          title: '搜索失败，请重试',
+          icon: 'error',
+          duration: 2000
+        });
+      }
     },
 
     // 选择历史记录
@@ -197,6 +234,25 @@ export default {
         }
         this.saveSearchHistory();
       }
+    },
+
+    // 删除单个搜索历史
+    deleteHistoryItem(index) {
+      uni.showModal({
+        title: '提示',
+        content: '确定要删除这条搜索记录吗？',
+        success: (res) => {
+          if (res.confirm) {
+            this.searchHistory.splice(index, 1);
+            this.saveSearchHistory();
+            uni.showToast({
+              title: '已删除',
+              icon: 'success',
+              duration: 1000
+            });
+          }
+        }
+      });
     },
 
     // 清空搜索历史
@@ -226,9 +282,20 @@ export default {
       }
     },
 
-    // 返回上一页
+    // 刷新搜索界面
     goBack() {
-      uni.navigateBack();
+      // 清空搜索关键词
+      this.keyword = '';
+      // 清空搜索结果
+      this.searchResults = [];
+      // 重置搜索状态
+      this.hasSearched = false;
+      // 显示提示
+      uni.showToast({
+        title: '已清空搜索',
+        icon: 'success',
+        duration: 1000
+      });
     },
 
     // 跳转到商品详情
@@ -238,9 +305,42 @@ export default {
       });
     },
 
-    // 加载推荐商品
-    loadRecommendProducts() {
-      // 模拟推荐商品数据
+    // 获取推荐商品
+    async fetchRecommendProducts() {
+      try {
+        // 调用后端API获取推荐商品，限制4个商品
+        const response = await productsApi.getProductList({
+          page: 0,
+          size: 4
+        });
+        
+        if (response.code === 200 && response.data) {
+          // 转换数据格式以适配前端显示
+          const productList = response.data.content || [];
+          this.recommendProducts = productList.map(product => ({
+            id: product.id,
+            name: product.productName,
+            description: product.productDescription || '暂无描述',
+            price: product.productPrice,
+            originalPrice: product.originalPrice || null,
+            image: this.getImageUrl(product.mainImageUrl)
+          }));
+          
+          console.log('推荐商品加载成功:', this.recommendProducts);
+        } else {
+          console.error('获取推荐商品失败:', response);
+          // 如果API调用失败，使用默认数据
+          this.loadDefaultRecommendProducts();
+        }
+      } catch (error) {
+        console.error('获取推荐商品出错:', error);
+        // 如果网络错误，使用默认数据
+        this.loadDefaultRecommendProducts();
+      }
+    },
+
+    // 加载默认推荐商品数据（当API调用失败时使用）
+    loadDefaultRecommendProducts() {
       this.recommendProducts = [
         {
           id: 101,
@@ -273,43 +373,33 @@ export default {
           price: "18.8",
           originalPrice: "25.0",
           image: "/static/logo.png"
-        },
-        {
-          id: 105,
-          name: "新鲜草莓",
-          description: "丹东草莓，香甜诱人",
-          price: "22.8",
-          originalPrice: "28.0",
-          image: "/static/logo.png"
-        },
-        {
-          id: 106,
-          name: "有机西瓜",
-          description: "麒麟瓜，清甜爽口",
-          price: "16.8",
-          originalPrice: "20.0",
-          image: "/static/logo.png"
         }
       ];
     },
 
     // 刷新推荐商品
-    refreshRecommend() {
+    async refreshRecommend() {
       uni.showLoading({
         title: '刷新中...'
       });
       
-      // 模拟刷新推荐商品
-      setTimeout(() => {
-        // 随机打乱推荐商品顺序
-        this.recommendProducts = this.shuffleArray([...this.recommendProducts]);
+      try {
+        // 重新获取推荐商品
+        await this.fetchRecommendProducts();
         uni.hideLoading();
         uni.showToast({
           title: '已刷新',
           icon: 'success',
           duration: 1000
         });
-      }, 800);
+      } catch (error) {
+        uni.hideLoading();
+        uni.showToast({
+          title: '刷新失败',
+          icon: 'error',
+          duration: 1000
+        });
+      }
     },
 
     // 数组随机打乱
@@ -356,9 +446,10 @@ export default {
 }
 
 .search-icon {
-  font-size: 28rpx;
+  width: 32rpx;
+  height: 32rpx;
   margin-right: 10rpx;
-  color: #999;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -405,8 +496,16 @@ export default {
 }
 
 .clear-history {
+  display: flex;
+  align-items: center;
   font-size: 26rpx;
   color: #999;
+}
+
+.clear-icon {
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 6rpx;
 }
 
 .history-tags {
@@ -415,12 +514,44 @@ export default {
   gap: 20rpx;
 }
 
+.history-tag-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .history-tag {
   background-color: #f0f0f0;
   color: #666;
   padding: 10rpx 20rpx;
   border-radius: 20rpx;
   font-size: 26rpx;
+  display: block;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -8rpx;
+  right: -8rpx;
+  width: 32rpx;
+  height: 32rpx;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background-color: rgba(255, 255, 255, 1);
+  transform: scale(1.1);
+}
+
+.delete-icon {
+  width: 20rpx;
+  height: 20rpx;
 }
 
 /* 热门搜索 */

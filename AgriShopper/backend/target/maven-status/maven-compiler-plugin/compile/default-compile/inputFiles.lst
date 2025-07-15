@@ -4,6 +4,7 @@ E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\ser
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\model\Admin.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\model\WxUser.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\dto\LoginResponse.java
+E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\model\ShoppingCart.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\controller\AdminController.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\controller\ProductController.java
 E:\agrishopper\AgriShopper\AgriShopper\backend\src\main\java\com\agrishopper\utils\ProductCodeGenerator.java

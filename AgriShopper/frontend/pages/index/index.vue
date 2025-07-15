@@ -4,15 +4,15 @@
       <!-- 搜索栏和用户入口 -->
       <view class="search-container">
         <view class="search-header">
-          <view class="search-box" @click="goToSearch">
-            <uni-icons type="search" size="24" color="#999"></uni-icons>
-            <input type="text" placeholder="搜索您想要的产品名称" class="search-input" disabled />
-            <view class="search-btn cursor-pointer">搜索</view>
-          </view>
-          <view class="user-avatar" @click="handleUserClick">
-            <image :src="userAvatar" mode="aspectFill" class="avatar-img" />
-            <view v-if="!isLoggedIn" class="login-badge">登录</view>
-          </view>
+                  <view class="search-box" @click="goToSearch">
+          <image :src="getImageUrl('icon/4.png')" class="search-icon" mode="aspectFit"></image>
+          <input type="text" placeholder="搜索您想要的产品名称" class="search-input" disabled />
+          <view class="search-btn cursor-pointer">搜索</view>
+        </view>
+                      <view class="user-avatar" @click="handleUserClick">
+              <image :src="userAvatar" mode="aspectFill" class="avatar-img" />
+              <view v-if="!isLoggedIn" class="login-badge">登录</view>
+            </view>
         </view>
       </view>
       
@@ -31,10 +31,14 @@
           ></view>
         </view>
         <view class="swiper-arrow left cursor-pointer" @click="prevSwiper">
-          <uni-icons type="left" size="24" color="#333"></uni-icons>
+          <view class="arrow-circle">
+            <image :src="getImageUrl('icon/1.png')" class="arrow-icon left-arrow" mode="aspectFit"></image>
+          </view>
         </view>
         <view class="swiper-arrow right cursor-pointer" @click="nextSwiper">
-          <uni-icons type="right" size="24" color="#333"></uni-icons>
+          <view class="arrow-circle">
+            <image :src="getImageUrl('icon/3.png')" class="arrow-icon right-arrow" mode="aspectFit"></image>
+          </view>
         </view>
       </view>
 
@@ -276,6 +280,16 @@ const getImageUrl = (url) => {
     return url;
   }
   
+  // 如果是icon图片，直接拼接后端地址
+  if (url.startsWith('icon/')) {
+    return 'http://localhost:8080/' + url;
+  }
+  
+  // 如果是tabbar图片，直接拼接后端地址
+  if (url.startsWith('tabbar/')) {
+    return 'http://localhost:8080/' + url;
+  }
+  
   // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
   if (url.startsWith('/static/uploads/')) {
     return 'http://localhost:8080' + url;
@@ -423,6 +437,12 @@ onMounted(() => {
   padding: 0 20rpx;
   box-shadow: none;
 }
+
+.search-icon {
+  width: 40rpx;
+  height: 40rpx;
+  flex-shrink: 0;
+}
 .search-input {
   flex: 1;
   height: 80rpx;
@@ -490,21 +510,43 @@ onMounted(() => {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
+  z-index: 10;
+}
+
+.arrow-circle {
   width: 60rpx;
   height: 60rpx;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 10;
-  box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+}
+
+.arrow-circle:hover {
+  background-color: rgba(255, 255, 255, 1);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.15);
 }
 .swiper-arrow.left {
   left: 20rpx;
 }
 .swiper-arrow.right {
   right: 20rpx;
+}
+
+.arrow-icon {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.left-arrow {
+  transform: rotate(-270deg);
+}
+
+.right-arrow {
+  transform: rotate(90deg);
 }
 
 /* 推荐商品标题优化 */

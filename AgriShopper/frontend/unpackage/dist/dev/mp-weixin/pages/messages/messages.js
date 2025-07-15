@@ -1,6 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const common_assets = require("../../common/assets.js");
 const store = require("../../store.js");
 const __default__ = {
   name: "Messages",
@@ -17,10 +16,10 @@ const __default__ = {
 const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
   setup(__props) {
     const messageTabs = common_vendor.ref([
-      { name: "系统通知", unread: 2, icon: "/static/messages/system_notification.png" },
-      { name: "订单消息", unread: 3, icon: "/static/messages/order_message.png" },
-      { name: "活动消息", unread: 1, icon: "/static/messages/activity_message.png" },
-      { name: "客服消息", unread: 5, icon: "/static/messages/customer_service_message.png" }
+      { name: "系统通知", unread: 2, icon: "messages/system_notification.png" },
+      { name: "订单消息", unread: 3, icon: "messages/order_message.png" },
+      { name: "活动消息", unread: 1, icon: "messages/activity_message.png" },
+      { name: "客服消息", unread: 5, icon: "messages/customer_service_message.png" }
     ]);
     const currentTab = common_vendor.ref(0);
     const isLoggedIn = common_vendor.ref(false);
@@ -86,7 +85,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         id: 1,
         name: "在线客服",
         // 请将 'cs_online_en.png' 替换为您实际的文件名
-        avatar: "/static/messages/cs_online_en.png",
+        avatar: "messages/cs_online_en.png",
         lastMessage: "您好，请问有什么可以帮您？",
         time: "16:30",
         unread: 1
@@ -95,7 +94,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         id: 2,
         name: "售后客服",
         // 请将 'cs_aftersales_en.png' 替换为您实际的文件名
-        avatar: "/static/messages/cs_aftersales_en.png",
+        avatar: "messages/cs_aftersales_en.png",
         lastMessage: "您的退款申请已处理完成",
         time: "15:45",
         unread: 0
@@ -163,7 +162,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       if (type === "order" || type === "promotion") {
         item.image = "https://placehold.co/100x100/ff0000/ffffff?text=Error";
       } else if (type === "service") {
-        item.avatar = "/static/messages/cs_error_fallback.png";
+        item.avatar = getImageUrl("messages/cs_error_fallback.png");
       }
     };
     const loadMore = () => {
@@ -195,16 +194,27 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
         isLoggedIn.value = false;
       }
     };
+    const getImageUrl = (path) => {
+      if (!path)
+        return "";
+      if (path.startsWith("http://") || path.startsWith("https://")) {
+        return path;
+      }
+      if (path.startsWith("tabbar/")) {
+        return "http://localhost:8080/" + path;
+      }
+      return `http://localhost:8080/${path}`;
+    };
     common_vendor.onMounted(() => {
       checkLoginStatus();
     });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_assets._imports_0$1,
+        a: getImageUrl("messages/clear_icon.png"),
         b: common_vendor.o(markAllAsRead),
         c: common_vendor.f(messageTabs.value, (tab, index, i0) => {
           return common_vendor.e({
-            a: tab.icon,
+            a: getImageUrl(tab.icon),
             b: common_vendor.t(tab.name),
             c: tab.unread > 0
           }, tab.unread > 0 ? {
@@ -279,7 +289,7 @@ const _sfc_main = /* @__PURE__ */ Object.assign(__default__, {
       }, currentTab.value === 3 ? {
         k: common_vendor.f(serviceMessages.value, (message, index, i0) => {
           return {
-            a: message.avatar,
+            a: getImageUrl(message.avatar),
             b: common_vendor.o(($event) => onImageError("service", message), index),
             c: common_vendor.t(message.name),
             d: common_vendor.t(message.time),
