@@ -1,14 +1,11 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-require("../../store.js");
+const common_assets = require("../../common/assets.js");
 const _sfc_main = {
   __name: "shoppingCart",
   setup(__props) {
     common_vendor.ref("河北张家口市");
     common_vendor.ref(true);
-    common_vendor.ref(false);
-    common_vendor.ref(false);
-    common_vendor.ref("/static/tabbar/user.png");
     const tagColors = {
       "热卖": "#ffeeee",
       "特惠": "#fff8e6",
@@ -115,10 +112,6 @@ const _sfc_main = {
       };
       return icons[name.replace(/有机|农家|新鲜|优质|红富士/g, "")] || "🛒";
     };
-    common_vendor.computed(() => {
-      const currentTotal = totalPrice.value;
-      return currentTotal < 300 ? (300 - currentTotal).toFixed(2) : 0;
-    });
     const totalSaved = common_vendor.computed(() => {
       return farmProducts.value.filter((item) => item.selected && item.originalPrice).reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0);
     });
@@ -128,10 +121,11 @@ const _sfc_main = {
     };
     const toggleShopSelect = (shopId) => {
       const shouldSelect = !isShopAllSelected(shopId);
-      farmProducts.value.forEach((item) => {
+      farmProducts.value = farmProducts.value.map((item) => {
         if (item.shopId === shopId) {
-          item.selected = shouldSelect;
+          return { ...item, selected: shouldSelect };
         }
+        return item;
       });
     };
     const handleItemSelect = (e, item) => {
@@ -142,9 +136,10 @@ const _sfc_main = {
     });
     const handleSelectAll = (e) => {
       const selected = e.detail.value.length > 0;
-      farmProducts.value.forEach((item) => {
-        item.selected = selected;
-      });
+      farmProducts.value = farmProducts.value.map((item) => ({
+        ...item,
+        selected
+      }));
     };
     const decreaseQuantity = (item) => {
       if (item.quantity > 1) {
@@ -155,6 +150,12 @@ const _sfc_main = {
       if (item.quantity < 99) {
         item.quantity++;
       }
+    };
+    const validateQuantity = (item) => {
+      if (isNaN(item.quantity)) {
+        item.quantity = 1;
+      }
+      item.quantity = Math.max(1, Math.min(99, Math.floor(item.quantity)));
     };
     const totalPrice = common_vendor.computed(() => {
       return farmProducts.value.filter((item) => item.selected).reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -175,15 +176,15 @@ const _sfc_main = {
         url: "/pages/checkout/checkout"
       });
     };
-    common_vendor.onMounted(() => {
-    });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.o(goToSearch),
-        b: common_vendor.o((...args) => _ctx.selectAddress && _ctx.selectAddress(...args)),
-        c: isShopAllSelected(1),
-        d: common_vendor.o(($event) => toggleShopSelect(1)),
-        e: common_vendor.f(farmProducts.value, (item, index, i0) => {
+        a: common_assets._imports_0$2,
+        b: common_vendor.o(goToSearch),
+        c: common_assets._imports_1,
+        d: common_vendor.o((...args) => _ctx.selectAddress && _ctx.selectAddress(...args)),
+        e: isShopAllSelected(1),
+        f: common_vendor.o(($event) => toggleShopSelect(1)),
+        g: common_vendor.f(farmProducts.value, (item, index, i0) => {
           return common_vendor.e({
             a: item.selected,
             b: common_vendor.o((e) => handleItemSelect(e, item), index),
@@ -205,22 +206,25 @@ const _sfc_main = {
             m: common_vendor.t(item.stock)
           } : {}, {
             n: common_vendor.o(($event) => decreaseQuantity(item), index),
-            o: item.quantity,
-            p: common_vendor.o(($event) => item.quantity = $event.detail.value, index),
-            q: common_vendor.o(($event) => increaseQuantity(item), index),
-            r: index
+            o: common_vendor.o(($event) => validateQuantity(item), index),
+            p: item.quantity,
+            q: common_vendor.o(common_vendor.m(($event) => item.quantity = $event.detail.value, {
+              number: true
+            }), index),
+            r: common_vendor.o(($event) => increaseQuantity(item), index),
+            s: index
           });
         }),
-        f: isAllSelected.value,
-        g: common_vendor.o(handleSelectAll),
-        h: common_vendor.t(totalPrice.value.toFixed(2)),
-        i: totalSaved.value > 0
+        h: isAllSelected.value,
+        i: common_vendor.o(handleSelectAll),
+        j: common_vendor.t(totalPrice.value.toFixed(2)),
+        k: totalSaved.value > 0
       }, totalSaved.value > 0 ? {
-        j: common_vendor.t(totalSaved.value.toFixed(2))
+        l: common_vendor.t(totalSaved.value.toFixed(2))
       } : {}, {
-        k: common_vendor.t(selectedCount.value),
-        l: selectedCount.value === 0 ? 1 : "",
-        m: common_vendor.o(checkout)
+        m: common_vendor.t(selectedCount.value),
+        n: selectedCount.value === 0 ? 1 : "",
+        o: common_vendor.o(checkout)
       });
     };
   }

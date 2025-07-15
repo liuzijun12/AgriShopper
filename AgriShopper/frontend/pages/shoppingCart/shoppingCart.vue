@@ -3,14 +3,14 @@
     <!-- 搜索栏 -->
     <view class="search-header">
       <view class="search-bar" @click="goToSearch">
-        <text class="search-icon">🔍</text>
+        <image class="search-icon" src="/static/shoppingCart/搜索.png"></image>
         <text class="search-text">搜索购物车商品</text>
       </view>
     </view>
 
     <!-- 地址栏 -->
     <view class="address-bar" @click="selectAddress">
-      <text class="address-icon">📍</text>
+      <image class="address-icon" src="/static/shoppingCart/地址.png"></image>
       <text class="address-text">河北张家口市</text>
       <text class="arrow">›</text>
     </view>
@@ -61,9 +61,11 @@
                 <text class="quantity-btn" @click="decreaseQuantity(item)">-</text>
                 <input 
                   type="number" 
-                  v-model="item.quantity" 
+                  v-model.number="item.quantity" 
                   class="quantity-input"
-                  disabled
+                  @blur="validateQuantity(item)"
+                  min="1"
+                  max="99"
                 />
                 <text class="quantity-btn" @click="increaseQuantity(item)">+</text>
               </view>
@@ -83,9 +85,14 @@
       </view>
 
       <view class="price-section">
-        <text class="total-text">合计：</text>
-        <text class="total-price">¥{{ totalPrice.toFixed(2) }}</text>
-        <text class="saved-price" v-if="totalSaved > 0">已省¥{{ totalSaved.toFixed(2) }}</text>
+        <view class="price-row">
+          <text class="total-text">合计：</text>
+          <text class="total-price">¥{{ totalPrice.toFixed(2) }}</text>
+        </view>
+        <view class="saved-row" v-if="totalSaved > 0">
+          <text class="saved-text">已省</text>
+          <text class="saved-price">¥{{ totalSaved.toFixed(2) }}</text>
+        </view>
       </view>
 
       <button 
@@ -96,24 +103,15 @@
         去结算({{ selectedCount }})
       </button>
     </view>
-    
-    <!-- 微信登录弹窗 -->
-    <!-- 已移除WxLoginModal相关内容 -->
   </view>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { store } from '../../store.js';
+import { ref, computed } from 'vue'
 
 // 示例数据
 const currentAddress = ref('河北张家口市')
 const showPromotionTip = ref(true)
-
-// 登录状态
-const isLoggedIn = ref(false);
-const showLoginModal = ref(false);
-const userAvatar = ref('/static/tabbar/user.png');
 
 const tagColors = {
   '热卖': '#ffeeee',
@@ -227,12 +225,6 @@ const getProductIcon = (name) => {
   return icons[name.replace(/有机|农家|新鲜|优质|红富士/g, '')] || '🛒'
 }
 
-// 计算还差多少金额满足满减
-const neededAmount = computed(() => {
-  const currentTotal = totalPrice.value
-  return currentTotal < 300 ? (300 - currentTotal).toFixed(2) : 0
-})
-
 // 计算节省金额
 const totalSaved = computed(() => {
   return farmProducts.value
@@ -248,10 +240,11 @@ const isShopAllSelected = (shopId) => {
 
 const toggleShopSelect = (shopId) => {
   const shouldSelect = !isShopAllSelected(shopId)
-  farmProducts.value.forEach(item => {
+  farmProducts.value = farmProducts.value.map(item => {
     if (item.shopId === shopId) {
-      item.selected = shouldSelect
+      return {...item, selected: shouldSelect}
     }
+    return item
   })
 }
 
@@ -268,9 +261,10 @@ const isAllSelected = computed(() => {
 // 全选/取消全选
 const handleSelectAll = (e) => {
   const selected = e.detail.value.length > 0
-  farmProducts.value.forEach(item => {
-    item.selected = selected
-  })
+  farmProducts.value = farmProducts.value.map(item => ({
+    ...item,
+    selected
+  }))
 }
 
 // 减少数量
@@ -285,6 +279,14 @@ const increaseQuantity = (item) => {
   if (item.quantity < 99) {
     item.quantity++
   }
+}
+
+// 验证数量输入
+const validateQuantity = (item) => {
+  if (isNaN(item.quantity)) {
+    item.quantity = 1
+  }
+  item.quantity = Math.max(1, Math.min(99, Math.floor(item.quantity)))
 }
 
 // 计算总价
@@ -314,11 +316,6 @@ const checkout = () => {
     url: '/pages/checkout/checkout'
   })
 }
-
-// 页面加载时检查登录状态
-onMounted(() => {
-  // 移除登录相关的onMounted调用
-});
 </script>
 
 <style>
@@ -333,7 +330,6 @@ onMounted(() => {
 .search-header {
   display: flex;
   align-items: center;
-  gap: 20rpx;
   padding: 20rpx 25rpx;
   background-color: #fff;
   border-bottom: 1rpx solid #f0f0f0;
@@ -343,42 +339,15 @@ onMounted(() => {
   flex: 1;
   display: flex;
   align-items: center;
-}
-
-.user-avatar {
-  position: relative;
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #f0f0f0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-}
-
-.login-badge {
-  position: absolute;
-  bottom: -5rpx;
-  right: -5rpx;
-  background: #07c160;
-  color: #fff;
-  font-size: 18rpx;
-  padding: 2rpx 6rpx;
-  border-radius: 8rpx;
-  white-space: nowrap;
+  background-color: #f5f5f5;
+  border-radius: 50rpx;
+  padding: 15rpx 25rpx;
 }
 
 .search-icon {
+  width: 36rpx;
+  height: 36rpx;
   margin-right: 15rpx;
-  font-size: 36rpx;
 }
 
 .search-text {
@@ -396,8 +365,9 @@ onMounted(() => {
   font-size: 34rpx;
 }
 .address-icon {
+  width: 40rpx;
+  height: 40rpx;
   margin-right: 15rpx;
-  font-size: 40rpx;
 }
 .address-text {
   flex: 1;
@@ -422,6 +392,10 @@ onMounted(() => {
   border-radius: 10rpx;
   font-size: 26rpx;
   margin-right: 15rpx;
+}
+.promotion-text {
+  font-size: 28rpx;
+  color: #666;
 }
 
 /* 店铺分组 */
@@ -565,19 +539,36 @@ onMounted(() => {
 }
 .price-section {
   flex: 1;
+  margin-left: 20rpx;
+  line-height: 1;
+}
+.price-row {
+  display: flex;
+  align-items: center;
+}
+.saved-row {
+  display: flex;
+  align-items: center;
+  margin-top: 0;
 }
 .total-text {
-  font-size: 32rpx;
+  font-size: 28rpx;
+  color: #666;
 }
 .total-price {
   color: #e93b3d;
-  font-size: 38rpx;
+  font-size: 32rpx;
   font-weight: bold;
+  margin-left: 10rpx;
+}
+.saved-text {
+  font-size: 24rpx;
+  color: #999;
 }
 .saved-price {
   color: #999;
-  font-size: 26rpx;
-  margin-left: 15rpx;
+  font-size: 24rpx;
+  margin-left: 10rpx;
 }
 .checkout-btn {
   width: 250rpx;
