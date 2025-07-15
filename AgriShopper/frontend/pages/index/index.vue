@@ -41,27 +41,51 @@
       <!-- 推荐商品区域 -->
       <view class="recommend-title">
         <text>推荐商品</text>
+        <text v-if="productsLoading" class="loading-text">加载中...</text>
       </view>
       
-      <view class="product-grid">
+      <!-- 加载状态 -->
+      <view v-if="productsLoading" class="loading-container">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">正在加载商品...</text>
+      </view>
+      
+      <!-- 商品网格 -->
+      <view v-else class="product-grid">
         <view 
           v-for="(product, index) in products" 
-          :key="index" 
+          :key="product.id || index" 
           class="product-card cursor-pointer"
+          @click="goToProductDetail(product)"
         >
-          <image :src="product.imageUrl" mode="aspectFill" class="product-image" />
+          <image 
+            :src="product.imageUrl" 
+            mode="aspectFill" 
+            class="product-image"
+            @error="handleImageError"
+          />
           <view class="product-info">
-            <text class="product-name">{{ product.name }}</text>
+            <view class="product-header">
+              <text class="product-name">{{ product.name }}</text>
+              <view class="product-tags">
+                <text v-if="product.isHotProduct" class="hot-tag">热销</text>
+                <text v-if="product.isNewProduct" class="new-tag">新品</text>
+              </view>
+            </view>
             <text class="product-desc">{{ product.description }}</text>
             <view class="product-bottom">
               <view class="price-container">
                 <text class="product-price">¥{{ product.price }}</text>
-                <text class="product-original" v-if="product.originalPrice">¥{{ product.originalPrice }}</text>
               </view>
-              <view class="buy-btn cursor-pointer">购买</view>
+              <view class="buy-btn cursor-pointer" @click.stop="addToCart(product)">购买</view>
             </view>
           </view>
         </view>
+      </view>
+      
+      <!-- 空状态 -->
+      <view v-if="!productsLoading && products.length === 0" class="empty-container">
+        <text class="empty-text">暂无推荐商品</text>
       </view>
     </view>
     
@@ -77,6 +101,7 @@
 import { ref, onMounted } from 'vue';
 import { store } from '../../store.js';
 import WxLoginModal from '../../components/WxLoginModal.vue';
+import env from '../../config/env.js';
 
 // 轮播图数据
 const bannerList = ref([
@@ -99,36 +124,8 @@ const categories = ref([
 ]);
 
 // 推荐商品数据
-const products = ref([
-  {
-    name: '有机红薯',
-    description: '农家自种，无公害种植',
-    price: '12.8',
-    originalPrice: '15.8',
-    imageUrl: 'https://readdy.ai/api/search-image?query=icon%2C%20Realistic%20food%2C%20photorealistic%20sweet%20potato%2C%20high-detail%203D%20rendering%2C%20prominent%20main%20subjects%2C%20clear%20and%20sharp%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20subtle%20shadows%2C%20product%20photography%20style&width=300&height=300&seq=4&orientation=squarish'
-  },
-  {
-    name: '优质玉米饲料',
-    description: '高营养，适合家禽喂养',
-    price: '45.9',
-    originalPrice: '59.9',
-    imageUrl: 'https://readdy.ai/api/search-image?query=icon%2C%20Realistic%20food%2C%20photorealistic%20corn%20feed%20grains%2C%20high-detail%203D%20rendering%2C%20prominent%20main%20subjects%2C%20clear%20and%20sharp%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20subtle%20shadows%2C%20product%20photography%20style&width=300&height=300&seq=5&orientation=squarish'
-  },
-  {
-    name: '枸杞菊花茶',
-    description: '养生保健，明目润肺',
-    price: '38.5',
-    originalPrice: '45.0',
-    imageUrl: 'https://readdy.ai/api/search-image?query=icon%2C%20Realistic%20food%2C%20photorealistic%20goji%20berries%20and%20chrysanthemum%20tea%2C%20high-detail%203D%20rendering%2C%20prominent%20main%20subjects%2C%20clear%20and%20sharp%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20subtle%20shadows%2C%20product%20photography%20style&width=300&height=300&seq=6&orientation=squarish'
-  },
-  {
-    name: '新鲜胡萝卜',
-    description: '富含胡萝卜素，助力健康',
-    price: '8.8',
-    originalPrice: '10.8',
-    imageUrl: 'https://readdy.ai/api/search-image?query=icon%2C%20Realistic%20food%2C%20photorealistic%20fresh%20carrots%2C%20high-detail%203D%20rendering%2C%20prominent%20main%20subjects%2C%20clear%20and%20sharp%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition%2C%20soft%20lighting%2C%20subtle%20shadows%2C%20product%20photography%20style&width=300&height=300&seq=7&orientation=squarish'
-  }
-]);
+const products = ref([]);
+const productsLoading = ref(false);
 
 // 当前状态
 const currentSwiper = ref(0);
@@ -217,9 +214,142 @@ const handleLoginSuccess = (userInfo) => {
   showLoginModal.value = false;
 };
 
+// 获取推荐商品
+const fetchRecommendProducts = async () => {
+  try {
+    productsLoading.value = true;
+    
+    // 调用后端API获取商品列表，限制4个推荐商品
+    const response = await new Promise((resolve, reject) => {
+      uni.request({
+        url: env.getApiUrl('/products'),
+        method: 'GET',
+        data: {
+          page: 0,
+          size: 4
+        },
+        success: (res) => {
+          resolve(res);
+        },
+        fail: (err) => {
+          reject(err);
+        }
+      });
+    });
+    
+    if (response.statusCode === 200 && response.data.code === 200) {
+      // 转换数据格式以适配前端显示
+      const productList = response.data.data.content || [];
+      products.value = productList.map(product => ({
+        id: product.id,
+        name: product.productName,
+        description: product.productDescription || '暂无描述',
+        price: product.productPrice,
+        imageUrl: getImageUrl(product.mainImageUrl),
+        productCode: product.productCode,
+        stockQuantity: product.stockQuantity,
+        isHotProduct: product.isHotProduct,
+        isNewProduct: product.isNewProduct
+      }));
+      
+      console.log('推荐商品加载成功:', products.value);
+    } else {
+      console.error('获取推荐商品失败:', response.data);
+      // 如果API调用失败，使用默认数据
+      loadDefaultProducts();
+    }
+  } catch (error) {
+    console.error('获取推荐商品出错:', error);
+    // 如果网络错误，使用默认数据
+    loadDefaultProducts();
+  } finally {
+    productsLoading.value = false;
+  }
+};
+
+// 处理图片URL
+const getImageUrl = (url) => {
+  if (!url) return '/static/default-product.png';
+  
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
+  if (url.startsWith('/static/uploads/')) {
+    return 'http://localhost:8080' + url;
+  }
+  
+  // 如果是文件名，拼接完整的静态资源路径
+  if (!url.startsWith('/')) {
+    return 'http://localhost:8080/static/uploads/' + url;
+  }
+  
+  // 其他情况，拼接后端地址和路径
+  return 'http://localhost:8080' + url;
+};
+
+// 加载默认商品数据（当API调用失败时使用）
+const loadDefaultProducts = () => {
+  products.value = [
+    {
+      id: 1,
+      name: '有机红薯',
+      description: '农家自种，无公害种植',
+      price: 12.8,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 2,
+      name: '优质玉米饲料',
+      description: '高营养，适合家禽喂养',
+      price: 45.9,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 3,
+      name: '枸杞菊花茶',
+      description: '养生保健，明目润肺',
+      price: 38.5,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 4,
+      name: '新鲜胡萝卜',
+      description: '富含胡萝卜素，助力健康',
+      price: 8.8,
+      imageUrl: '/static/default-product.png'
+    }
+  ];
+};
+
+// 跳转到商品详情
+const goToProductDetail = (product) => {
+  uni.navigateTo({
+    url: `/pages/productDetail/productDetail?id=${product.id}`
+  });
+};
+
+// 添加到购物车
+const addToCart = (product) => {
+  // TODO: 实现添加到购物车的逻辑
+  uni.showToast({
+    title: '已添加到购物车',
+    icon: 'success'
+  });
+};
+
+// 处理图片加载错误
+const handleImageError = (e) => {
+  // 设置默认图片
+  e.target.src = '/static/default-product.png';
+};
+
 // 页面加载时检查登录状态
 onMounted(() => {
   checkLoginStatus();
+  fetchRecommendProducts();
 });
 </script>
 <style>
@@ -449,18 +579,12 @@ onMounted(() => {
 }
 .price-container {
   display: flex;
-  flex-direction: column;
+  align-items: center;
 }
 .product-price {
   font-size: 36rpx;
   font-weight: bold;
   color: #4CAF50;
-}
-.product-original {
-  font-size: 24rpx;
-  color: #bdbdbd;
-  text-decoration: line-through;
-  margin-top: 4rpx;
 }
 .buy-btn {
   padding: 10rpx 28rpx;
@@ -475,6 +599,78 @@ onMounted(() => {
 .buy-btn:active {
   background: #388e3c;
 }
+
+/* 加载状态样式 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60rpx 0;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 空状态样式 */
+.empty-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80rpx 0;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
+/* 商品标签样式 */
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8rpx;
+}
+
+.product-tags {
+  display: flex;
+  gap: 8rpx;
+}
+
+.hot-tag, .new-tag {
+  font-size: 20rpx;
+  padding: 4rpx 8rpx;
+  border-radius: 8rpx;
+  color: #fff;
+}
+
+.hot-tag {
+  background-color: #ff4444;
+}
+
+.new-tag {
+  background-color: #4CAF50;
+}
+
 .cursor-pointer {
   cursor: pointer;
 }

@@ -77,15 +77,72 @@ public class WxUserController {
         }
     }
     
+    @PostMapping("/code2session")
+    @Operation(summary = "微信code换取session", description = "通过微信code获取openid和session_key")
+    public ApiResponse<Map<String, String>> code2Session(
+            @Parameter(description = "微信登录code") @RequestParam String code) {
+        try {
+            System.out.println("=== 开始处理code2session请求 ===");
+            System.out.println("微信登录code: " + code);
+
+            if (code == null || code.trim().isEmpty()) {
+                return ApiResponse.error(400, "缺少微信登录code");
+            }
+
+            // 调用服务层获取session信息
+            Map<String, String> sessionInfo = wxUserService.getSessionInfo(code);
+            System.out.println("=== code2session请求处理完成 ===");
+
+            return ApiResponse.success(sessionInfo);
+        } catch (Exception e) {
+            System.out.println("=== code2session请求处理失败 ===");
+            e.printStackTrace();
+            return ApiResponse.error(500, "获取session失败: " + e.getMessage());
+        }
+    }
+    
     @PostMapping("/login")
     @Operation(summary = "微信用户登录", description = "通过微信code进行登录或注册")
     public ApiResponse<WxUser> wxLogin(
-            @Parameter(description = "微信登录code") @RequestParam String code,
+            @Parameter(description = "微信登录code") @RequestParam(required = false) String code,
             @Parameter(description = "用户信息（可选）") @RequestBody(required = false) Map<String, Object> requestBody) {
         try {
             System.out.println("=== 开始处理微信登录请求 ===");
             System.out.println("微信登录code: " + code);
             System.out.println("请求体: " + requestBody);
+
+            // 从请求体中提取code（如果URL参数中没有）
+            if (code == null && requestBody != null && requestBody.containsKey("code")) {
+                code = (String) requestBody.get("code");
+                System.out.println("从请求体获取到code: " + code);
+            }
+
+            if (code == null) {
+                return ApiResponse.error(400, "缺少微信登录code");
+            }
+
+            // 从请求体中提取session信息
+            Map<String, Object> sessionInfo = null;
+            if (requestBody != null && requestBody.containsKey("sessionInfo")) {
+                sessionInfo = (Map<String, Object>) requestBody.get("sessionInfo");
+                System.out.println("接收到session信息: " + sessionInfo);
+            }
+            
+            // 从请求体中提取加密数据
+            String encryptedData = null;
+            String iv = null;
+            String signature = null;
+            
+            if (requestBody != null) {
+                encryptedData = (String) requestBody.get("encryptedData");
+                iv = (String) requestBody.get("iv");
+                signature = (String) requestBody.get("signature");
+                
+                System.out.println("接收到加密数据:");
+                System.out.println("encryptedData: " + (encryptedData != null ? encryptedData.substring(0, Math.min(50, encryptedData.length())) + "..." : "null"));
+                System.out.println("iv: " + iv);
+                System.out.println("signature: " + signature);
+            }
 
             // 从请求体中提取用户信息
             WxUser userInfo = null;
@@ -138,8 +195,8 @@ public class WxUserController {
                 System.out.println("请求体中没有userInfo字段或请求体为空");
             }
 
-            // 调用服务层处理登录
-            WxUser wxUser = wxUserService.wxLogin(code, userInfo);
+            // 调用服务层处理登录（带解密）
+            WxUser wxUser = wxUserService.wxLogin(code, userInfo, encryptedData, iv, signature, sessionInfo);
             System.out.println("登录成功，返回用户信息: " + wxUser.getNickname());
             System.out.println("=== 微信登录请求处理完成 ===");
 
@@ -205,6 +262,42 @@ public class WxUserController {
             return ApiResponse.success(exists);
         } catch (Exception e) {
             return ApiResponse.error(500, "检查失败: " + e.getMessage());
+        }
+    }
+    
+    @PostMapping("/test-decrypt")
+    @Operation(summary = "测试解密功能", description = "测试微信数据解密功能")
+    public ApiResponse<Map<String, Object>> testDecrypt(
+            @Parameter(description = "请求体") @RequestBody(required = false) Map<String, Object> requestBody) {
+        try {
+            System.out.println("=== 测试解密功能 ===");
+            System.out.println("请求体: " + requestBody);
+            
+            if (requestBody == null) {
+                return ApiResponse.error(400, "请求体不能为空");
+            }
+            
+            String encryptedData = (String) requestBody.get("encryptedData");
+            String iv = (String) requestBody.get("iv");
+            String sessionKey = (String) requestBody.get("sessionKey");
+            
+            System.out.println("encryptedData: " + (encryptedData != null ? encryptedData.substring(0, Math.min(50, encryptedData.length())) + "..." : "null"));
+            System.out.println("iv: " + iv);
+            System.out.println("sessionKey: " + (sessionKey != null ? sessionKey.substring(0, Math.min(20, sessionKey.length())) + "..." : "null"));
+            
+            if (encryptedData == null || iv == null || sessionKey == null) {
+                return ApiResponse.error(400, "缺少必要参数: encryptedData, iv, sessionKey");
+            }
+            
+            // 直接调用解密工具类
+            com.agrishopper.utils.WxDataDecryptUtil decryptUtil = new com.agrishopper.utils.WxDataDecryptUtil();
+            Map<String, Object> decryptedData = decryptUtil.decryptUserData(encryptedData, iv, sessionKey);
+            
+            return ApiResponse.success(decryptedData);
+        } catch (Exception e) {
+            System.out.println("=== 测试解密失败 ===");
+            e.printStackTrace();
+            return ApiResponse.error(500, "解密失败: " + e.getMessage());
         }
     }
 } 

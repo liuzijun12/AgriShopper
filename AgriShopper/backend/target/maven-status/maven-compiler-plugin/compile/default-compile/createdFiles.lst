@@ -1,8 +1,8 @@
 com\agrishopper\service\ProductService.class
 com\agrishopper\service\impl\ProductServiceImpl.class
 com\agrishopper\AgriShopperApplication.class
-com\agrishopper\common\ApiResponse.class
 com\agrishopper\repository\ProductRepository.class
 com\agrishopper\model\Product.class
 com\agrishopper\controller\ProductController.class
 com\agrishopper\config\OpenAPIConfig.class
+com\agrishopper\common\ApiResponse.class

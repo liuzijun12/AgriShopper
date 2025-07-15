@@ -2,6 +2,7 @@ package com.agrishopper.controller;
 
 import com.agrishopper.model.Product;
 import com.agrishopper.service.ProductService;
+import com.agrishopper.utils.ProductCodeGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -94,6 +95,12 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody Product product) {
         try {
+            // 如果商品编码为空，自动生成6位随机编码
+            if (product.getProductCode() == null || product.getProductCode().trim().isEmpty()) {
+                String generatedCode = ProductCodeGenerator.generateProductCode();
+                product.setProductCode(generatedCode);
+            }
+            
             Product savedProduct = productService.saveProduct(product);
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(createSuccessResponse(savedProduct));
@@ -135,6 +142,21 @@ public class ProductController {
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "生成商品编码", description = "生成6位随机数字商品编码")
+    @ApiResponse(responseCode = "200", description = "成功生成商品编码")
+    @GetMapping("/generate-code")
+    public ResponseEntity<?> generateProductCode() {
+        try {
+            String productCode = ProductCodeGenerator.generateProductCode();
+            Map<String, Object> data = new HashMap<>();
+            data.put("productCode", productCode);
+            return ResponseEntity.ok(createSuccessResponse(data));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse(e.getMessage()));
         }
     }

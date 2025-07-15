@@ -14,10 +14,15 @@
 
       <!-- 左侧主分类导航 -->
       <view class="category-sidebar">
-        <view class="main-categories">
+        <!-- 分类加载状态 -->
+        <view v-if="categoriesLoading" class="category-loading">
+          <text class="loading-text">加载分类中...</text>
+        </view>
+        
+        <view v-else class="main-categories">
           <view 
             v-for="(category, index) in categories" 
-            :key="index"
+            :key="category.id || index"
             :class="['category-item', currentCategory === index ? 'category-active' : '']"
             @tap="changeCategory(index)"
             class="cursor-pointer"
@@ -28,115 +33,229 @@
       </view>
 
       <!-- 右侧商品展示区 -->
-      <scroll-view class="product-list" scroll-y="true">
+      <scroll-view class="product-list" scroll-y="true" @scrolltolower="loadMore">
+        
+        <!-- 加载状态 -->
+        <view v-if="loading && products.length === 0" class="loading-container">
+          <uni-load-more status="loading" :content-text="loadingText"></uni-load-more>
+        </view>
 
+        <!-- 错误状态 -->
+        <view v-if="error && products.length === 0" class="error-container">
+          <text class="error-text">{{ error }}</text>
+          <view class="retry-button" @tap="loadProducts">
+            <text>重新加载</text>
+          </view>
+        </view>
 
         <!-- 商品卡片列表 -->
         <view 
           class="product-item cursor-pointer" 
           v-for="(product, index) in products" 
-          :key="index"
+          :key="product.id"
+          @tap="goToProductDetail(product.id)"
         >
-          <image class="product-image" :src="product.image" mode="aspectFill"></image>
+          <image 
+            class="product-image" 
+            :src="product.mainImageUrl || '/static/default-product.png'" 
+            mode="aspectFill"
+            @error="handleImageError"
+          ></image>
           <view class="product-info">
-            <text class="product-name">{{ product.name }}</text>
-            <text class="product-desc">{{ product.description }}</text>
+            <text class="product-name">{{ product.productName }}</text>
+            <text class="product-desc">{{ product.productDescription }}</text>
             <view class="product-stats">
-              <text>销量: {{ product.sales }}</text>
-              <text>库存: {{ product.stock }}</text>
+              <view class="stats-row">
+                <text class="stock-info">库存: {{ product.stockQuantity }}</text>
+                <view class="product-tags">
+                  <text v-if="product.isHotProduct" class="hot-tag">热销</text>
+                  <text v-if="product.isNewProduct" class="new-tag">新品</text>
+                </view>
+              </view>
+              <view class="stats-row">
+                <text class="unit-info">单位: {{ product.productUnit || '件' }}</text>
+              </view>
             </view>
             <view class="product-bottom">
-              <text class="product-price">¥{{ product.price }}</text>
-              <view class="buy-button cursor-pointer">
+              <text class="product-price">¥{{ product.productPrice }}</text>
+              <view class="buy-button cursor-pointer" @tap.stop="addToCart(product)">
                 <text>购买</text>
               </view>
             </view>
           </view>
         </view>
 
+        <!-- 加载更多 -->
+        <view v-if="hasMore && !loading" class="load-more">
+          <uni-load-more status="more" :content-text="loadMoreText"></uni-load-more>
+        </view>
+
+        <!-- 没有更多数据 -->
+        <view v-if="!hasMore && products.length > 0" class="no-more">
+          <uni-load-more status="noMore" :content-text="noMoreText"></uni-load-more>
+        </view>
+
       </scroll-view>
     </view>
     
-    <!-- 微信登录弹窗 -->
-    <!-- 已移除WxLoginModal相关内容 -->
   </view>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, reactive } from 'vue';
 import { store } from '../../store.js';
+import productsApi from '../../api/products.js';
+import categoriesApi from '../../api/categories.js';
 
-// 当前选中的分类
+// 响应式数据
 const currentCategory = ref(0);
+const products = ref([]);
+const loading = ref(false);
+const error = ref('');
+const hasMore = ref(true);
 
-// 主分类列表
+// 分页参数
+const pageParams = reactive({
+  page: 0,
+  size: 10
+});
+
+// 主分类列表 - 从数据库获取
 const categories = ref([
-  { name: '农产品', id: 1 },
-  { name: '饲料', id: 2 },
-  { name: '养生保健', id: 3 }
+  { name: '全部', id: 0 }
 ]);
+const categoriesLoading = ref(false);
 
-// 商品列表
-const products = ref([
-  {
-    id: 1,
-    name: '有机西红柿',
-    description: '新鲜采摘，无农药，口感酸甜多汁',
-    price: '12.8',
-    sales: 1280,
-    stock: 500,
-    image: 'https://readdy.ai/api/search-image?query=Realistic%20fresh%20organic%20tomatoes%2C%20vibrant%20red%20color%2C%20farm%20fresh%20produce%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements%2C%20professional%20food%20photography.&width=160&height=160&seq=5&orientation=squarish'
-  },
-  {
-    id: 2,
-    name: '绿色菠菜',
-    description: '富含铁质，叶片肥厚，口感清爽',
-    price: '8.5',
-    sales: 950,
-    stock: 300,
-    image: 'https://readdy.ai/api/search-image?query=Fresh%20green%20spinach%20leaves%2C%20organic%20farm%20produce%2C%20vibrant%20green%20color%2C%20crisp%20and%20healthy%20appearance%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements.&width=160&height=160&seq=6&orientation=squarish'
-  },
-  {
-    id: 3,
-    name: '土鸡蛋',
-    description: '散养土鸡所产，蛋黄饱满，营养丰富',
-    price: '28.8',
-    sales: 2100,
-    stock: 200,
-    image: 'https://readdy.ai/api/search-image?query=Organic%20farm%20fresh%20eggs%2C%20brown%20shells%2C%20arranged%20neatly%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements%2C%20professional%20food%20photography.&width=160&height=160&seq=7&orientation=squarish'
-  },
-  {
-    id: 4,
-    name: '有机红薯',
-    description: '农家种植，口感香甜，富含膳食纤维',
-    price: '15.9',
-    sales: 1560,
-    stock: 400,
-    image: 'https://readdy.ai/api/search-image?query=Organic%20sweet%20potatoes%2C%20freshly%20harvested%2C%20earthy%20brown%20skin%20with%20vibrant%20orange%20flesh%2C%20farm%20fresh%20produce%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements.&width=160&height=160&seq=8&orientation=squarish'
-  },
-  {
-    id: 5,
-    name: '新鲜玉米',
-    description: '当季采摘，颗粒饱满，甜度适中',
-    price: '9.9',
-    sales: 1890,
-    stock: 350,
-    image: 'https://readdy.ai/api/search-image?query=Fresh%20corn%20on%20the%20cob%2C%20bright%20yellow%20kernels%2C%20partially%20peeled%20husk%2C%20farm%20fresh%20produce%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements.&width=160&height=160&seq=9&orientation=squarish'
-  },
-  {
-    id: 6,
-    name: '有机黄瓜',
-    description: '绿色种植，脆嫩多汁，清香可口',
-    price: '7.5',
-    sales: 2300,
-    stock: 600,
-    image: 'https://readdy.ai/api/search-image?query=Organic%20cucumbers%2C%20bright%20green%20color%2C%20smooth%20skin%2C%20farm%20fresh%20produce%2C%20high-detail%20photography%2C%20clean%20background%2C%20natural%20lighting%2C%20showing%20texture%20and%20freshness%2C%20product%20photography%20style%2C%20no%20human%20elements%2C%20professional%20food%20photography.&width=160&height=160&seq=10&orientation=squarish'
+// 加载文本配置
+const loadingText = {
+  contentdown: '上拉显示更多',
+  contentrefresh: '正在加载...',
+  contentnomore: '没有更多数据了'
+};
+
+const loadMoreText = {
+  contentdown: '上拉显示更多',
+  contentrefresh: '正在加载...',
+  contentnomore: '没有更多数据了'
+};
+
+const noMoreText = {
+  contentdown: '上拉显示更多',
+  contentrefresh: '正在加载...',
+  contentnomore: '没有更多数据了'
+};
+
+// 加载商品列表
+const loadProducts = async (reset = false) => {
+  if (loading.value) return;
+  
+  try {
+    loading.value = true;
+    error.value = '';
+    
+    if (reset) {
+      pageParams.page = 0;
+      products.value = [];
+      hasMore.value = true;
+    }
+    
+    const params = {
+      page: pageParams.page,
+      size: pageParams.size
+    };
+    
+    // 获取所有商品，然后在前端按分类过滤
+    const response = await productsApi.getProductList(params);
+    
+    if (response.code === 200 && response.data) {
+      let filteredProducts = response.data.content || [];
+      
+      // 如果选择了特定分类，按分类ID过滤商品
+      if (currentCategory.value > 0) {
+        const categoryId = categories.value[currentCategory.value].id;
+        filteredProducts = filteredProducts.filter(product => product.categoryId === categoryId);
+      }
+      
+      // 创建新的响应对象
+      const filteredResponse = {
+        ...response,
+        data: {
+          ...response.data,
+          content: filteredProducts,
+          totalElements: filteredProducts.length
+        }
+      };
+      
+      handleProductResponse(filteredResponse, reset);
+    } else {
+      throw new Error(response.message || '获取商品数据失败');
+    }
+    
+  } catch (err) {
+    console.error('加载商品失败:', err);
+    error.value = err.message || '加载商品失败，请重试';
+    if (reset) {
+      products.value = [];
+    }
+  } finally {
+    loading.value = false;
   }
-]);
+};
+
+// 处理商品响应数据
+const handleProductResponse = (response, reset) => {
+  if (response.code === 200 && response.data) {
+    const newProducts = response.data.content || [];
+    
+    if (reset) {
+      products.value = newProducts;
+    } else {
+      products.value.push(...newProducts);
+    }
+    
+    // 检查是否还有更多数据
+    const totalElements = response.data.totalElements || 0;
+    const currentTotal = products.value.length;
+    hasMore.value = currentTotal < totalElements;
+    
+    // 如果还有更多数据，增加页码
+    if (hasMore.value) {
+      pageParams.page++;
+    }
+  } else {
+    throw new Error(response.message || '获取商品数据失败');
+  }
+};
 
 // 切换分类
 const changeCategory = (index) => {
+  if (currentCategory.value === index) return;
+  
   currentCategory.value = index;
+  loadProducts(true); // 重置并重新加载
+};
+
+// 加载更多
+const loadMore = () => {
+  if (hasMore.value && !loading.value) {
+    loadProducts(false);
+  }
+};
+
+// 跳转到商品详情
+const goToProductDetail = (productId) => {
+  uni.navigateTo({
+    url: `/pages/productDetail/productDetail?id=${productId}`
+  });
+};
+
+// 添加到购物车
+const addToCart = (product) => {
+  // TODO: 实现添加到购物车的逻辑
+  uni.showToast({
+    title: '已添加到购物车',
+    icon: 'success'
+  });
 };
 
 // 跳转到搜索页面
@@ -146,9 +265,66 @@ const goToSearch = () => {
   });
 };
 
+// 处理图片加载错误
+const handleImageError = (e) => {
+  // 设置默认图片
+  e.target.src = '/static/default-product.png';
+};
+
+// 获取分类列表
+const loadCategories = async () => {
+  try {
+    categoriesLoading.value = true;
+    const response = await categoriesApi.getCategoryList();
+    
+    if (response.code === 200 && response.data) {
+      // 将数据库分类数据转换为前端格式
+      const dbCategories = response.data.map(category => ({
+        id: category.id,
+        name: category.categoryName,
+        description: category.categoryDescription,
+        icon: category.categoryIcon,
+        sortOrder: category.sortOrder
+      }));
+      
+      // 按排序权重排序
+      dbCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+      
+      // 更新分类列表，保留"全部"选项
+      categories.value = [
+        { name: '全部', id: 0 },
+        ...dbCategories
+      ];
+      
+      console.log('分类加载成功:', categories.value);
+    } else {
+      console.error('获取分类失败:', response.message);
+      // 如果API调用失败，使用默认分类
+      loadDefaultCategories();
+    }
+  } catch (error) {
+    console.error('获取分类出错:', error);
+    // 如果网络错误，使用默认分类
+    loadDefaultCategories();
+  } finally {
+    categoriesLoading.value = false;
+  }
+};
+
+// 加载默认分类数据（当API调用失败时使用）
+const loadDefaultCategories = () => {
+  categories.value = [
+    { name: '全部', id: 0 },
+    { name: '农产品', id: 1 },
+    { name: '养生保健', id: 2 },
+    { name: '饲料', id: 3 }
+  ];
+};
+
 // 页面加载时检查登录状态
 onMounted(() => {
-  // 移除登录相关的逻辑
+  loadCategories();
+  loadProducts(true);
 });
 </script>
 <style>
@@ -270,6 +446,19 @@ page {
   margin-top: 10rpx;
 }
 
+/* 分类加载状态 */
+.category-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200rpx;
+}
+
+.category-loading .loading-text {
+  font-size: 28rpx;
+  color: #999;
+}
+
 /* 主分类列表 */
 .main-categories {
   flex: 1;
@@ -296,6 +485,44 @@ page {
 .product-list {
   width: 75%;
   overflow: auto;
+  padding: 20rpx;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40rpx;
+}
+
+/* 错误状态 */
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx;
+}
+
+.error-text {
+  color: #ff4444;
+  font-size: 14px;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.retry-button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 20rpx 40rpx;
+  border-radius: 8rpx;
+  font-size: 14px;
+}
+
+/* 加载更多 */
+.load-more, .no-more {
+  display: flex;
+  justify-content: center;
   padding: 20rpx;
 }
 
@@ -345,13 +572,38 @@ page {
 
 .product-stats {
   display: flex;
+  flex-direction: column;
   font-size: 12px;
   color: #999999;
   margin-bottom: 10rpx;
 }
 
-.product-stats text {
-  margin-right: 20rpx;
+.stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.stock-info, .unit-info {
+  flex: 1;
+}
+
+.product-tags {
+  display: flex;
+  gap: 8rpx;
+}
+
+.hot-tag, .new-tag {
+  background-color: #ff4444;
+  color: white;
+  font-size: 10px;
+  padding: 4rpx 8rpx;
+  border-radius: 4rpx;
+}
+
+.new-tag {
+  background-color: #4CAF50;
 }
 
 .product-bottom {

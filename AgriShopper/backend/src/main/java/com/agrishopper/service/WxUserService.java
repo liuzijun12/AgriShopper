@@ -2,6 +2,7 @@ package com.agrishopper.service;
 
 import com.agrishopper.model.WxUser;
 import java.util.Optional;
+import java.util.Map;
 
 /**
  * 微信用户服务接口
@@ -15,6 +16,29 @@ public interface WxUserService {
      * @return 用户信息
      */
     WxUser wxLogin(String code, WxUser userInfo);
+    
+    /**
+     * 微信用户登录/注册（带解密）
+     * @param code 微信登录code
+     * @param userInfo 用户信息（可选）
+     * @param encryptedData 加密的用户数据
+     * @param iv 加密算法的初始向量
+     * @param signature 数据签名
+     * @return 用户信息
+     */
+    WxUser wxLogin(String code, WxUser userInfo, String encryptedData, String iv, String signature);
+    
+    /**
+     * 微信用户登录/注册（带session解密）
+     * @param code 微信登录code
+     * @param userInfo 用户信息（可选）
+     * @param encryptedData 加密的用户数据
+     * @param iv 加密算法的初始向量
+     * @param signature 数据签名
+     * @param sessionInfo session信息
+     * @return 用户信息
+     */
+    WxUser wxLogin(String code, WxUser userInfo, String encryptedData, String iv, String signature, Map<String, Object> sessionInfo);
     
     /**
      * 根据openid查找用户
@@ -51,4 +75,11 @@ public interface WxUserService {
      * @return 是否存在
      */
     boolean existsByOpenid(String openid);
+    
+    /**
+     * 通过code获取session信息
+     * @param code 微信登录code
+     * @return session信息（包含openid、session_key、unionid）
+     */
+    Map<String, String> getSessionInfo(String code);
 } 

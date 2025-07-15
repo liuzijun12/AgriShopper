@@ -2,7 +2,7 @@
 const ENV = {
   // 开发环境
   development: {
-    baseUrl: 'http://192.168.31.248:8080',
+    baseUrl: 'http://localhost:8080',
     apiPrefix: '/api'
   },
   // 生产环境

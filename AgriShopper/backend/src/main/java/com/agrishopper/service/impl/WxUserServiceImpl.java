@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.agrishopper.utils.WxDataDecryptUtil;
 
 /**
  * 微信用户服务实现类
@@ -24,6 +25,9 @@ public class WxUserServiceImpl implements WxUserService {
     
     @Autowired
     private RestTemplate restTemplate;
+    
+    @Autowired
+    private WxDataDecryptUtil wxDataDecryptUtil;
     
     @Value("${wx.appid}")
     private String appid;
@@ -39,23 +43,100 @@ public class WxUserServiceImpl implements WxUserService {
     
     @Override
     public WxUser wxLogin(String code, WxUser userInfo) {
+        return wxLogin(code, userInfo, null, null, null);
+    }
+    
+    @Override
+    public WxUser wxLogin(String code, WxUser userInfo, String encryptedData, String iv, String signature) {
+        return wxLogin(code, userInfo, encryptedData, iv, signature, null);
+    }
+    
+    @Override
+    public WxUser wxLogin(String code, WxUser userInfo, String encryptedData, String iv, String signature, Map<String, Object> sessionInfo) {
         try {
             System.out.println("开始处理微信登录，code: " + code);
             
-            // 1. 通过code获取openid和session_key
-            Map<String, String> wxResponse = getWxSession(code);
+            // 1. 获取openid和session_key
+            String openid = null;
+            String sessionKey = null;
+            String unionid = null;
             
-            if (wxResponse == null || wxResponse.get("openid") == null) {
+            if (sessionInfo != null) {
+                // 使用传入的session信息
+                openid = (String) sessionInfo.get("openid");
+                sessionKey = (String) sessionInfo.get("session_key");
+                unionid = (String) sessionInfo.get("unionid");
+                System.out.println("使用传入的session信息");
+            } else {
+                // 通过code获取session信息
+                Map<String, String> wxResponse = getWxSession(code);
+                openid = wxResponse.get("openid");
+                sessionKey = wxResponse.get("session_key");
+                unionid = wxResponse.get("unionid");
+                System.out.println("通过code获取session信息");
+            }
+            
+            if (openid == null) {
                 throw new RuntimeException("获取微信用户信息失败");
             }
             
-            String openid = wxResponse.get("openid");
-            String unionid = wxResponse.get("unionid");
-            
             System.out.println("获取到openid: " + openid);
             System.out.println("获取到unionid: " + unionid);
+            System.out.println("获取到session_key: " + (sessionKey != null ? sessionKey.substring(0, 10) + "..." : "null"));
             
-            // 2. 查找或创建用户
+            // 2. 如果有加密数据，尝试解密获取完整用户信息
+            WxUser decryptedUserInfo = null;
+            if (encryptedData != null && iv != null && sessionKey != null) {
+                try {
+                    System.out.println("=== 开始解密用户数据 ===");
+                    System.out.println("encryptedData: " + (encryptedData != null ? encryptedData.substring(0, Math.min(50, encryptedData.length())) + "..." : "null"));
+                    System.out.println("iv: " + iv);
+                    System.out.println("sessionKey: " + (sessionKey != null ? sessionKey.substring(0, Math.min(20, sessionKey.length())) + "..." : "null"));
+                    
+                    // 验证签名（如果有rawData）
+                    if (signature != null && userInfo != null) {
+                        // 这里需要前端传递rawData，暂时跳过签名验证
+                        System.out.println("跳过签名验证");
+                    }
+                    
+                    // 解密用户数据
+                    Map<String, Object> decryptedData = wxDataDecryptUtil.decryptUserData(encryptedData, iv, sessionKey);
+                    
+                    if (decryptedData != null) {
+                        decryptedUserInfo = new WxUser();
+                        decryptedUserInfo.setNickname((String) decryptedData.get("nickName"));
+                        decryptedUserInfo.setAvatar((String) decryptedData.get("avatarUrl"));
+                        
+                        Object genderObj = decryptedData.get("gender");
+                        if (genderObj instanceof Integer) {
+                            decryptedUserInfo.setGender((Integer) genderObj);
+                        } else if (genderObj instanceof Number) {
+                            decryptedUserInfo.setGender(((Number) genderObj).intValue());
+                        }
+                        
+                        decryptedUserInfo.setCountry((String) decryptedData.get("country"));
+                        decryptedUserInfo.setProvince((String) decryptedData.get("province"));
+                        decryptedUserInfo.setCity((String) decryptedData.get("city"));
+                        
+                        System.out.println("=== 解密成功，用户信息已提取 ===");
+                        System.out.println("解密后的昵称: " + decryptedUserInfo.getNickname());
+                        System.out.println("解密后的性别: " + decryptedUserInfo.getGender());
+                        System.out.println("解密后的地区: " + decryptedUserInfo.getCountry() + " " + decryptedUserInfo.getProvince() + " " + decryptedUserInfo.getCity());
+                        System.out.println("解密后的头像: " + decryptedUserInfo.getAvatar());
+                    }
+                } catch (Exception e) {
+                    System.out.println("=== 解密失败，将使用原始用户信息 ===");
+                    System.out.println("解密错误: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("=== 缺少解密参数，跳过解密 ===");
+                System.out.println("encryptedData: " + (encryptedData != null ? "有" : "无"));
+                System.out.println("iv: " + (iv != null ? "有" : "无"));
+                System.out.println("sessionKey: " + (sessionKey != null ? "有" : "无"));
+            }
+            
+            // 3. 查找或创建用户
             Optional<WxUser> existingUser = wxUserRepository.findByOpenid(openid);
             WxUser wxUser;
             
@@ -63,21 +144,32 @@ public class WxUserServiceImpl implements WxUserService {
                 // 用户已存在，更新信息
                 wxUser = existingUser.get();
                 System.out.println("用户已存在，ID: " + wxUser.getId());
-                if (userInfo != null) {
+                
+                // 优先使用解密后的信息，其次使用原始信息
+                if (decryptedUserInfo != null) {
+                    updateUserInfo(wxUser, decryptedUserInfo);
+                    System.out.println("使用解密后的信息更新用户");
+                } else if (userInfo != null) {
                     updateUserInfo(wxUser, userInfo);
+                    System.out.println("使用原始信息更新用户");
                 }
             } else {
                 // 新用户，创建记录
                 wxUser = new WxUser();
                 wxUser.setOpenid(openid);
                 wxUser.setUnionid(unionid);
-                if (userInfo != null) {
+                
+                // 优先使用解密后的信息，其次使用原始信息
+                if (decryptedUserInfo != null) {
+                    updateUserInfo(wxUser, decryptedUserInfo);
+                    System.out.println("使用解密后的信息创建新用户");
+                } else if (userInfo != null) {
                     updateUserInfo(wxUser, userInfo);
+                    System.out.println("使用原始信息创建新用户");
                 }
-                System.out.println("创建新用户");
             }
             
-            // 3. 保存用户信息
+            // 4. 保存用户信息
             WxUser savedUser = wxUserRepository.save(wxUser);
             System.out.println("用户保存成功，ID: " + savedUser.getId());
             
@@ -118,6 +210,40 @@ public class WxUserServiceImpl implements WxUserService {
     @Override
     public boolean existsByOpenid(String openid) {
         return wxUserRepository.existsByOpenid(openid);
+    }
+    
+    @Override
+    public Map<String, String> getSessionInfo(String code) {
+        try {
+            System.out.println("开始通过code获取session信息，code: " + code);
+            
+            // 调用微信接口获取session信息
+            Map<String, String> wxResponse = getWxSession(code);
+            
+            if (wxResponse == null || wxResponse.get("openid") == null) {
+                throw new RuntimeException("获取微信session信息失败");
+            }
+            
+            String openid = wxResponse.get("openid");
+            String sessionKey = wxResponse.get("session_key");
+            String unionid = wxResponse.get("unionid");
+            
+            System.out.println("获取到openid: " + openid);
+            System.out.println("获取到session_key: " + (sessionKey != null ? sessionKey.substring(0, 10) + "..." : "null"));
+            System.out.println("获取到unionid: " + unionid);
+            
+            // 返回session信息（包含完整的session_key用于解密）
+            Map<String, String> result = new HashMap<>();
+            result.put("openid", openid);
+            result.put("unionid", unionid != null ? unionid : "");
+            result.put("session_key", sessionKey != null ? sessionKey : "");
+            
+            return result;
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("获取session信息失败: " + e.getMessage());
+        }
     }
     
     /**

@@ -17,12 +17,17 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: true
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
 
 # 文件上传配置
 file:
   upload:
-    path: uploads/
-    url-prefix: /uploads/
+    path: static/uploads/
+    url-prefix: /static/uploads/
 
 logging:
   level:
@@ -34,4 +39,9 @@ wx:
   appid: wx8c6d69b835a8a621
   secret: 00922f26bdf3fdc9517b3fa865f10c05
   login-url: https://api.weixin.qq.com/sns/jscode2session  # 微信官方登录接口
-  grant-type: authorization_code                            # 固定值 
+  grant-type: authorization_code                            # 固定值
+
+# JWT配置
+jwt:
+  secret: agrishopper-jwt-secret-key-2024-very-long-and-secure-key-for-hmac-sha256-algorithm
+  expiration: 3600  # 1小时 
