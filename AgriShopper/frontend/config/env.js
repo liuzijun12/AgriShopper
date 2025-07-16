@@ -1,8 +1,13 @@
 // 环境配置
 const ENV = {
-  // 开发环境
+  // 开发环境 - 本地调试
   development: {
     baseUrl: 'http://localhost:8080',
+    apiPrefix: '/api'
+  },
+  // 真机调试环境 - 使用电脑IP地址
+  mobile: {
+    baseUrl: 'http://192.168.31.248:8080', // 你的电脑IP地址
     apiPrefix: '/api'
   },
   // 生产环境
@@ -24,8 +29,10 @@ function getCurrentEnv() {
   // #endif
   
   // #ifndef MP-WEIXIN
-  // 其他环境
-  return 'development'
+  // 其他环境 - 可以根据需要手动切换
+  // return 'development'  // 本地调试
+  // return 'mobile'  // 真机调试
+  return 'mobile'
   // #endif
 }
 

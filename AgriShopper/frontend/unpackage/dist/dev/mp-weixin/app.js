@@ -17,6 +17,7 @@ if (!Math) {
   "./pages/shoppingCart/shoppingCart.js";
   "./pages/my/my.js";
   "./pages/searchProduct/searchProduct.js";
+  "./pages/productDetail/productDetail.js";
 }
 const _sfc_main = {
   globalData: {

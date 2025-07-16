@@ -137,19 +137,20 @@ const _sfc_main = {
       if (url.startsWith("http://") || url.startsWith("https://")) {
         return url;
       }
+      const config = config_env.env.getConfig();
       if (url.startsWith("icon/")) {
-        return "http://localhost:8080/" + url;
+        return config.baseUrl + "/" + url;
       }
       if (url.startsWith("tabbar/")) {
-        return "http://localhost:8080/" + url;
+        return config.baseUrl + "/" + url;
       }
       if (url.startsWith("/static/uploads/")) {
-        return "http://localhost:8080" + url;
+        return config.baseUrl + url;
       }
       if (!url.startsWith("/")) {
-        return "http://localhost:8080/static/uploads/" + url;
+        return config.baseUrl + "/static/uploads/" + url;
       }
-      return "http://localhost:8080" + url;
+      return config.baseUrl + url;
     };
     const loadDefaultProducts = () => {
       products.value = [
@@ -189,9 +190,8 @@ const _sfc_main = {
       });
     };
     const addToCart = (product) => {
-      common_vendor.index.showToast({
-        title: "已添加到购物车",
-        icon: "success"
+      common_vendor.index.navigateTo({
+        url: `/pages/productDetail/productDetail?id=${product.id}`
       });
     };
     const handleImageError = (e) => {
@@ -241,7 +241,7 @@ const _sfc_main = {
           }, product.isNewProduct ? {} : {}, {
             f: common_vendor.t(product.description),
             g: common_vendor.t(product.price),
-            h: common_vendor.o(($event) => addToCart(), product.id || index),
+            h: common_vendor.o(($event) => addToCart(product), product.id || index),
             i: product.id || index,
             j: common_vendor.o(($event) => goToProductDetail(product), product.id || index)
           });

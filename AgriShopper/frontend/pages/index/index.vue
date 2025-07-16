@@ -280,28 +280,31 @@ const getImageUrl = (url) => {
     return url;
   }
   
+  // 使用环境配置中的baseUrl
+  const config = env.getConfig();
+  
   // 如果是icon图片，直接拼接后端地址
   if (url.startsWith('icon/')) {
-    return 'http://localhost:8080/' + url;
+    return config.baseUrl + '/' + url;
   }
   
   // 如果是tabbar图片，直接拼接后端地址
   if (url.startsWith('tabbar/')) {
-    return 'http://localhost:8080/' + url;
+    return config.baseUrl + '/' + url;
   }
   
   // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
   if (url.startsWith('/static/uploads/')) {
-    return 'http://localhost:8080' + url;
+    return config.baseUrl + url;
   }
   
   // 如果是文件名，拼接完整的静态资源路径
   if (!url.startsWith('/')) {
-    return 'http://localhost:8080/static/uploads/' + url;
+    return config.baseUrl + '/static/uploads/' + url;
   }
   
   // 其他情况，拼接后端地址和路径
-  return 'http://localhost:8080' + url;
+  return config.baseUrl + url;
 };
 
 // 加载默认商品数据（当API调用失败时使用）
@@ -345,12 +348,11 @@ const goToProductDetail = (product) => {
   });
 };
 
-// 添加到购物车
+// 购买按钮点击处理
 const addToCart = (product) => {
-  // TODO: 实现添加到购物车的逻辑
-  uni.showToast({
-    title: '已添加到购物车',
-    icon: 'success'
+  // 跳转到商品详情页面
+  uni.navigateTo({
+    url: `/pages/productDetail/productDetail?id=${product.id}`
   });
 };
 
@@ -636,10 +638,33 @@ onMounted(() => {
   font-size: 26rpx;
   font-weight: 500;
   box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
+
 .buy-btn:active {
   background: #388e3c;
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 4rpx rgba(76,175,80,0.12);
+}
+
+.buy-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.buy-btn:active::before {
+  width: 100rpx;
+  height: 100rpx;
 }
 
 /* 加载状态样式 */

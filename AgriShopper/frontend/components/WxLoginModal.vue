@@ -70,8 +70,9 @@ export default {
 			if (path.startsWith('http://') || path.startsWith('https://')) {
 				return path;
 			}
-			// 如果是相对路径，拼接后端地址
-			return `http://localhost:8080/${path}`;
+			// 使用环境配置中的baseUrl
+			const config = env.getConfig();
+			return `${config.baseUrl}/${path}`;
 		},
 		
 		// 处理遮罩点击

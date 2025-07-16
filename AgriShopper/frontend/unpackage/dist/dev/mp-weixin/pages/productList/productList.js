@@ -118,9 +118,8 @@ const _sfc_main = {
       });
     };
     const addToCart = (product) => {
-      common_vendor.index.showToast({
-        title: "已添加到购物车",
-        icon: "success"
+      common_vendor.index.navigateTo({
+        url: `/pages/productDetail/productDetail?id=${product.id}`
       });
     };
     const goToSearch = () => {
@@ -148,13 +147,13 @@ const _sfc_main = {
             { name: "全部", id: 0 },
             ...dbCategories
           ];
-          common_vendor.index.__f__("log", "at pages/productList/productList.vue:299", "分类加载成功:", categories.value);
+          common_vendor.index.__f__("log", "at pages/productList/productList.vue:298", "分类加载成功:", categories.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/productList/productList.vue:301", "获取分类失败:", response.message);
+          common_vendor.index.__f__("error", "at pages/productList/productList.vue:300", "获取分类失败:", response.message);
           loadDefaultCategories();
         }
       } catch (error2) {
-        common_vendor.index.__f__("error", "at pages/productList/productList.vue:306", "获取分类出错:", error2);
+        common_vendor.index.__f__("error", "at pages/productList/productList.vue:305", "获取分类出错:", error2);
         loadDefaultCategories();
       } finally {
         categoriesLoading.value = false;
@@ -216,7 +215,7 @@ const _sfc_main = {
           }, product.isNewProduct ? {} : {}, {
             h: common_vendor.t(product.productUnit || "件"),
             i: common_vendor.t(product.productPrice),
-            j: common_vendor.o(($event) => addToCart(), product.id),
+            j: common_vendor.o(($event) => addToCart(product), product.id),
             k: product.id,
             l: common_vendor.o(($event) => goToProductDetail(product.id), product.id)
           });

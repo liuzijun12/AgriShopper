@@ -13,7 +13,8 @@
     "pages/messages/costomerServiceChat/costomerServiceChat",
     "pages/shoppingCart/shoppingCart",
     "pages/my/my",
-    "pages/searchProduct/searchProduct"
+    "pages/searchProduct/searchProduct",
+    "pages/productDetail/productDetail"
   ],
   "window": {
     "navigationBarTextStyle": "black",

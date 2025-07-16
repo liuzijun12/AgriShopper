@@ -249,12 +249,11 @@ const goToProductDetail = (productId) => {
   });
 };
 
-// 添加到购物车
+// 购买按钮点击处理
 const addToCart = (product) => {
-  // TODO: 实现添加到购物车的逻辑
-  uni.showToast({
-    title: '已添加到购物车',
-    icon: 'success'
+  // 跳转到商品详情页面
+  uni.navigateTo({
+    url: `/pages/productDetail/productDetail?id=${product.id}`
   });
 };
 
@@ -620,7 +619,7 @@ page {
 }
 
 .buy-button {
-  background-color: #4CAF50;
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
   color: white;
   font-size: 14px;
   padding: 10rpx 30rpx;
@@ -628,6 +627,34 @@ page {
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.buy-button:active {
+  background: #388e3c;
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 4rpx rgba(76,175,80,0.12);
+}
+
+.buy-button::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+
+.buy-button:active::before {
+  width: 100rpx;
+  height: 100rpx;
 }
 
 

@@ -21,8 +21,22 @@
       <text class="promotion-text">跨店每满300减30，7月31日24点结束</text>
     </view>
 
+    <!-- 加载状态 -->
+    <view v-if="loading" class="loading-container">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在加载购物车...</text>
+    </view>
+
+    <!-- 空购物车状态 -->
+    <view v-else-if="cartItems.length === 0" class="empty-cart">
+      <image class="empty-icon" src="/static/shoppingCart/empty-cart.png" mode="aspectFit"></image>
+      <text class="empty-text">您的购物车里面空空如也</text>
+      <text class="empty-subtext">快去挑选心仪的产品吧</text>
+      <button class="go-shopping-btn" @click="goShopping">去购物</button>
+    </view>
+
     <!-- 商品分组 -->
-    <scroll-view scroll-y class="cart-list">
+    <scroll-view v-else scroll-y class="cart-list">
       <!-- 店铺分组1 -->
       <view class="shop-group">
         <view class="shop-header">
@@ -34,49 +48,57 @@
         </view>
 
         <!-- 商品项 -->
-        <view class="cart-item" v-for="(item, index) in farmProducts" :key="index">
-          <checkbox-group @change="(e) => handleItemSelect(e, item)">
-            <checkbox :checked="item.selected" color="#e93b3d" />
-          </checkbox-group>
+        <view class="cart-item-wrapper" v-for="(item, index) in cartItems" :key="item.id">
+          <view class="cart-item">
+            <checkbox-group @change="(e) => handleItemSelect(e, item)">
+              <checkbox :checked="item.selected" color="#e93b3d" />
+            </checkbox-group>
 
-          <view class="item-icon">
-            <text class="icon">{{ getProductIcon(item.name) }}</text>
-          </view>
-          
-          <view class="item-info">
-            <view class="item-header">
-              <text class="item-name">{{ item.name }}</text>
-              <text v-if="item.tag" class="item-tag" :style="{backgroundColor: tagColors[item.tag]}">{{ item.tag }}</text>
-            </view>
-            <text class="item-spec">{{ item.specification }}</text>
-            
-            <view class="price-row">
-              <text class="item-price">¥{{ item.price.toFixed(2) }}</text>
-              <text v-if="item.originalPrice" class="original-price">¥{{ item.originalPrice.toFixed(2) }}</text>
+            <view class="item-icon">
+              <image v-if="item.image" :src="item.image" mode="aspectFill" class="item-image" />
+              <text v-else class="icon">{{ getProductIcon(item.name) }}</text>
             </view>
             
-            <view class="item-footer">
-              <text class="stock" v-if="item.stock < 10">仅剩{{ item.stock }}件</text>
-              <view class="quantity-control">
-                <text class="quantity-btn" @click="decreaseQuantity(item)">-</text>
-                <input 
-                  type="number" 
-                  v-model.number="item.quantity" 
-                  class="quantity-input"
-                  @blur="validateQuantity(item)"
-                  min="1"
-                  max="99"
-                />
-                <text class="quantity-btn" @click="increaseQuantity(item)">+</text>
+            <view class="item-info">
+              <view class="item-header">
+                <text class="item-name">{{ item.name }}</text>
+                <text v-if="item.tag" class="item-tag" :style="{backgroundColor: tagColors[item.tag]}">{{ item.tag }}</text>
+              </view>
+              <text class="item-spec">{{ item.specification }}</text>
+              
+              <view class="price-row">
+                <text class="item-price">¥{{ item.price.toFixed(2) }}</text>
+                <text v-if="item.originalPrice && item.originalPrice > item.price" class="original-price">¥{{ item.originalPrice.toFixed(2) }}</text>
+              </view>
+              
+              <view class="item-footer">
+                <text class="stock" v-if="item.stock < 10">仅剩{{ item.stock }}件</text>
+                <view class="quantity-control">
+                  <text class="quantity-btn" @click="decreaseQuantity(item)">-</text>
+                  <input 
+                    type="number" 
+                    v-model.number="item.quantity" 
+                    class="quantity-input"
+                    @blur="validateQuantity(item)"
+                    min="1"
+                    max="99"
+                  />
+                  <text class="quantity-btn" @click="increaseQuantity(item)">+</text>
+                </view>
               </view>
             </view>
+          </view>
+          
+          <!-- 右滑删除按钮 -->
+          <view class="delete-btn" @click="deleteCartItem(item)">
+            <text class="delete-text">删除</text>
           </view>
         </view>
       </view>
     </scroll-view>
 
     <!-- 底部结算栏 -->
-    <view class="cart-footer">
+    <view v-if="!loading && cartItems.length > 0" class="cart-footer">
       <view class="select-all">
         <checkbox-group @change="handleSelectAll">
           <checkbox :checked="isAllSelected" color="#e93b3d" />
@@ -107,11 +129,14 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import cartApi from '../../api/cart.js'
 
-// 示例数据
+// 响应式数据
 const currentAddress = ref('河北张家口市')
 const showPromotionTip = ref(true)
+const loading = ref(false)
+const cartItems = ref([])
 
 const tagColors = {
   '热卖': '#ffeeee',
@@ -120,89 +145,59 @@ const tagColors = {
   '促销': '#ffebee'
 }
 
-const farmProducts = ref([
-  {
-    id: 1,
-    name: '有机西红柿',
-    price: 5.99,
-    originalPrice: 7.99,
-    quantity: 1,
-    selected: false,
-    specification: '500g/份',
-    stock: 8,
-    tag: '热卖',
-    shopId: 1
-  },
-  {
-    id: 2,
-    name: '农家土鸡蛋',
-    price: 15.8,
-    quantity: 2,
-    selected: false,
-    specification: '30枚/盒',
-    stock: 15,
-    tag: '特惠',
-    shopId: 1
-  },
-  {
-    id: 3,
-    name: '新鲜菠菜',
-    price: 3.5,
-    quantity: 1,
-    selected: false,
-    specification: '250g/捆',
-    stock: 20,
-    tag: '新品',
-    shopId: 1
-  },
-  {
-    id: 4,
-    name: '优质西红柿',
-    price: 4.5,
-    originalPrice: 6.0,
-    quantity: 1,
-    selected: false,
-    specification: '400g/份',
-    stock: 12,
-    tag: '促销',
-    shopId: 1
-  },
-  {
-    id: 5,
-    name: '新鲜土豆',
-    price: 2.8,
-    quantity: 3,
-    selected: false,
-    specification: '1kg/袋',
-    stock: 25,
-    tag: '热卖',
-    shopId: 1
-  },
-  {
-    id: 6,
-    name: '有机白菜',
-    price: 3.2,
-    originalPrice: 4.0,
-    quantity: 1,
-    selected: false,
-    specification: '800g/颗',
-    stock: 18,
-    tag: '特惠',
-    shopId: 1
-  },
-  {
-    id: 7,
-    name: '红富士苹果',
-    price: 8.8,
-    originalPrice: 10.0,
-    quantity: 1,
-    selected: false,
-    specification: '1kg/袋',
-    stock: 15,
-    tag: '促销',
-    shopId: 1
+// 加载购物车数据
+const loadCartData = async () => {
+  try {
+    loading.value = true
+    const response = await cartApi.getCartList()
+    
+    if (response.code === 200 && response.data) {
+      // 转换后端数据为前端格式
+      cartItems.value = response.data.map(item => ({
+        id: item.id,
+        productId: item.productId,
+        name: item.product?.productName || '未知商品',
+        price: parseFloat(item.unitPrice) || 0,
+        originalPrice: parseFloat(item.product?.costPrice) || 0,
+        quantity: item.quantity || 1,
+        selected: item.isSelected || false,
+        specification: item.product?.productSpec || '默认规格',
+        stock: item.product?.stockQuantity || 0,
+        tag: getProductTag(item.product),
+        shopId: 1, // 默认店铺ID
+        image: item.product?.mainImageUrl || '/static/default-product.png'
+      }))
+    } else {
+      console.error('获取购物车数据失败:', response.message)
+      uni.showToast({
+        title: response.message || '获取购物车数据失败',
+        icon: 'error'
+      })
+    }
+  } catch (error) {
+    console.error('加载购物车数据失败:', error)
+    uni.showToast({
+      title: '加载购物车数据失败',
+      icon: 'error'
+    })
+  } finally {
+    loading.value = false
   }
-])
+}
+
+// 获取商品标签
+const getProductTag = (product) => {
+  if (!product) return ''
+  if (product.isHotProduct) return '热卖'
+  if (product.isNewProduct) return '新品'
+  if (product.costPrice && product.costPrice > product.productPrice) return '特惠'
+  return '促销'
+}
+
+// 页面加载时获取数据
+onMounted(() => {
+  loadCartData()
+})
 
 // 搜索方法
 const goToSearch = () => {
@@ -227,20 +222,20 @@ const getProductIcon = (name) => {
 
 // 计算节省金额
 const totalSaved = computed(() => {
-  return farmProducts.value
-    .filter(item => item.selected && item.originalPrice)
+  return cartItems.value
+    .filter(item => item.selected && item.originalPrice && item.originalPrice > item.price)
     .reduce((sum, item) => sum + (item.originalPrice - item.price) * item.quantity, 0)
 })
 
 // 店铺全选逻辑
 const isShopAllSelected = (shopId) => {
-  const shopItems = farmProducts.value.filter(item => item.shopId === shopId)
+  const shopItems = cartItems.value.filter(item => item.shopId === shopId)
   return shopItems.length > 0 && shopItems.every(item => item.selected)
 }
 
 const toggleShopSelect = (shopId) => {
   const shouldSelect = !isShopAllSelected(shopId)
-  farmProducts.value = farmProducts.value.map(item => {
+  cartItems.value = cartItems.value.map(item => {
     if (item.shopId === shopId) {
       return {...item, selected: shouldSelect}
     }
@@ -251,59 +246,146 @@ const toggleShopSelect = (shopId) => {
 // 商品选择
 const handleItemSelect = (e, item) => {
   item.selected = e.detail.value.length > 0
+  // 更新后端选中状态
+  updateItemSelectedStatus(item)
 }
 
 // 是否全选
 const isAllSelected = computed(() => {
-  return farmProducts.value.length > 0 && farmProducts.value.every(item => item.selected)
+  return cartItems.value.length > 0 && cartItems.value.every(item => item.selected)
 })
 
 // 全选/取消全选
 const handleSelectAll = (e) => {
   const selected = e.detail.value.length > 0
-  farmProducts.value = farmProducts.value.map(item => ({
+  cartItems.value = cartItems.value.map(item => ({
     ...item,
     selected
   }))
+  // 更新后端全选状态
+  updateAllSelectedStatus(selected)
 }
 
 // 减少数量
-const decreaseQuantity = (item) => {
+const decreaseQuantity = async (item) => {
   if (item.quantity > 1) {
     item.quantity--
+    await updateItemQuantity(item)
   }
 }
 
 // 增加数量
-const increaseQuantity = (item) => {
+const increaseQuantity = async (item) => {
   if (item.quantity < 99) {
     item.quantity++
+    await updateItemQuantity(item)
   }
 }
 
 // 验证数量输入
-const validateQuantity = (item) => {
+const validateQuantity = async (item) => {
   if (isNaN(item.quantity)) {
     item.quantity = 1
   }
   item.quantity = Math.max(1, Math.min(99, Math.floor(item.quantity)))
+  await updateItemQuantity(item)
 }
 
 // 计算总价
 const totalPrice = computed(() => {
-  return farmProducts.value
+  return cartItems.value
     .filter(item => item.selected)
     .reduce((sum, item) => sum + item.price * item.quantity, 0)
 })
 
 // 计算选中商品数量
 const selectedCount = computed(() => {
-  return farmProducts.value.filter(item => item.selected).length
+  return cartItems.value.filter(item => item.selected).length
 })
+
+// 更新商品数量
+const updateItemQuantity = async (item) => {
+  try {
+    await cartApi.updateQuantity(item.productId, item.quantity)
+  } catch (error) {
+    console.error('更新商品数量失败:', error)
+    uni.showToast({
+      title: '更新数量失败',
+      icon: 'error'
+    })
+  }
+}
+
+// 更新商品选中状态
+const updateItemSelectedStatus = async (item) => {
+  try {
+    await cartApi.updateSelectedStatus(item.id, item.selected)
+  } catch (error) {
+    console.error('更新选中状态失败:', error)
+    uni.showToast({
+      title: '更新选中状态失败',
+      icon: 'error'
+    })
+  }
+}
+
+// 更新全选状态
+const updateAllSelectedStatus = async (selected) => {
+  try {
+    await cartApi.selectAll(selected)
+  } catch (error) {
+    console.error('更新全选状态失败:', error)
+    uni.showToast({
+      title: '更新全选状态失败',
+      icon: 'error'
+    })
+  }
+}
+
+// 去购物
+const goShopping = () => {
+  uni.switchTab({
+    url: '/pages/index/index'
+  })
+}
+
+// 删除购物车项
+const deleteCartItem = async (item) => {
+  try {
+    uni.showModal({
+      title: '确认删除',
+      content: `确定要删除"${item.name}"吗？`,
+      confirmText: '删除',
+      confirmColor: '#e93b3d',
+      success: async (res) => {
+        if (res.confirm) {
+          await cartApi.softDeleteCartItem(item.id)
+          
+          // 从本地列表中移除
+          const index = cartItems.value.findIndex(cartItem => cartItem.id === item.id)
+          if (index > -1) {
+            cartItems.value.splice(index, 1)
+          }
+          
+          uni.showToast({
+            title: '删除成功',
+            icon: 'success'
+          })
+        }
+      }
+    })
+  } catch (error) {
+    console.error('删除购物车项失败:', error)
+    uni.showToast({
+      title: error.message || '删除失败',
+      icon: 'error'
+    })
+  }
+}
 
 // 结算操作
 const checkout = () => {
-  const selectedItems = farmProducts.value.filter(item => item.selected)
+  const selectedItems = cartItems.value.filter(item => item.selected)
   if (selectedItems.length === 0) {
     uni.showToast({
       title: '请选择要结算的商品',
@@ -324,6 +406,73 @@ const checkout = () => {
   font-size: 32rpx;
   background-color: #f7f7f7;
   padding-bottom: 120rpx;
+}
+
+/* 加载状态 */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 0;
+}
+
+.loading-spinner {
+  width: 60rpx;
+  height: 60rpx;
+  border: 4rpx solid #f3f3f3;
+  border-top: 4rpx solid #e93b3d;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #999;
+  font-size: 28rpx;
+}
+
+/* 空购物车状态 */
+.empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100rpx 0;
+}
+
+.empty-icon {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 30rpx;
+}
+
+.empty-text {
+  font-size: 36rpx;
+  color: #333;
+  margin-bottom: 10rpx;
+}
+
+.empty-subtext {
+  font-size: 28rpx;
+  color: #999;
+  margin-bottom: 40rpx;
+}
+
+.go-shopping-btn {
+  width: 300rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  background-color: #e93b3d;
+  color: white;
+  border-radius: 40rpx;
+  font-size: 32rpx;
+  font-weight: bold;
 }
 
 /* 搜索栏样式 */
@@ -405,6 +554,10 @@ const checkout = () => {
   border-radius: 15rpx;
   overflow: hidden;
 }
+
+.shop-group .cart-item-wrapper:last-child {
+  margin-bottom: 0;
+}
 .shop-header {
   display: flex;
   align-items: center;
@@ -425,11 +578,45 @@ const checkout = () => {
   font-size: 26rpx;
 }
 
+/* 商品项包装器 */
+.cart-item-wrapper {
+  position: relative;
+  background-color: #fff;
+  margin-bottom: 2rpx;
+}
+
 /* 商品项 */
 .cart-item {
   display: flex;
   padding: 25rpx;
   align-items: center;
+  background-color: #fff;
+  transition: transform 0.3s ease;
+}
+
+/* 删除按钮 */
+.delete-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 120rpx;
+  background-color: #e93b3d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+
+.cart-item-wrapper:hover .delete-btn {
+  transform: translateX(0);
+}
+
+.delete-text {
+  color: white;
+  font-size: 28rpx;
+  font-weight: bold;
 }
 .item-icon {
   width: 180rpx;
@@ -441,6 +628,13 @@ const checkout = () => {
   align-items: center;
   justify-content: center;
   font-size: 80rpx;
+  overflow: hidden;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 10rpx;
 }
 .item-info {
   flex: 1;

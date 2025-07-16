@@ -257,10 +257,30 @@
   font-size: 26rpx;
   font-weight: 500;
   box-shadow: 0 2rpx 8rpx rgba(76,175,80,0.08);
-  transition: background 0.2s;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 .buy-btn:active {
   background: #388e3c;
+  transform: scale(0.95);
+  box-shadow: 0 1rpx 4rpx rgba(76,175,80,0.12);
+}
+.buy-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
+}
+.buy-btn:active::before {
+  width: 100rpx;
+  height: 100rpx;
 }
 
 /* 加载状态样式 */
