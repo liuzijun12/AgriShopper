@@ -7,6 +7,13 @@ if (!Math) {
   "./pages/wxLogin/wxLogin.js";
   "./pages/productList/productList.js";
   "./pages/messages/messages.js";
+  "./pages/messages/systemNotification/accountSecurity.js";
+  "./pages/messages/systemNotification/platformOperation.js";
+  "./pages/messages/systemNotification/ruleUpdate.js";
+  "./pages/messages/systemNotification/globalAnnouncement.js";
+  "./pages/messages/orderDetail/orderDetail.js";
+  "./pages/messages/activityDetail/activityDetail.js";
+  "./pages/messages/costomerServiceChat/costomerServiceChat.js";
   "./pages/shoppingCart/shoppingCart.js";
   "./pages/my/my.js";
   "./pages/searchProduct/searchProduct.js";

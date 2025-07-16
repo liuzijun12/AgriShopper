@@ -11,7 +11,7 @@
 			"path": "pages/wxLogin/wxLogin",
 			"style": {
 				"navigationBarTitleText": "微信登录",
-				"enablePullDownRefresh": false,
+				"enablePullDownDownRefresh": false,
 				"navigationStyle": "custom"
 			}
 		},
@@ -23,13 +23,55 @@
 			}
 		},
 		{
-			"path": "pages/messages/messages",
-			"style": {
+			"path": "pages/messages/messages",  
+            "style": {
 				"navigationBarTitleText": "消息",
 				"enablePullDownRefresh": true,
 				"backgroundColor": "#f5f5f5"
 			}
 		},
+		{
+		 	"path": "pages/messages/systemNotification/accountSecurity", 
+		 	"style": {
+		 		"navigationBarTitleText": "账户安全详情"
+		 	}
+		},
+		{
+		 	"path": "pages/messages/systemNotification/platformOperation", 
+		 	"style": {
+		 		"navigationBarTitleText": "支付系统维护通知"
+		 	}
+		}, 
+		{
+		      "path": "pages/messages/systemNotification/ruleUpdate",  
+		      "style": {
+		        "navigationBarTitleText": "规则更新详情"
+		      }
+		},
+		{
+			"path": "pages/messages/systemNotification/globalAnnouncement", 
+			"style": {
+				"navigationBarTitleText": "公告详情"
+			  }
+		},
+		{
+		      "path": "pages/messages/orderDetail/orderDetail",
+		      "style": {
+		        "navigationBarTitleText": "订单详情"
+		      }
+		},
+		{
+		      "path": "pages/messages/activityDetail/activityDetail",
+		      "style": {
+		        "navigationBarTitleText": "活动详情"
+		      }
+		},
+        {
+             "path": "pages/messages/costomerServiceChat/costomerServiceChat",
+             "style": {
+             "navigationBarTitleText": "客服会话"
+              }
+        },
 		{
 			"path": "pages/shoppingCart/shoppingCart",
 			"style": {
@@ -80,10 +122,9 @@
 				"text": "商品",
 				"iconPath": "static/tabbar/list.png",
 				"selectedIconPath": "static/tabbar/list-active.png"
-			}
-			,
+			},
 			{
-				"pagePath": "pages/messages/messages",
+				"pagePath": "pages/messages/messages", 
 				"text": "消息",
 				"iconPath": "static/tabbar/message.png",
 				"selectedIconPath": "static/tabbar/message-active.png"

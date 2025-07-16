@@ -4,6 +4,13 @@
     "pages/wxLogin/wxLogin",
     "pages/productList/productList",
     "pages/messages/messages",
+    "pages/messages/systemNotification/accountSecurity",
+    "pages/messages/systemNotification/platformOperation",
+    "pages/messages/systemNotification/ruleUpdate",
+    "pages/messages/systemNotification/globalAnnouncement",
+    "pages/messages/orderDetail/orderDetail",
+    "pages/messages/activityDetail/activityDetail",
+    "pages/messages/costomerServiceChat/costomerServiceChat",
     "pages/shoppingCart/shoppingCart",
     "pages/my/my",
     "pages/searchProduct/searchProduct"
