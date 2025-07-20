@@ -34,8 +34,7 @@
 ```
 frontend/
 ├── pages/
-│   └── wxLogin/
-│       └── wxLogin.vue      # 登录页面
+
 ├── utils/
 │   └── wxLogin.js          # 登录工具类
 ├── store.js                 # 状态管理
@@ -45,8 +44,8 @@ frontend/
 
 ## 核心组件
 
-### 1. 登录页面 (pages/wxLogin/wxLogin.vue)
-- 美观的UI界面
+### 1. 登录弹窗组件 (components/WxLoginModal.vue)
+- 美观的弹窗UI界面
 - 完整的登录逻辑
 - 错误处理和重试机制
 
@@ -84,10 +83,9 @@ frontend/
 ### 1. 页面配置 (pages.json)
 ```json
 {
-  "path": "pages/wxLogin/wxLogin",
+  "path": "pages/index/index",
   "style": {
-    "navigationBarTitleText": "微信登录",
-    "navigationStyle": "custom"
+    "navigationBarTitleText": "首页"
   }
 }
 ```

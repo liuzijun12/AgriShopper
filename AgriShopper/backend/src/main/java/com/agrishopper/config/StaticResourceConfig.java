@@ -25,8 +25,29 @@ public class StaticResourceConfig implements WebMvcConfigurer {
                 .setCachePeriod(3600) // 缓存1小时
                 .resourceChain(true);
         
+        // 映射 /static/icon/** 到 classpath:static/icon/
+        registry.addResourceHandler("/static/icon/**")
+                .addResourceLocations("classpath:static/icon/")
+                .setCachePeriod(3600) // 缓存1小时
+                .resourceChain(true);
+        
+        // 映射 /static/messages/** 到 classpath:static/messages/
+        registry.addResourceHandler("/static/messages/**")
+                .addResourceLocations("classpath:static/messages/")
+                .setCachePeriod(3600) // 缓存1小时
+                .resourceChain(true);
+        
+        // 映射 /static/Carousel/** 到 classpath:static/Carousel/
+        registry.addResourceHandler("/static/Carousel/**")
+                .addResourceLocations("classpath:static/Carousel/")
+                .setCachePeriod(3600) // 缓存1小时
+                .resourceChain(true);
+        
         // 添加日志输出以便调试
         System.out.println("Static resource mapping: /static/uploads/** -> " + uploadLocation);
+        System.out.println("Static resource mapping: /static/icon/** -> classpath:static/icon/");
+        System.out.println("Static resource mapping: /static/messages/** -> classpath:static/messages/");
+        System.out.println("Static resource mapping: /static/Carousel/** -> classpath:static/Carousel/");
         System.out.println("Upload directory exists: " + uploadDir.toFile().exists());
         System.out.println("Upload directory path: " + uploadDir.toString());
     }

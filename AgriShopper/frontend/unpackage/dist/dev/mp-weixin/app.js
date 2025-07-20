@@ -4,7 +4,6 @@ const common_vendor = require("./common/vendor.js");
 const store = require("./store.js");
 if (!Math) {
   "./pages/index/index.js";
-  "./pages/wxLogin/wxLogin.js";
   "./pages/productList/productList.js";
   "./pages/messages/messages.js";
   "./pages/messages/systemNotification/accountSecurity.js";
@@ -18,6 +17,9 @@ if (!Math) {
   "./pages/my/my.js";
   "./pages/searchProduct/searchProduct.js";
   "./pages/productDetail/productDetail.js";
+  "./pages/favorites/favorites.js";
+  "./pages/address/add.js";
+  "./pages/address/edit.js";
 }
 const _sfc_main = {
   globalData: {

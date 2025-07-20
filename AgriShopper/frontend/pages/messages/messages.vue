@@ -42,56 +42,57 @@
     >
       <!-- System Notifications -->
       <view v-if="currentTab === 0" class="message-section">
-        <view class="message-group" v-for="(group, date) in groupedSystemMessages" :key="date">
-          <view class="date-divider">{{ date }}</view>
-          <view
-            :class="[
-              'message-card',
-              'system-card',
-              // 根据消息类型添加特定颜色类和边框
-              message.type === 'highRiskOp' ? 'high-risk-card' : '',
-              message.type === 'riskWarning' ? 'high-risk-card' : '',
-              message.type === 'platformOperation' ? 'maintenance-card' : '',
-              message.type === 'ruleUpdate' ? 'rule-card' : '',
-              message.type === 'globalAnnouncement' ? 'announcement-card' : ''
-            ]"
-            v-for="(message, index) in group"
-            :key="index"
-            @tap="handleMessageClick(message, 'system')"
-          >
-            <view class="card-content">
-              <view class="card-header">
-                <!-- 图标 -->
-                <text class="card-icon">{{ message.icon }}</text>
-                <text class="card-title">{{ message.title }}</text>
-                <text class="card-time">{{ message.time }}</text>
-              </view>
-              <text class="card-summary">{{ message.content }}</text>
-
-              <!-- 特定类型详情 (这里只展示部分，完整详情在各自的详情页中展示) -->
-              <view v-if="message.type === 'highRiskOp'" class="card-info system-details">
-                <text>异常设备/IP: {{ message.deviceIp }}</text>
-                <text>操作类型: {{ message.operationType }}</text>
-              </view>
-              <view v-else-if="message.type === 'platformOperation'" class="card-info system-details">
-                <text>维护时间: {{ message.maintenanceTime }}</text>
-                <text>影响范围: {{ message.impactScope }}</text>
-              </view>
-              <view v-else-if="message.type === 'ruleUpdate'" class="card-info system-details">
-                <text>生效时间: {{ message.effectiveTime }}</text>
-                <text>核心变更: {{ message.newRule }}</text>
-              </view>
-              <view v-else-if="message.type === 'riskWarning'" class="card-info system-details">
-                <text>风险对象: {{ message.riskObject }}</text>
-                <text>潜在影响: {{ message.potentialImpact }}</text>
-              </view>
-              <view v-else-if="message.type === 'globalAnnouncement'" class="card-info system-details">
-                <text>受影响时间: {{ message.affectedTimeRange }}</text>
-                <text>暂停服务: {{ message.pausedServices }}</text>
-              </view>
+        <view
+          :class="[
+            'message-card',
+            'system-card',
+            // 根据消息类型添加特定颜色类和边框
+            message.type === 'highRiskOp' ? 'high-risk-card' : '',
+            message.type === 'riskWarning' ? 'high-risk-card' : '',
+            message.type === 'platformOperation' ? 'maintenance-card' : '',
+            message.type === 'ruleUpdate' ? 'rule-card' : '',
+            message.type === 'globalAnnouncement' ? 'announcement-card' : ''
+          ]"
+          v-for="(message, index) in systemMessages"
+          :key="message.id || index"
+          @tap="handleMessageClick(message, 'system')"
+        >
+          <view class="card-content">
+            <view class="card-header">
+              <!-- 图标 -->
+              <text class="card-icon">{{ message.icon }}</text>
+              <text class="card-title">{{ message.title }}</text>
+              <text class="card-time">{{ message.time }}</text>
             </view>
-            <view v-if="!message.read" class="unread-dot"></view>
+            <text class="card-summary">{{ message.content }}</text>
+
+            <!-- 特定类型详情 (这里只展示部分，完整详情在各自的详情页中展示) -->
+            <view v-if="message.type === 'highRiskOp'" class="card-info system-details">
+              <text>异常设备/IP: {{ message.deviceIp }}</text>
+              <text>操作类型: {{ message.operationType }}</text>
+            </view>
+            <view v-else-if="message.type === 'platformOperation'" class="card-info system-details">
+              <text>维护时间: {{ message.maintenanceTime }}</text>
+              <text>影响范围: {{ message.impactScope }}</text>
+            </view>
+            <view v-else-if="message.type === 'ruleUpdate'" class="card-info system-details">
+              <text>生效时间: {{ message.effectiveTime }}</text>
+              <text>核心变更: {{ message.newRule }}</text>
+            </view>
+            <view v-else-if="message.type === 'riskWarning'" class="card-info system-details">
+              <text>风险对象: {{ message.riskObject }}</text>
+              <text>潜在影响: {{ message.potentialImpact }}</text>
+            </view>
+            <view v-else-if="message.type === 'globalAnnouncement'" class="card-info system-details">
+              <text>受影响时间: {{ message.affectedTimeRange }}</text>
+              <text>暂停服务: {{ message.pausedServices }}</text>
+            </view>
           </view>
+          <view v-if="!message.read" class="unread-dot"></view>
+        </view>
+        
+        <view v-if="systemMessages.length === 0" class="no-messages">
+          暂无系统通知
         </view>
       </view>
 
@@ -127,58 +128,55 @@
           </scroll-view>
         </view>
 
-        <view class="message-group" v-for="(group, date) in groupedOrderMessages" :key="date">
-          <view class="date-divider">{{ date }}</view>
+        <view
+          class="swipe-wrapper"
+          v-for="(message) in filteredOrderMessages"
+          :key="message.id"
+          @touchstart="onTouchStart($event, message.id)"
+          @touchmove="onTouchMove($event, message.id)"
+          @touchend="onTouchEnd($event, message.id)"
+          @tap="handleMessageClick(message, 'order')"
+        >
           <view
-            class="swipe-wrapper"
-            v-for="(message) in group"
-            :key="message.id"
-            @touchstart="onTouchStart($event, message.id)"
-            @touchmove="onTouchMove($event, message.id)"
-            @touchend="onTouchEnd($event, message.id)"
-            @tap="handleMessageClick(message, 'order')"
+            class="message-card order-card"
+            :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
           >
-            <view
-              class="message-card order-card"
-              :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
-            >
-              <view class="card-content">
-                <view class="card-header">
-                  <text class="card-title">{{ message.title }}</text>
-                  <text class="card-time">{{ message.time }}</text>
-                  <text v-if="message.alertIcon" class="alert-icon">{{ message.alertIcon }}</text>
-                  <!-- 垃圾桶图标已移除 -->
-                </view>
-                
-                <view class="order-product-info">
-                  <image v-if="message.productImage" class="product-thumbnail" :src="message.productImage" mode="aspectFill" @error="onImageError('product', message)"></image>
-                  <view class="product-details">
-                    <text class="product-name">{{ message.productName }}</text>
-                    <text class="product-spec">{{ message.productSpec }}</text>
-                  </view>
-                </view>
-
-                <view class="card-info order-info">
-                  <text :class="['status-tag', 'order-status-tag', message.statusClass]">{{ message.status }}</text>
-                  <text class="card-id">订单号：{{ message.orderId }}</text>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="card-title">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
+                <text v-if="message.alertIcon" class="alert-icon">{{ message.alertIcon }}</text>
+              </view>
+              
+              <view class="order-product-info">
+                <image v-if="message.productImage" class="product-thumbnail" :src="message.productImage" mode="aspectFill" @error="onImageError('product', message)"></image>
+                <view class="product-details">
+                  <text class="product-name">{{ message.productName }}</text>
+                  <text class="product-spec">{{ message.productSpec }}</text>
                 </view>
               </view>
-              <view v-if="!message.read" class="unread-dot"></view>
-              <button v-if="message.actionButtonText" :class="['action-button', message.actionButtonClass]" @tap.stop="handleOrderAction(message)">
-                {{ message.actionButtonText }}
-              </button>
+
+              <view class="card-info order-info">
+                <text :class="['status-tag', 'order-status-tag', message.statusClass]">{{ message.status }}</text>
+                <text class="card-id">订单号：{{ message.orderId }}</text>
+              </view>
             </view>
-            <!-- 右滑删除按钮 -->
-            <view class="delete-button-container">
-              <view class="delete-button" @tap.stop="deleteOrderMessage(message.id)">删除</view>
-            </view>
+            <view v-if="!message.read" class="unread-dot"></view>
+            <button v-if="message.actionButtonText" :class="['action-button', message.actionButtonClass]" @tap.stop="handleOrderAction(message)">
+              {{ message.actionButtonText }}
+            </button>
           </view>
-          <view v-if="group.length === 0 && searchQuery === '' && filterStatus === 'all'" class="no-messages">
-            暂无订单消息
+          <!-- 右滑删除按钮 -->
+          <view class="delete-button-container">
+            <view class="delete-button" @tap.stop="deleteOrderMessage(message.id)">删除</view>
           </view>
-          <view v-else-if="group.length === 0" class="no-messages">
-            无匹配的订单消息
-          </view>
+        </view>
+        
+        <view v-if="filteredOrderMessages.length === 0 && searchQuery === '' && filterStatus === 'all'" class="no-messages">
+          暂无订单消息
+        </view>
+        <view v-else-if="filteredOrderMessages.length === 0" class="no-messages">
+          无匹配的订单消息
         </view>
       </view>
 
@@ -213,49 +211,47 @@
           </scroll-view>
         </view>
 
-        <view class="message-group" v-for="(group, date) in groupedPromotionMessages" :key="date">
-          <view class="date-divider">{{ date }}</view>
+        <view
+          class="swipe-wrapper"
+          v-for="(message) in filteredPromotionMessages"
+          :key="message.id"
+          @touchstart="onTouchStart($event, message.id)"
+          @touchmove="onTouchMove($event, message.id)"
+          @touchend="onTouchEnd($event, message.id)"
+          @tap="handleMessageClick(message, 'activity')"
+        >
           <view
-            class="swipe-wrapper"
-            v-for="(message) in group"
-            :key="message.id"
-            @touchstart="onTouchStart($event, message.id)"
-            @touchmove="onTouchMove($event, message.id)"
-            @touchend="onTouchEnd($event, message.id)"
-            @tap="handleMessageClick(message, 'activity')"
+            class="message-card promotion-card"
+            :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
           >
-            <view
-              class="message-card promotion-card"
-              :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
-            >
-              <image class="card-image promotion-image" :src="message.image" mode="aspectFill" @error="onImageError('promotion', message)"></image>
-              <view class="card-content">
-                <view class="card-header">
-                  <text class="card-title">{{ message.title }}</text>
-                  <text class="card-time">{{ message.time }}</text>
-                  <text v-if="message.isNew" class="new-badge">新</text>
-                  <text v-else-if="!message.read" class="unread-dot-small"></text>
-                </view>
-                <view class="promotion-meta">
-                  <text :class="['status-tag', 'promotion-type-tag', message.typeClass]">{{ message.type }}</text>
-                  <text class="promotion-sender">{{ message.sender }}</text>
-                </view>
-                <text class="card-summary promotion-benefit">{{ message.benefitSummary }}</text>
-                <text class="promotion-validity">{{ message.validity }}</text>
-                <text class="promotion-target">{{ message.targetAudience }}</text>
+            <image class="card-image promotion-image" :src="message.image" mode="aspectFill" @error="onImageError('promotion', message)"></image>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="card-title">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
+                <text v-if="message.isNew" class="new-badge">新</text>
+                <text v-else-if="!message.read" class="unread-dot-small"></text>
               </view>
+              <view class="promotion-meta">
+                <text :class="['status-tag', 'promotion-type-tag', message.typeClass]">{{ message.type }}</text>
+                <text class="promotion-sender">{{ message.sender }}</text>
+              </view>
+              <text class="card-summary promotion-benefit">{{ message.benefitSummary }}</text>
+              <text class="promotion-validity">{{ message.validity }}</text>
+              <text class="promotion-target">{{ message.targetAudience }}</text>
             </view>
-            <!-- 右滑删除按钮 -->
-            <view class="delete-button-container">
-              <view class="delete-button" @tap.stop="deletePromotionMessage(message.id)">删除</view>
-            </view>
           </view>
-          <view v-if="group.length === 0 && activitySearchQuery === '' && activityFilterStatus === 'all'" class="no-messages">
-            暂无活动消息
+          <!-- 右滑删除按钮 -->
+          <view class="delete-button-container">
+            <view class="delete-button" @tap.stop="deletePromotionMessage(message.id)">删除</view>
           </view>
-          <view v-else-if="group.length === 0" class="no-messages">
-            无匹配的活动消息
-          </view>
+        </view>
+        
+        <view v-if="filteredPromotionMessages.length === 0 && activitySearchQuery === '' && activityFilterStatus === 'all'" class="no-messages">
+          暂无活动消息
+        </view>
+        <view v-else-if="filteredPromotionMessages.length === 0" class="no-messages">
+          无匹配的活动消息
         </view>
       </view>
 
@@ -309,52 +305,50 @@
           </scroll-view>
         </view>
 
-        <view class="message-group" v-for="(group, date) in groupedServiceMessages" :key="date">
-          <view class="date-divider">{{ date }}</view>
+        <view
+          class="swipe-wrapper"
+          v-for="(message) in filteredServiceMessages"
+          :key="message.id"
+          @touchstart="onTouchStart($event, message.id)"
+          @touchmove="onTouchMove($event, message.id)"
+          @touchend="onTouchEnd($event, message.id)"
+          @tap="handleMessageClick(message, 'customerService')"
+        >
           <view
-            class="swipe-wrapper"
-            v-for="(message) in group"
-            :key="message.id"
-            @touchstart="onTouchStart($event, message.id)"
-            @touchmove="onTouchMove($event, message.id)"
-            @touchend="onTouchEnd($event, message.id)"
-            @tap="handleMessageClick(message, 'customerService')"
+            class="message-card service-card"
+            :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
           >
-            <view
-              class="message-card service-card"
-              :style="{ transform: `translateX(${swipeStates[message.id] || 0}rpx)` }"
-            >
-              <image class="service-avatar" :src="message.avatar" mode="aspectFill" @error="onImageError('service', message)"></image>
-              <view class="card-content">
-                <view class="card-header">
-                  <text class="service-name">{{ message.title }}</text>
-                  <text class="card-time">{{ message.time }}</text>
-                  <text v-if="message.priorityIcon" class="priority-icon">{{ message.priorityIcon }}</text>
-                </view>
-                <view class="service-meta">
-                  <text v-if="message.senderType === 'agent'" class="sender-info">{{ message.senderName }}</text>
-                  <text v-else class="sender-info">{{ message.senderType }}</text>
-                  <text v-if="message.orderId" class="associated-order">关联订单: {{ message.orderId }}</text>
-                </view>
-                <text class="card-summary">{{ message.lastMessage }}</text>
-                <view class="service-tags">
-                  <text :class="['status-tag', 'issue-type-tag', message.issueTypeClass]">{{ message.issueType }}</text>
-                  <text :class="['status-tag', 'cs-status-tag', message.statusClass]">{{ message.status }}</text>
-                </view>
+            <image class="service-avatar" :src="message.avatar" mode="aspectFill" @error="onImageError('service', message)"></image>
+            <view class="card-content">
+              <view class="card-header">
+                <text class="service-name">{{ message.title }}</text>
+                <text class="card-time">{{ message.time }}</text>
+                <text v-if="message.priorityIcon" class="priority-icon">{{ message.priorityIcon }}</text>
               </view>
-              <view v-if="message.unread > 0" class="unread-badge-small">{{ message.unread }}</view>
+              <view class="service-meta">
+                <text v-if="message.senderType === 'agent'" class="sender-info">{{ message.senderName }}</text>
+                <text v-else class="sender-info">{{ message.senderType }}</text>
+                <text v-if="message.orderId" class="associated-order">关联订单: {{ message.orderId }}</text>
+              </view>
+              <text class="card-summary">{{ message.lastMessage }}</text>
+              <view class="service-tags">
+                <text :class="['status-tag', 'issue-type-tag', message.issueTypeClass]">{{ message.issueType }}</text>
+                <text :class="['status-tag', 'cs-status-tag', message.statusClass]">{{ message.status }}</text>
+              </view>
             </view>
-            <!-- 右滑删除按钮 -->
-            <view class="delete-button-container">
-              <view class="delete-button" @tap.stop="deleteServiceMessage(message.id)">删除</view>
-            </view>
+            <view v-if="message.unread > 0" class="unread-badge-small">{{ message.unread }}</view>
           </view>
-          <view v-if="group.length === 0 && csSearchQuery === '' && csFilterStatus === 'all' && csFilterIssueType === 'all'" class="no-messages">
-            暂无客服消息
+          <!-- 右滑删除按钮 -->
+          <view class="delete-button-container">
+            <view class="delete-button" @tap.stop="deleteServiceMessage(message.id)">删除</view>
           </view>
-          <view v-else-if="group.length === 0" class="no-messages">
-            无匹配的客服消息
-          </view>
+        </view>
+        
+        <view v-if="filteredServiceMessages.length === 0 && csSearchQuery === '' && csFilterStatus === 'all' && csFilterIssueType === 'all'" class="no-messages">
+          暂无客服消息
+        </view>
+        <view v-else-if="filteredServiceMessages.length === 0" class="no-messages">
+          无匹配的客服消息
         </view>
       </view>
 
@@ -532,7 +526,7 @@ const fetchSystemMessages = () => {
         id: 5,
         type: 'globalAnnouncement',
         icon: '📢',
-        title: '台风“木兰”配送延迟公告',
+        title: '台风"木兰"配送延迟公告',
         content: '受台风影响，7月15-18日 广东、福建产区发货及物流时效调整',
         affectedTimeRange: '7月15-18日',
         pausedServices: '汕头、汕尾、厦门产区直发',
@@ -655,7 +649,7 @@ const fetchOrderMessages = () => {
         read: true,
         actionButtonText: ''
       }
-    ].sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+    ].sort(compareDates);
 
     orderMessages.value = mockData;
     updateUnreadCount();
@@ -742,7 +736,7 @@ const fetchPromotionMessages = () => {
         read: true,
         isNew: false
       }
-    ].sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+    ].sort(compareDates);
 
     promotionMessages.value = mockData;
     updateUnreadCount();
@@ -833,7 +827,7 @@ const fetchServiceMessages = () => {
       {
         id: 305,
         title: '如何开电子发票？',
-        lastMessage: '请在“我的订单”中选择对应订单，点击“申请发票”即可。',
+        lastMessage: '请在"我的订单"中选择对应订单，点击"申请发票"即可。',
         time: '2025-07-13 10:00',
         date: '2025-07-13',
         unread: 0,
@@ -849,17 +843,13 @@ const fetchServiceMessages = () => {
         priority: 'normal',
         priorityIcon: ''
       }
-    ].sort((a, b) => new Date(b.date + ' ' + b.time) - new Date(a.date + ' ' + a.time));
+    ].sort(compareDates);
 
     serviceMessages.value = mockData;
     updateUnreadCount();
     uni.hideLoading();
   }, 1000);
 };
-
-const groupedSystemMessages = computed(() => {
-  return groupMessagesByDate(systemMessages.value);
-});
 
 const filteredOrderMessages = computed(() => {
   let filtered = orderMessages.value;
@@ -938,61 +928,7 @@ const filteredServiceMessages = computed(() => {
 });
 
 
-const groupedOrderMessages = computed(() => {
-  const sortedMessages = [...filteredOrderMessages.value].sort((a, b) => {
-    const dateA = new Date(a.date + ' ' + a.time.replace('今天 ', '').replace('昨天 ', ''));
-    const dateB = new Date(b.date + ' ' + b.time.replace('今天 ', '').replace('昨天 ', ''));
-    return dateB - dateA;
-  });
-  return groupMessagesByDate(sortedMessages);
-});
 
-const groupedPromotionMessages = computed(() => {
-  const sortedMessages = [...filteredPromotionMessages.value].sort((a, b) => {
-    const dateA = new Date(a.date + ' ' + a.time.replace('今天 ', '').replace('昨天 ', ''));
-    const dateB = new Date(b.date + ' ' + b.time.replace('今天 ', '').replace('昨天 ', ''));
-    return dateB - dateA;
-  });
-  return groupMessagesByDate(sortedMessages);
-});
-
-const groupedServiceMessages = computed(() => {
-  const sortedMessages = [...filteredServiceMessages.value].sort((a, b) => {
-    const dateA = new Date(a.date + ' ' + a.time.replace('今天 ', '').replace('昨天 ', ''));
-    const dateB = new Date(b.date + ' ' + b.time.replace('今天 ', '').replace('昨天 ', ''));
-    return dateB - dateA;
-  });
-  return groupMessagesByDate(sortedMessages);
-});
-
-
-const groupMessagesByDate = (messages) => {
-  const groups = {};
-  messages.forEach(message => {
-    const displayDate = formatDisplayDate(message.date);
-    if (!groups[displayDate]) {
-      groups[displayDate] = [];
-    }
-    groups[displayDate].push(message);
-  });
-  return groups;
-};
-
-const formatDisplayDate = (dateString) => {
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-
-  const messageDate = new Date(dateString);
-
-  if (messageDate.toDateString() === today.toDateString()) {
-    return '今天';
-  } else if (messageDate.toDateString() === yesterday.toDateString()) {
-    return '昨天';
-  } else {
-    return dateString;
-  }
-};
 
 const hasMore = ref(false);
 const loading = ref(false);
@@ -1369,6 +1305,31 @@ onShow(() => {
   fetchPromotionMessages();
   fetchServiceMessages();
 });
+
+// 兼容的日期解析函数，解决iOS日期格式兼容性问题
+const parseDate = (dateStr, timeStr) => {
+  try {
+    // 处理包含"今天"、"昨天"等相对时间的情况
+    let processedTime = timeStr;
+    if (timeStr.includes('今天 ') || timeStr.includes('昨天 ')) {
+      processedTime = timeStr.replace('今天 ', '').replace('昨天 ', '');
+    }
+    
+    // 使用ISO格式，确保iOS兼容性
+    const isoString = `${dateStr}T${processedTime}:00`;
+    return new Date(isoString);
+  } catch (error) {
+    console.warn('日期解析失败，使用当前时间:', error);
+    return new Date();
+  }
+};
+
+// 兼容的日期比较函数
+const compareDates = (a, b) => {
+  const dateA = parseDate(a.date, a.time);
+  const dateB = parseDate(b.date, b.time);
+  return dateB - dateA;
+};
 </script>
 
 
@@ -1529,18 +1490,7 @@ page {
   padding: 0 20rpx;
 }
 
-.message-group {
-  margin-bottom: 30rpx;
-}
 
-.date-divider {
-  padding: 20rpx 0;
-  font-size: 26rpx;
-  color: #999999;
-  font-weight: 500;
-  text-align: left;
-  margin-left: 10rpx;
-}
 
 /* Swipe Wrapper for Order Messages */
 .swipe-wrapper {

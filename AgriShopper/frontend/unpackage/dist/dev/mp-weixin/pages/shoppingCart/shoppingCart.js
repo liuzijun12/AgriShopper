@@ -2,6 +2,7 @@
 const common_vendor = require("../../common/vendor.js");
 const common_assets = require("../../common/assets.js");
 const api_cart = require("../../api/cart.js");
+const config_env = require("../../config/env.js");
 const _sfc_main = {
   __name: "shoppingCart",
   setup(__props) {
@@ -9,6 +10,30 @@ const _sfc_main = {
     common_vendor.ref(true);
     const loading = common_vendor.ref(false);
     const cartItems = common_vendor.ref([]);
+    const getImageUrl = (url) => {
+      if (!url)
+        return "/static/default-product.png";
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      const config = config_env.env.getConfig();
+      if (url.startsWith("icon/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("tabbar/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("Carousel/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("/static/uploads/")) {
+        return config.baseUrl + url;
+      }
+      if (!url.startsWith("/")) {
+        return config.baseUrl + "/static/uploads/" + url;
+      }
+      return config.baseUrl + url;
+    };
     const tagColors = {
       "热卖": "#ffeeee",
       "特惠": "#fff8e6",
@@ -39,14 +64,14 @@ const _sfc_main = {
             };
           });
         } else {
-          common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:171", "获取购物车数据失败:", response.message);
+          common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:213", "获取购物车数据失败:", response.message);
           common_vendor.index.showToast({
             title: response.message || "获取购物车数据失败",
             icon: "error"
           });
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:178", "加载购物车数据失败:", error);
+        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:220", "加载购物车数据失败:", error);
         common_vendor.index.showToast({
           title: "加载购物车数据失败",
           icon: "error"
@@ -146,7 +171,7 @@ const _sfc_main = {
       try {
         await api_cart.cartApi.updateQuantity(item.productId, item.quantity);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:311", "更新商品数量失败:", error);
+        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:353", "更新商品数量失败:", error);
         common_vendor.index.showToast({
           title: "更新数量失败",
           icon: "error"
@@ -157,7 +182,7 @@ const _sfc_main = {
       try {
         await api_cart.cartApi.updateSelectedStatus(item.id, item.selected);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:324", "更新选中状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:366", "更新选中状态失败:", error);
         common_vendor.index.showToast({
           title: "更新选中状态失败",
           icon: "error"
@@ -168,7 +193,7 @@ const _sfc_main = {
       try {
         await api_cart.cartApi.selectAll(selected);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:337", "更新全选状态失败:", error);
+        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:379", "更新全选状态失败:", error);
         common_vendor.index.showToast({
           title: "更新全选状态失败",
           icon: "error"
@@ -202,7 +227,7 @@ const _sfc_main = {
           }
         });
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:378", "删除购物车项失败:", error);
+        common_vendor.index.__f__("error", "at pages/shoppingCart/shoppingCart.vue:420", "删除购物车项失败:", error);
         common_vendor.index.showToast({
           title: error.message || "删除失败",
           icon: "error"
@@ -224,13 +249,13 @@ const _sfc_main = {
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_assets._imports_0$2,
+        a: getImageUrl("icon/搜索.png"),
         b: common_vendor.o(goToSearch),
-        c: common_assets._imports_1$1,
+        c: getImageUrl("icon/地址.png"),
         d: common_vendor.o((...args) => _ctx.selectAddress && _ctx.selectAddress(...args)),
         e: loading.value
       }, loading.value ? {} : cartItems.value.length === 0 ? {
-        g: common_assets._imports_2,
+        g: common_assets._imports_0$1,
         h: common_vendor.o(goShopping)
       } : {
         i: isShopAllSelected(1),

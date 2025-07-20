@@ -3,14 +3,14 @@
     <!-- 搜索栏 -->
     <view class="search-header">
       <view class="search-bar" @click="goToSearch">
-        <image class="search-icon" src="/static/shoppingCart/搜索.png"></image>
+        <image class="search-icon" :src="getImageUrl('icon/搜索.png')"></image>
         <text class="search-text">搜索购物车商品</text>
       </view>
     </view>
 
     <!-- 地址栏 -->
     <view class="address-bar" @click="selectAddress">
-      <image class="address-icon" src="/static/shoppingCart/地址.png"></image>
+      <image class="address-icon" :src="getImageUrl('icon/地址.png')"></image>
       <text class="address-text">河北张家口市</text>
       <text class="arrow">›</text>
     </view>
@@ -131,12 +131,54 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import cartApi from '../../api/cart.js'
+import env from '../../config/env.js'
 
 // 响应式数据
 const currentAddress = ref('河北张家口市')
 const showPromotionTip = ref(true)
 const loading = ref(false)
 const cartItems = ref([])
+
+// 处理图片URL
+const getImageUrl = (url) => {
+  if (!url) return '/static/default-product.png';
+  
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // 使用环境配置中的baseUrl
+  const config = env.getConfig();
+  
+  // 如果是icon图片，直接拼接后端地址
+  if (url.startsWith('icon/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果是tabbar图片，直接拼接后端地址
+  if (url.startsWith('tabbar/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果是Carousel轮播图，直接拼接后端地址
+  if (url.startsWith('Carousel/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
+  if (url.startsWith('/static/uploads/')) {
+    return config.baseUrl + url;
+  }
+  
+  // 如果是文件名，拼接完整的静态资源路径
+  if (!url.startsWith('/')) {
+    return config.baseUrl + '/static/uploads/' + url;
+  }
+  
+  // 其他情况，拼接后端地址和路径
+  return config.baseUrl + url;
+};
 
 const tagColors = {
   '热卖': '#ffeeee',
@@ -583,15 +625,19 @@ const checkout = () => {
   position: relative;
   background-color: #fff;
   margin-bottom: 2rpx;
+  overflow: hidden;
 }
 
 /* 商品项 */
 .cart-item {
   display: flex;
   padding: 25rpx;
-  align-items: center;
+  padding-right: 145rpx;
+  align-items: flex-start;
   background-color: #fff;
   transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* 删除按钮 */
@@ -607,6 +653,7 @@ const checkout = () => {
   justify-content: center;
   transform: translateX(100%);
   transition: transform 0.3s ease;
+  z-index: 10;
 }
 
 .cart-item-wrapper:hover .delete-btn {
@@ -678,6 +725,10 @@ const checkout = () => {
 .item-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  margin-top: 20rpx;
 }
 .stock {
   color: #e93b3d;
@@ -690,6 +741,10 @@ const checkout = () => {
   align-items: center;
   border: 1rpx solid #ddd;
   border-radius: 10rpx;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+  margin-right: 10rpx;
 }
 .quantity-btn {
   width: 70rpx;
@@ -699,6 +754,8 @@ const checkout = () => {
   font-size: 36rpx;
   color: #666;
   background-color: #f7f7f7;
+  border: none;
+  outline: none;
 }
 .quantity-input {
   width: 90rpx;
@@ -707,6 +764,10 @@ const checkout = () => {
   font-size: 32rpx;
   border-left: 1rpx solid #ddd;
   border-right: 1rpx solid #ddd;
+  border-top: none;
+  border-bottom: none;
+  background-color: #fff;
+  outline: none;
 }
 
 /* 底部结算栏 */
@@ -721,6 +782,8 @@ const checkout = () => {
   align-items: center;
   padding: 0 25rpx;
   border-top: 1rpx solid #f0f0f0;
+  z-index: 1000;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 .select-all {
   display: flex;

@@ -139,29 +139,32 @@
   z-index: 10;
 }
 .arrow-circle {
-  width: 60rpx;
-  height: 60rpx;
-  background-color: rgba(255, 255, 255, 0.9);
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  -webkit-backdrop-filter: blur(10rpx);
+          backdrop-filter: blur(10rpx);
 }
-.arrow-circle:hover {
+.arrow-circle:active {
   background-color: rgba(255, 255, 255, 1);
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.15);
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.2);
+  transform: scale(0.95);
 }
 .swiper-arrow.left {
-  left: 20rpx;
+  left: 30rpx;
 }
 .swiper-arrow.right {
-  right: 20rpx;
+  right: 30rpx;
 }
 .arrow-icon {
-  width: 32rpx;
-  height: 32rpx;
+  width: 40rpx;
+  height: 40rpx;
 }
 .left-arrow {
   transform: rotate(-270deg);
@@ -178,6 +181,53 @@
   color: #222;
   background: transparent;
   letter-spacing: 2rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+.recommendation-type {
+  font-size: 24rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+  font-weight: normal;
+}
+.recommendation-type.personalized {
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
+  color: #fff;
+}
+.recommendation-type.popular {
+  background: linear-gradient(90deg, #ff9800 60%, #f57c00 100%);
+  color: #fff;
+}
+.recommendation-type.default {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 推荐统计信息样式 */
+.recommendation-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  margin: 0 30rpx 20rpx 30rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+}
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+.stats-label {
+  font-size: 24rpx;
+  color: #666;
+}
+.stats-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #4CAF50;
 }
 
 /* 商品网格样式优化 */
@@ -187,10 +237,11 @@
   padding: 0 10rpx 120rpx 10rpx;
   background: transparent;
   justify-content: space-between;
+  gap: 20rpx;
 }
 .product-card {
-  width: calc(50% - 16rpx);
-  margin: 10rpx 0;
+  width: calc(50% - 10rpx);
+  margin: 0;
   background: #fff;
   border-radius: 20rpx;
   overflow: hidden;

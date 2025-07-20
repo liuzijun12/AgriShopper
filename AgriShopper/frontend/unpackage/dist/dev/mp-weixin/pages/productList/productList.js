@@ -3,10 +3,10 @@ const common_vendor = require("../../common/vendor.js");
 require("../../store.js");
 const api_products = require("../../api/products.js");
 const api_categories = require("../../api/categories.js");
+const config_env = require("../../config/env.js");
 if (!Array) {
-  const _component_uni_icons = common_vendor.resolveComponent("uni-icons");
   const _component_uni_load_more = common_vendor.resolveComponent("uni-load-more");
-  (_component_uni_icons + _component_uni_load_more)();
+  _component_uni_load_more();
 }
 const _sfc_main = {
   __name: "productList",
@@ -16,6 +16,30 @@ const _sfc_main = {
     const loading = common_vendor.ref(false);
     const error = common_vendor.ref("");
     const hasMore = common_vendor.ref(true);
+    const getImageUrl = (url) => {
+      if (!url)
+        return "/static/default-product.png";
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      const config = config_env.env.getConfig();
+      if (url.startsWith("icon/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("tabbar/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("Carousel/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("/static/uploads/")) {
+        return config.baseUrl + url;
+      }
+      if (!url.startsWith("/")) {
+        return config.baseUrl + "/static/uploads/" + url;
+      }
+      return config.baseUrl + url;
+    };
     const pageParams = common_vendor.reactive({
       page: 0,
       size: 10
@@ -74,7 +98,7 @@ const _sfc_main = {
           throw new Error(response.message || "获取商品数据失败");
         }
       } catch (err) {
-        common_vendor.index.__f__("error", "at pages/productList/productList.vue:195", "加载商品失败:", err);
+        common_vendor.index.__f__("error", "at pages/productList/productList.vue:237", "加载商品失败:", err);
         error.value = err.message || "加载商品失败，请重试";
         if (reset) {
           products.value = [];
@@ -147,13 +171,13 @@ const _sfc_main = {
             { name: "全部", id: 0 },
             ...dbCategories
           ];
-          common_vendor.index.__f__("log", "at pages/productList/productList.vue:298", "分类加载成功:", categories.value);
+          common_vendor.index.__f__("log", "at pages/productList/productList.vue:340", "分类加载成功:", categories.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/productList/productList.vue:300", "获取分类失败:", response.message);
+          common_vendor.index.__f__("error", "at pages/productList/productList.vue:342", "获取分类失败:", response.message);
           loadDefaultCategories();
         }
       } catch (error2) {
-        common_vendor.index.__f__("error", "at pages/productList/productList.vue:305", "获取分类出错:", error2);
+        common_vendor.index.__f__("error", "at pages/productList/productList.vue:347", "获取分类出错:", error2);
         loadDefaultCategories();
       } finally {
         categoriesLoading.value = false;
@@ -173,11 +197,7 @@ const _sfc_main = {
     });
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: common_vendor.p({
-          type: "search",
-          size: "18",
-          color: "#999999"
-        }),
+        a: getImageUrl("icon/搜索.png"),
         b: common_vendor.o(goToSearch),
         c: categoriesLoading.value
       }, categoriesLoading.value ? {} : {

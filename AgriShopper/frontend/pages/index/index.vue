@@ -18,7 +18,7 @@
       
       <!-- 顶部轮播图 -->
       <view class="swiper-container">
-        <swiper class="swiper" circular autoplay interval="3000" duration="500" @change="onSwiperChange">
+        <swiper class="swiper" circular :current="currentSwiper" autoplay interval="4000" duration="500" @change="onSwiperChange">
           <swiper-item v-for="(item, index) in bannerList" :key="index">
             <image :src="item.imageUrl" mode="aspectFill" class="swiper-image" />
           </swiper-item>
@@ -45,8 +45,13 @@
       <!-- 推荐商品区域 -->
       <view class="recommend-title">
         <text>推荐商品</text>
+        <text v-if="recommendationType === 'personalized'" class="recommendation-type personalized">为您推荐</text>
+        <text v-else-if="recommendationType === 'popular'" class="recommendation-type popular">热门推荐</text>
+        <text v-else class="recommendation-type default">精选商品</text>
         <text v-if="productsLoading" class="loading-text">加载中...</text>
       </view>
+      
+
       
       <!-- 加载状态 -->
       <view v-if="productsLoading" class="loading-container">
@@ -108,17 +113,7 @@ import WxLoginModal from '../../components/WxLoginModal.vue';
 import env from '../../config/env.js';
 
 // 轮播图数据
-const bannerList = ref([
-  {
-    imageUrl: 'https://readdy.ai/api/search-image?query=Beautiful%20organic%20farm%20with%20green%20vegetables%20and%20fruits%2C%20fresh%20produce%20harvest%20scene%2C%20morning%20sunlight%2C%20vibrant%20colors%2C%20natural%20farming%20landscape%2C%20healthy%20food%20ingredients%20displayed%2C%20sustainable%20agriculture%2C%20farm%20to%20table%20concept%2C%20high%20quality%20professional%20photography&width=750&height=400&seq=1&orientation=landscape'
-  },
-  {
-    imageUrl: 'https://readdy.ai/api/search-image?query=Farmers%20market%20with%20colorful%20organic%20vegetables%20and%20fruits%2C%20fresh%20local%20produce%2C%20wooden%20crates%2C%20natural%20lighting%2C%20vibrant%20colors%2C%20rustic%20farm%20stand%2C%20healthy%20food%20display%2C%20sustainable%20agriculture%2C%20countryside%20scenery%2C%20professional%20food%20photography&width=750&height=400&seq=2&orientation=landscape'
-  },
-  {
-    imageUrl: 'https://readdy.ai/api/search-image?query=Organic%20health%20supplements%20and%20natural%20remedies%2C%20herbal%20medicine%20bottles%20and%20capsules%2C%20green%20leaves%20background%2C%20wellness%20products%2C%20clean%20modern%20display%2C%20healthy%20lifestyle%20concept%2C%20soft%20natural%20lighting%2C%20professional%20product%20photography&width=750&height=400&seq=3&orientation=landscape'
-  }
-]);
+const bannerList = ref([]);
 
 // 分类数据
 const categories = ref([
@@ -130,6 +125,8 @@ const categories = ref([
 // 推荐商品数据
 const products = ref([]);
 const productsLoading = ref(false);
+const recommendationType = ref(''); // 推荐类型：'personalized' | 'popular' | 'default'
+const recommendationStats = ref(null); // 推荐统计信息
 
 // 当前状态
 const currentSwiper = ref(0);
@@ -147,20 +144,14 @@ const onSwiperChange = (e) => {
 
 // 上一张轮播图
 const prevSwiper = () => {
-  if (currentSwiper.value === 0) {
-    currentSwiper.value = bannerList.value.length - 1;
-  } else {
-    currentSwiper.value--;
-  }
+  const newIndex = currentSwiper.value === 0 ? bannerList.value.length - 1 : currentSwiper.value - 1;
+  currentSwiper.value = newIndex;
 };
 
 // 下一张轮播图
 const nextSwiper = () => {
-  if (currentSwiper.value === bannerList.value.length - 1) {
-    currentSwiper.value = 0;
-  } else {
-    currentSwiper.value++;
-  }
+  const newIndex = currentSwiper.value === bannerList.value.length - 1 ? 0 : currentSwiper.value + 1;
+  currentSwiper.value = newIndex;
 };
 
 // 切换分类
@@ -168,8 +159,465 @@ const changeCategory = (index) => {
   currentCategory.value = index;
 };
 
+// 获取推荐商品
+const fetchRecommendProducts = async () => {
+  try {
+    productsLoading.value = true;
+    
+    const userInfo = store.getUserInfo();
+    let productList = [];
+    
+    // 如果用户已登录，尝试获取个性化推荐
+    if (userInfo && userInfo.openid) {
+      try {
+        const personalizedResponse = await new Promise((resolve, reject) => {
+          uni.request({
+            url: env.getApiUrl(`/user-behavior/recommendations/${userInfo.id || 1}`),
+            method: 'GET',
+            data: {
+              limit: 8
+            },
+            success: (res) => {
+              resolve(res);
+            },
+            fail: (err) => {
+              reject(err);
+            }
+          });
+        });
+        
+        if (personalizedResponse.statusCode === 200 && personalizedResponse.data.code === 200) {
+          // 获取个性化推荐的商品编码列表
+          const recommendedProductCodes = personalizedResponse.data.data || [];
+          console.log('个性化推荐商品编码:', recommendedProductCodes);
+          
+          // 根据推荐的商品编码获取商品详情
+          if (recommendedProductCodes.length > 0) {
+            for (const productCode of recommendedProductCodes) {
+              try {
+                const productResponse = await new Promise((resolve, reject) => {
+                  uni.request({
+                    url: env.getApiUrl(`/products`),
+                    method: 'GET',
+                    data: {
+                      productCode: productCode,
+                      page: 0,
+                      size: 1
+                    },
+                    success: (res) => {
+                      resolve(res);
+                    },
+                    fail: (err) => {
+                      reject(err);
+                    }
+                  });
+                });
+                
+                if (productResponse.statusCode === 200 && productResponse.data.code === 200) {
+                  const products = productResponse.data.data.content || [];
+                  if (products.length > 0) {
+                    productList.push(products[0]);
+                  }
+                }
+              } catch (error) {
+                console.error('获取推荐商品详情失败:', error);
+              }
+            }
+          }
+          
+          if (productList.length > 0) {
+            recommendationType.value = 'personalized';
+          }
+        }
+      } catch (error) {
+        console.error('获取个性化推荐失败:', error);
+      }
+    }
+    
+    // 如果个性化推荐为空或失败，获取热门推荐
+    if (productList.length === 0) {
+      try {
+        const hotResponse = await new Promise((resolve, reject) => {
+          uni.request({
+            url: env.getApiUrl('/user-behavior/popular'),
+            method: 'GET',
+            data: {
+              limit: 8,
+              days: 7
+            },
+            success: (res) => {
+              resolve(res);
+            },
+            fail: (err) => {
+              reject(err);
+            }
+          });
+        });
+        
+        if (hotResponse.statusCode === 200 && hotResponse.data.code === 200) {
+          const hotProductCodes = hotResponse.data.data || [];
+          console.log('热门推荐商品编码:', hotProductCodes);
+          
+          // 根据热门商品编码获取商品详情
+          for (const productCode of hotProductCodes) {
+            try {
+              const productResponse = await new Promise((resolve, reject) => {
+                uni.request({
+                  url: env.getApiUrl(`/products`),
+                  method: 'GET',
+                  data: {
+                    productCode: productCode,
+                    page: 0,
+                    size: 1
+                  },
+                  success: (res) => {
+                    resolve(res);
+                  },
+                  fail: (err) => {
+                    reject(err);
+                  }
+                });
+              });
+              
+              if (productResponse.statusCode === 200 && productResponse.data.code === 200) {
+                const products = productResponse.data.data.content || [];
+                if (products.length > 0) {
+                  productList.push(products[0]);
+                }
+              }
+            } catch (error) {
+              console.error('获取热门商品详情失败:', error);
+            }
+          }
+          
+          if (productList.length > 0) {
+            recommendationType.value = 'popular';
+          }
+        }
+      } catch (error) {
+        console.error('获取热门推荐失败:', error);
+      }
+    }
+    
+    // 如果推荐系统都失败，使用默认的商品列表
+    if (productList.length === 0) {
+      const response = await new Promise((resolve, reject) => {
+        uni.request({
+          url: env.getApiUrl('/products'),
+          method: 'GET',
+                  data: {
+          page: 0,
+          size: 8
+        },
+          success: (res) => {
+            resolve(res);
+          },
+          fail: (err) => {
+            reject(err);
+          }
+        });
+      });
+      
+      if (response.statusCode === 200 && response.data.code === 200) {
+        productList = response.data.data.content || [];
+        recommendationType.value = 'default';
+      } else {
+        console.error('获取商品列表失败:', response.data);
+        loadDefaultProducts();
+        recommendationType.value = 'default';
+        return;
+      }
+    }
+    
+    // 转换数据格式以适配前端显示
+    products.value = productList.map(product => ({
+      id: product.id,
+      name: product.productName,
+      description: product.productDescription || '暂无描述',
+      price: product.productPrice,
+      imageUrl: getImageUrl(product.mainImageUrl),
+      productCode: product.productCode,
+      stockQuantity: product.stockQuantity,
+      isHotProduct: product.isHotProduct,
+      isNewProduct: product.isNewProduct
+    }));
+    
+    console.log('推荐商品加载成功:', products.value);
+    console.log('推荐类型:', recommendationType.value);
+    
+    // 记录用户查看首页推荐商品的行为
+    recordViewRecommendPage();
+    
+  } catch (error) {
+    console.error('获取推荐商品出错:', error);
+    // 如果网络错误，使用默认数据
+    loadDefaultProducts();
+    recommendationType.value = 'default';
+  } finally {
+    productsLoading.value = false;
+  }
+};
+
+// 获取推荐统计信息
+const fetchRecommendationStats = async () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      return;
+    }
+    
+    const response = await new Promise((resolve, reject) => {
+      uni.request({
+        url: env.getApiUrl(`/user-behavior/statistics/${userInfo.id || 1}`),
+        method: 'GET',
+        success: (res) => {
+          resolve(res);
+        },
+        fail: (err) => {
+          reject(err);
+        }
+      });
+    });
+    
+    if (response.statusCode === 200 && response.data.code === 200) {
+      recommendationStats.value = response.data.data;
+      console.log('推荐统计信息:', recommendationStats.value);
+    }
+  } catch (error) {
+    console.error('获取推荐统计信息失败:', error);
+  }
+};
+
+// 记录用户查看首页推荐商品的行为
+const recordViewRecommendPage = async () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      console.log('用户未登录，跳过行为记录');
+      return;
+    }
+    
+    // 记录查看推荐页面行为
+    await uni.request({
+      url: env.getApiUrl('/user-behavior/view-page'),
+      method: 'POST',
+      data: {
+        userId: userInfo.id || 1, // 默认使用用户ID=1
+        pagePath: '/pages/index/index',
+        pageTitle: '首页推荐',
+        sourcePage: 'home'
+      }
+    });
+    
+    console.log('记录查看推荐页面行为成功');
+  } catch (error) {
+    console.error('记录查看推荐页面行为失败:', error);
+  }
+};
+
+// 记录用户点击商品的行为
+const recordClickProduct = async (product) => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      console.log('用户未登录，跳过行为记录');
+      return;
+    }
+    
+    // 记录点击商品行为
+    await uni.request({
+      url: env.getApiUrl('/user-behavior/click-product'),
+      method: 'POST',
+      data: {
+        userId: userInfo.id || 1, // 默认使用用户ID=1
+        productCode: product.productCode,
+        productName: product.name,
+        sourcePage: 'home'
+      }
+    });
+    
+    console.log('记录点击商品行为成功:', product.name);
+  } catch (error) {
+    console.error('记录点击商品行为失败:', error);
+  }
+};
+
+// 记录用户查看商品详情的行为
+const recordViewProduct = async (product) => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      console.log('用户未登录，跳过行为记录');
+      return;
+    }
+    
+    // 记录查看商品行为
+    await uni.request({
+      url: env.getApiUrl('/user-behavior/view-product'),
+      method: 'POST',
+      data: {
+        userId: userInfo.id || 1, // 默认使用用户ID=1
+        productCode: product.productCode,
+        productName: product.name,
+        sourcePage: 'home'
+      }
+    });
+    
+    console.log('记录查看商品行为成功:', product.name);
+  } catch (error) {
+    console.error('记录查看商品行为失败:', error);
+  }
+};
+
+// 记录用户搜索行为
+const recordSearchBehavior = async () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      console.log('用户未登录，跳过行为记录');
+      return;
+    }
+    
+    // 记录搜索行为（搜索框点击）
+    await uni.request({
+      url: env.getApiUrl('/user-behavior/search'),
+      method: 'POST',
+      data: {
+        userId: userInfo.id || 1, // 默认使用用户ID=1
+        keyword: '搜索框点击',
+        sourcePage: 'home'
+      }
+    });
+    
+    console.log('记录搜索行为成功');
+  } catch (error) {
+    console.error('记录搜索行为失败:', error);
+  }
+};
+
+// 处理图片URL
+const getImageUrl = (url) => {
+  if (!url) return '/static/default-product.png';
+  
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // 使用环境配置中的baseUrl
+  const config = env.getConfig();
+  
+  // 如果是icon图片，直接拼接后端地址
+  if (url.startsWith('icon/')) {
+    return config.baseUrl + '/' + url;
+  }
+  
+  // 如果是tabbar图片，直接拼接后端地址
+  if (url.startsWith('tabbar/')) {
+    return config.baseUrl + '/' + url;
+  }
+  
+  // 如果是Carousel轮播图，直接拼接后端地址
+  if (url.startsWith('Carousel/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
+  if (url.startsWith('/static/uploads/')) {
+    return config.baseUrl + url;
+  }
+  
+  // 如果是文件名，拼接完整的静态资源路径
+  if (!url.startsWith('/')) {
+    return config.baseUrl + '/static/uploads/' + url;
+  }
+  
+  // 其他情况，拼接后端地址和路径
+  return config.baseUrl + url;
+};
+
+// 初始化轮播图数据
+const initBannerList = () => {
+  bannerList.value = [
+    {
+      imageUrl: getImageUrl('Carousel/siliao.jpg')
+    },
+    {
+      imageUrl: getImageUrl('Carousel/shucai.jpg')
+    },
+    {
+      imageUrl: getImageUrl('Carousel/baojian.jpg')
+    }
+  ];
+};
+
+// 加载默认商品数据（当API调用失败时使用）
+const loadDefaultProducts = () => {
+  products.value = [
+    {
+      id: 1,
+      name: '有机红薯',
+      description: '农家自种，无公害种植',
+      price: 12.8,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 2,
+      name: '优质玉米饲料',
+      description: '高营养，适合家禽喂养',
+      price: 45.9,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 3,
+      name: '枸杞菊花茶',
+      description: '养生保健，明目润肺',
+      price: 38.5,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 4,
+      name: '新鲜胡萝卜',
+      description: '富含胡萝卜素，助力健康',
+      price: 8.8,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 5,
+      name: '有机白菜',
+      description: '新鲜采摘，绿色健康',
+      price: 6.5,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 6,
+      name: '土鸡蛋',
+      description: '散养土鸡，营养丰富',
+      price: 15.9,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 7,
+      name: '蜂蜜',
+      description: '纯天然野生蜂蜜',
+      price: 68.0,
+      imageUrl: '/static/default-product.png'
+    },
+    {
+      id: 8,
+      name: '有机大米',
+      description: '东北黑土地种植',
+      price: 25.8,
+      imageUrl: '/static/default-product.png'
+    }
+  ];
+};
+
 // 跳转到搜索页面
 const goToSearch = () => {
+  // 记录搜索行为
+  recordSearchBehavior();
+  
   uni.navigateTo({
     url: '/pages/searchProduct/searchProduct'
   });
@@ -218,131 +666,14 @@ const handleLoginSuccess = (userInfo) => {
   showLoginModal.value = false;
 };
 
-// 获取推荐商品
-const fetchRecommendProducts = async () => {
-  try {
-    productsLoading.value = true;
-    
-    // 调用后端API获取商品列表，限制4个推荐商品
-    const response = await new Promise((resolve, reject) => {
-      uni.request({
-        url: env.getApiUrl('/products'),
-        method: 'GET',
-        data: {
-          page: 0,
-          size: 4
-        },
-        success: (res) => {
-          resolve(res);
-        },
-        fail: (err) => {
-          reject(err);
-        }
-      });
-    });
-    
-    if (response.statusCode === 200 && response.data.code === 200) {
-      // 转换数据格式以适配前端显示
-      const productList = response.data.data.content || [];
-      products.value = productList.map(product => ({
-        id: product.id,
-        name: product.productName,
-        description: product.productDescription || '暂无描述',
-        price: product.productPrice,
-        imageUrl: getImageUrl(product.mainImageUrl),
-        productCode: product.productCode,
-        stockQuantity: product.stockQuantity,
-        isHotProduct: product.isHotProduct,
-        isNewProduct: product.isNewProduct
-      }));
-      
-      console.log('推荐商品加载成功:', products.value);
-    } else {
-      console.error('获取推荐商品失败:', response.data);
-      // 如果API调用失败，使用默认数据
-      loadDefaultProducts();
-    }
-  } catch (error) {
-    console.error('获取推荐商品出错:', error);
-    // 如果网络错误，使用默认数据
-    loadDefaultProducts();
-  } finally {
-    productsLoading.value = false;
-  }
-};
-
-// 处理图片URL
-const getImageUrl = (url) => {
-  if (!url) return '/static/default-product.png';
-  
-  // 如果已经是完整URL，直接返回
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url;
-  }
-  
-  // 使用环境配置中的baseUrl
-  const config = env.getConfig();
-  
-  // 如果是icon图片，直接拼接后端地址
-  if (url.startsWith('icon/')) {
-    return config.baseUrl + '/' + url;
-  }
-  
-  // 如果是tabbar图片，直接拼接后端地址
-  if (url.startsWith('tabbar/')) {
-    return config.baseUrl + '/' + url;
-  }
-  
-  // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
-  if (url.startsWith('/static/uploads/')) {
-    return config.baseUrl + url;
-  }
-  
-  // 如果是文件名，拼接完整的静态资源路径
-  if (!url.startsWith('/')) {
-    return config.baseUrl + '/static/uploads/' + url;
-  }
-  
-  // 其他情况，拼接后端地址和路径
-  return config.baseUrl + url;
-};
-
-// 加载默认商品数据（当API调用失败时使用）
-const loadDefaultProducts = () => {
-  products.value = [
-    {
-      id: 1,
-      name: '有机红薯',
-      description: '农家自种，无公害种植',
-      price: 12.8,
-      imageUrl: '/static/default-product.png'
-    },
-    {
-      id: 2,
-      name: '优质玉米饲料',
-      description: '高营养，适合家禽喂养',
-      price: 45.9,
-      imageUrl: '/static/default-product.png'
-    },
-    {
-      id: 3,
-      name: '枸杞菊花茶',
-      description: '养生保健，明目润肺',
-      price: 38.5,
-      imageUrl: '/static/default-product.png'
-    },
-    {
-      id: 4,
-      name: '新鲜胡萝卜',
-      description: '富含胡萝卜素，助力健康',
-      price: 8.8,
-      imageUrl: '/static/default-product.png'
-    }
-  ];
-};
-
 // 跳转到商品详情
 const goToProductDetail = (product) => {
+  // 记录点击商品行为
+  recordClickProduct(product);
+  
+  // 记录查看商品行为
+  recordViewProduct(product);
+  
   uni.navigateTo({
     url: `/pages/productDetail/productDetail?id=${product.id}`
   });
@@ -350,6 +681,9 @@ const goToProductDetail = (product) => {
 
 // 购买按钮点击处理
 const addToCart = (product) => {
+  // 记录点击商品行为
+  recordClickProduct(product);
+  
   // 跳转到商品详情页面
   uni.navigateTo({
     url: `/pages/productDetail/productDetail?id=${product.id}`
@@ -364,8 +698,10 @@ const handleImageError = (e) => {
 
 // 页面加载时检查登录状态
 onMounted(() => {
+  initBannerList(); // 初始化轮播图数据
   checkLoginStatus();
   fetchRecommendProducts();
+  fetchRecommendationStats();
 });
 </script>
 <style>
@@ -487,6 +823,8 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
 }
+
+
 .swiper-dots {
   position: absolute;
   bottom: 24rpx;
@@ -516,31 +854,33 @@ onMounted(() => {
 }
 
 .arrow-circle {
-  width: 60rpx;
-  height: 60rpx;
-  background-color: rgba(255, 255, 255, 0.9);
+  width: 80rpx;
+  height: 80rpx;
+  background-color: rgba(255, 255, 255, 0.95);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.1);
-  transition: all 0.2s ease;
+  box-shadow: 0 4rpx 16rpx rgba(0,0,0,0.15);
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10rpx);
 }
 
-.arrow-circle:hover {
+.arrow-circle:active {
   background-color: rgba(255, 255, 255, 1);
-  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.15);
+  box-shadow: 0 6rpx 20rpx rgba(0,0,0,0.2);
+  transform: scale(0.95);
 }
 .swiper-arrow.left {
-  left: 20rpx;
+  left: 30rpx;
 }
 .swiper-arrow.right {
-  right: 20rpx;
+  right: 30rpx;
 }
 
 .arrow-icon {
-  width: 32rpx;
-  height: 32rpx;
+  width: 40rpx;
+  height: 40rpx;
 }
 
 .left-arrow {
@@ -559,6 +899,60 @@ onMounted(() => {
   color: #222;
   background: transparent;
   letter-spacing: 2rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.recommendation-type {
+  font-size: 24rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+  font-weight: normal;
+}
+
+.recommendation-type.personalized {
+  background: linear-gradient(90deg, #4CAF50 60%, #43a047 100%);
+  color: #fff;
+}
+
+.recommendation-type.popular {
+  background: linear-gradient(90deg, #ff9800 60%, #f57c00 100%);
+  color: #fff;
+}
+
+.recommendation-type.default {
+  background: #f0f0f0;
+  color: #666;
+}
+
+/* 推荐统计信息样式 */
+.recommendation-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 20rpx 30rpx;
+  background: #fff;
+  margin: 0 30rpx 20rpx 30rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.05);
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.stats-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #4CAF50;
 }
 
 /* 商品网格样式优化 */
@@ -568,10 +962,11 @@ onMounted(() => {
   padding: 0 10rpx 120rpx 10rpx;
   background: transparent;
   justify-content: space-between;
+  gap: 20rpx;
 }
 .product-card {
-  width: calc(50% - 16rpx);
-  margin: 10rpx 0;
+  width: calc(50% - 10rpx);
+  margin: 0;
   background: #fff;
   border-radius: 20rpx;
   overflow: hidden;

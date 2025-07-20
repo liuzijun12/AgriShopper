@@ -60,6 +60,11 @@ page {
   align-items: center;
   padding: 0 30rpx;
 }
+.search-icon {
+  width: 36rpx;
+  height: 36rpx;
+  flex-shrink: 0;
+}
 .search-placeholder {
   margin-left: 20rpx;
   font-size: 14px;

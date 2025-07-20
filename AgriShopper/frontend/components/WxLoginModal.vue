@@ -91,11 +91,33 @@ export default {
 		async handleWxLogin() {
 			if (this.isLoading) return
 			this.isLoading = true
-			// 跳转到微信原生授权页面
-			uni.navigateTo({
-				url: '/pages/wxLogin/wxLogin'
-			});
-			this.isLoading = false
+			
+			try {
+				// 直接在当前组件中处理登录
+				const code = await this.getWxLoginCode()
+				const result = await this.callBackendLogin(code)
+				
+				if (result && result.data) {
+					// 登录成功，存储用户信息
+					store.setUserInfo(result.data)
+					
+					uni.showToast({
+						title: '登录成功',
+						icon: 'success'
+					})
+					
+					// 关闭登录弹窗
+					this.$emit('close')
+					
+					// 刷新页面数据
+					this.$emit('login-success')
+				}
+			} catch (error) {
+				console.error('登录失败:', error)
+				this.handleLoginError(error)
+			} finally {
+				this.isLoading = false
+			}
 		},
 		
 		// 测试后端连接

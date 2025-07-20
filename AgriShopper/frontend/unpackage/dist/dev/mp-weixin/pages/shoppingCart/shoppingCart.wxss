@@ -172,15 +172,19 @@
   position: relative;
   background-color: #fff;
   margin-bottom: 2rpx;
+  overflow: hidden;
 }
 
 /* 商品项 */
 .cart-item {
   display: flex;
   padding: 25rpx;
-  align-items: center;
+  padding-right: 145rpx;
+  align-items: flex-start;
   background-color: #fff;
   transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
 }
 
 /* 删除按钮 */
@@ -196,6 +200,7 @@
   justify-content: center;
   transform: translateX(100%);
   transition: transform 0.3s ease;
+  z-index: 10;
 }
 .cart-item-wrapper:hover .delete-btn {
   transform: translateX(0);
@@ -264,6 +269,10 @@
 .item-footer {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  margin-top: 20rpx;
 }
 .stock {
   color: #e93b3d;
@@ -276,6 +285,10 @@
   align-items: center;
   border: 1rpx solid #ddd;
   border-radius: 10rpx;
+  background-color: #fff;
+  position: relative;
+  z-index: 1;
+  margin-right: 10rpx;
 }
 .quantity-btn {
   width: 70rpx;
@@ -285,6 +298,8 @@
   font-size: 36rpx;
   color: #666;
   background-color: #f7f7f7;
+  border: none;
+  outline: none;
 }
 .quantity-input {
   width: 90rpx;
@@ -293,6 +308,10 @@
   font-size: 32rpx;
   border-left: 1rpx solid #ddd;
   border-right: 1rpx solid #ddd;
+  border-top: none;
+  border-bottom: none;
+  background-color: #fff;
+  outline: none;
 }
 
 /* 底部结算栏 */
@@ -307,6 +326,8 @@
   align-items: center;
   padding: 0 25rpx;
   border-top: 1rpx solid #f0f0f0;
+  z-index: 1000;
+  box-shadow: 0 -2rpx 10rpx rgba(0, 0, 0, 0.1);
 }
 .select-all {
   display: flex;

@@ -4,7 +4,7 @@
     <!-- 顶部搜索栏 -->
     <view class="search-bar">
       <view class="search-input" @click="goToSearch">
-        <uni-icons type="search" size="18" color="#999999"></uni-icons>
+        <image :src="getImageUrl('icon/搜索.png')" class="search-icon" mode="aspectFit"></image>
         <text class="search-placeholder">搜索商品名称</text>
       </view>
     </view>
@@ -106,6 +106,7 @@ import { ref, onMounted, reactive } from 'vue';
 import { store } from '../../store.js';
 import productsApi from '../../api/products.js';
 import categoriesApi from '../../api/categories.js';
+import env from '../../config/env.js';
 
 // 响应式数据
 const currentCategory = ref(0);
@@ -113,6 +114,47 @@ const products = ref([]);
 const loading = ref(false);
 const error = ref('');
 const hasMore = ref(true);
+
+// 处理图片URL
+const getImageUrl = (url) => {
+  if (!url) return '/static/default-product.png';
+  
+  // 如果已经是完整URL，直接返回
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // 使用环境配置中的baseUrl
+  const config = env.getConfig();
+  
+  // 如果是icon图片，直接拼接后端地址
+  if (url.startsWith('icon/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果是tabbar图片，直接拼接后端地址
+  if (url.startsWith('tabbar/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果是Carousel轮播图，直接拼接后端地址
+  if (url.startsWith('Carousel/')) {
+    return config.baseUrl + '/static/' + url;
+  }
+  
+  // 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
+  if (url.startsWith('/static/uploads/')) {
+    return config.baseUrl + url;
+  }
+  
+  // 如果是文件名，拼接完整的静态资源路径
+  if (!url.startsWith('/')) {
+    return config.baseUrl + '/static/uploads/' + url;
+  }
+  
+  // 其他情况，拼接后端地址和路径
+  return config.baseUrl + url;
+};
 
 // 分页参数
 const pageParams = reactive({
@@ -393,6 +435,12 @@ page {
   display: flex;
   align-items: center;
   padding: 0 30rpx;
+}
+
+.search-icon {
+  width: 36rpx;
+  height: 36rpx;
+  flex-shrink: 0;
 }
 
 .search-placeholder {

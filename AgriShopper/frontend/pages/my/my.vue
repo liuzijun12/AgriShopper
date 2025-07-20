@@ -28,7 +28,7 @@
 
     <!-- 快捷功能区 -->
     <view class="quick-functions">
-      <view class="function-item cursor-pointer" v-for="(item, index) in functionItems" :key="index">
+      <view class="function-item cursor-pointer" v-for="(item, index) in functionItems" :key="index" @click="handleFunctionClick(item)">
         <text class="function-text">{{ item.text }}</text>
       </view>
     </view>
@@ -43,23 +43,44 @@
 
     <!-- 地址管理区域 -->
     <view class="address-section">
-      <view class="section-title">
-        <text>地址管理</text>
+      <view class="section-header">
+        <text class="section-title">地址管理</text>
+        <view class="add-address-btn cursor-pointer" @click="addAddress">
+          <text class="add-icon">+</text>
+          <text class="add-text">新增地址</text>
+        </view>
       </view>
-      <view class="address-list">
-        <view class="address-item" v-for="(address, index) in addresses" :key="index">
-          <view class="address-info">
+      
+      <!-- 加载状态 -->
+      <view v-if="loading" class="loading-container">
+        <view class="loading-spinner"></view>
+        <text class="loading-text">正在加载地址...</text>
+      </view>
+      
+      <!-- 空状态 -->
+      <view v-else-if="addresses.length === 0" class="empty-address">
+        <text class="empty-text">暂无收货地址</text>
+        <text class="empty-subtext">点击上方"新增地址"添加</text>
+      </view>
+      
+      <!-- 地址列表 -->
+      <view v-else class="address-list">
+        <view class="address-item" v-for="(address, index) in addresses" :key="address.id">
+          <view class="address-info" @click="editAddress(index)">
             <view class="address-detail">
               <text class="address-name">{{ address.name }}</text>
               <text class="address-phone">{{ address.phone }}</text>
+              <text v-if="address.isDefault" class="default-tag">默认</text>
             </view>
             <text class="address-text">{{ address.address }}</text>
           </view>
-          <view class="address-default cursor-pointer" @click="setDefaultAddress(index)">
-            <view class="radio-button" :class="{ 'radio-selected': address.isDefault }">
-              <view v-if="address.isDefault" class="radio-inner"></view>
+          <view class="address-actions">
+            <view class="action-btn cursor-pointer" @click="setDefaultAddress(index)" v-if="!address.isDefault">
+              <text class="action-text">设为默认</text>
             </view>
-            <text class="default-text">默认地址</text>
+            <view class="action-btn delete-btn cursor-pointer" @click="deleteAddress(index)">
+              <text class="action-text">删除</text>
+            </view>
           </view>
         </view>
       </view>
@@ -77,6 +98,7 @@
 import { ref, onMounted } from 'vue';
 import { store } from '../../store.js';
 import WxLoginModal from '../../components/WxLoginModal.vue';
+import addressApi from '../../api/address.js';
 
 // 登录状态
 const isLoggedIn = ref(false);
@@ -102,25 +124,150 @@ const functionItems = ref([
 ]);
 
 // 地址信息
-const addresses = ref([
-  { 
-    name: '张先生', 
-    phone: '138****1234', 
-    address: '浙江省杭州市西湖区文三路100号', 
-    isDefault: true 
-  },
-  { 
-    name: '张先生', 
-    phone: '138****1234', 
-    address: '浙江省杭州市滨江区江南大道500号', 
-    isDefault: false 
+const addresses = ref([]);
+const loading = ref(false);
+
+// 加载地址列表
+const loadAddresses = async () => {
+  try {
+    loading.value = true;
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.id) {
+      console.log('用户未登录，无法加载地址');
+      return;
+    }
+
+    const response = await addressApi.getAddressList(userInfo.id);
+    if (response.code === 200 && response.data) {
+      // 转换后端数据格式为前端格式
+      addresses.value = response.data.map(address => ({
+        id: address.id,
+        name: address.receiverName,
+        phone: address.receiverPhone,
+        address: `${address.province}${address.city}${address.district}${address.detailAddress}`,
+        isDefault: address.isDefault,
+        // 保存完整地址信息用于编辑
+        fullAddress: address
+      }));
+    } else {
+      console.error('获取地址列表失败:', response.message);
+      uni.showToast({
+        title: response.message || '获取地址列表失败',
+        icon: 'error'
+      });
+    }
+  } catch (error) {
+    console.error('加载地址列表失败:', error);
+    uni.showToast({
+      title: '加载地址列表失败',
+      icon: 'error'
+    });
+  } finally {
+    loading.value = false;
   }
-]);
+};
 
 // 设置默认地址
-const setDefaultAddress = (index) => {
-  addresses.value.forEach((address, i) => {
-    address.isDefault = i === index;
+const setDefaultAddress = async (index) => {
+  try {
+    const address = addresses.value[index];
+    const userInfo = store.getUserInfo();
+    
+    if (!userInfo || !userInfo.id) {
+      uni.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    const response = await addressApi.setDefaultAddress(address.id, userInfo.id);
+    if (response.code === 200) {
+      // 更新本地状态
+      addresses.value.forEach((addr, i) => {
+        addr.isDefault = i === index;
+      });
+      
+      uni.showToast({
+        title: '设置默认地址成功',
+        icon: 'success'
+      });
+    } else {
+      uni.showToast({
+        title: response.message || '设置默认地址失败',
+        icon: 'error'
+      });
+    }
+  } catch (error) {
+    console.error('设置默认地址失败:', error);
+    uni.showToast({
+      title: '设置默认地址失败',
+      icon: 'error'
+    });
+  }
+};
+
+// 删除地址
+const deleteAddress = async (index) => {
+  try {
+    const address = addresses.value[index];
+    const userInfo = store.getUserInfo();
+    
+    if (!userInfo || !userInfo.id) {
+      uni.showToast({
+        title: '请先登录',
+        icon: 'none'
+      });
+      return;
+    }
+
+    uni.showModal({
+      title: '确认删除',
+      content: `确定要删除地址"${address.name}"吗？`,
+      confirmText: '删除',
+      confirmColor: '#ff6b6b',
+      success: async (res) => {
+        if (res.confirm) {
+          const response = await addressApi.deleteAddress(address.id, userInfo.id);
+          if (response.code === 200) {
+            // 从本地列表中移除
+            addresses.value.splice(index, 1);
+            
+            uni.showToast({
+              title: '删除地址成功',
+              icon: 'success'
+            });
+          } else {
+            uni.showToast({
+              title: response.message || '删除地址失败',
+              icon: 'error'
+            });
+          }
+        }
+      }
+    });
+  } catch (error) {
+    console.error('删除地址失败:', error);
+    uni.showToast({
+      title: '删除地址失败',
+      icon: 'error'
+    });
+  }
+};
+
+// 编辑地址
+const editAddress = (index) => {
+  const address = addresses.value[index];
+  // 跳转到地址编辑页面，传递地址信息
+  uni.navigateTo({
+    url: `/pages/address/edit?addressId=${address.id}`
+  });
+};
+
+// 新增地址
+const addAddress = () => {
+  uni.navigateTo({
+    url: '/pages/address/add'
   });
 };
 
@@ -167,6 +314,27 @@ const handleLoginSuccess = (userInfo) => {
   console.log('登录成功:', userInfo);
   checkLoginStatus();
   showLoginModal.value = false;
+  // 登录成功后加载地址列表
+  loadAddresses();
+};
+
+// 处理功能项点击
+const handleFunctionClick = (item) => {
+  switch (item.text) {
+    case '我的收藏':
+      uni.navigateTo({
+        url: '/pages/favorites/favorites'
+      });
+      break;
+    case '浏览记录':
+      uni.showToast({
+        title: '功能开发中',
+        icon: 'none'
+      });
+      break;
+    default:
+      break;
+  }
 };
 
 // 退出登录处理
@@ -220,6 +388,10 @@ const handleLogout = () => {
 // 页面加载时检查登录状态
 onMounted(() => {
   checkLoginStatus();
+  // 如果已登录，加载地址列表
+  if (isLoggedIn.value) {
+    loadAddresses();
+  }
 });
 </script>
 <style>
@@ -375,20 +547,98 @@ page {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.section-title {
-  padding: 30rpx;
+.section-header {
+  padding: 40rpx 30rpx;
   border-bottom: 1px solid #eee;
-  font-size: 16px;
-  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.section-title {
+  font-size: 36rpx;
+  font-weight: 600;
   color: #333;
 }
 
+.add-address-btn {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 30rpx;
+  background-color: #4CAF50;
+  border-radius: 25rpx;
+  color: white;
+}
+
+.add-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  font-weight: bold;
+}
+
+.add-text {
+  font-size: 28rpx;
+  font-weight: 500;
+}
+
+/* 加载状态 */
+.loading-container {
+  padding: 80rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner {
+  width: 80rpx;
+  height: 80rpx;
+  border: 6rpx solid #f3f3f3;
+  border-top: 6rpx solid #4CAF50;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 30rpx;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  color: #999;
+  font-size: 32rpx;
+  font-weight: 500;
+}
+
+/* 空状态 */
+.empty-address {
+  padding: 80rpx 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-text {
+  font-size: 36rpx;
+  color: #999;
+  margin-bottom: 16rpx;
+  font-weight: 500;
+}
+
+.empty-subtext {
+  font-size: 30rpx;
+  color: #ccc;
+}
+
+/* 地址列表 */
 .address-list {
   padding: 0 30rpx;
 }
 
 .address-item {
-  padding: 32rpx 0;
+  padding: 40rpx 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -401,61 +651,61 @@ page {
 
 .address-info {
   flex: 1;
+  cursor: pointer;
 }
 
 .address-detail {
   display: flex;
-  margin-bottom: 12rpx;
+  align-items: center;
+  margin-bottom: 16rpx;
 }
 
 .address-name {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 32rpx;
+  font-weight: 600;
   color: #333;
-  margin-right: 16rpx;
+  margin-right: 20rpx;
 }
 
 .address-phone {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666;
+  margin-right: 20rpx;
+}
+
+.default-tag {
+  font-size: 24rpx;
+  color: #4CAF50;
+  background-color: #e8f5e8;
+  padding: 8rpx 16rpx;
+  border-radius: 16rpx;
+  font-weight: 500;
 }
 
 .address-text {
-  font-size: 14px;
+  font-size: 28rpx;
   color: #666;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
-.address-default {
+.address-actions {
   display: flex;
-  align-items: center;
-  margin-left: 20rpx;
+  flex-direction: column;
+  gap: 16rpx;
 }
 
-.radio-button {
-  width: 36rpx;
-  height: 36rpx;
-  border-radius: 18rpx;
-  border: 1px solid #ddd;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-right: 12rpx;
-}
-
-.radio-selected {
-  border-color: #4CAF50;
-}
-
-.radio-inner {
-  width: 20rpx;
-  height: 20rpx;
-  border-radius: 10rpx;
-  background-color: #4CAF50;
-}
-
-.default-text {
-  font-size: 12px;
+.action-btn {
+  padding: 16rpx 24rpx;
+  border-radius: 20rpx;
+  text-align: center;
+  font-size: 26rpx;
+  background-color: #f5f5f5;
   color: #666;
+  font-weight: 500;
+}
+
+.action-btn.delete-btn {
+  background-color: #ffebee;
+  color: #f44336;
 }
 </style>

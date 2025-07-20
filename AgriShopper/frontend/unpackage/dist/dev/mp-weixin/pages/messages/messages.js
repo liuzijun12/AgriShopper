@@ -144,7 +144,7 @@ const _sfc_main = {
             id: 5,
             type: "globalAnnouncement",
             icon: "📢",
-            title: "台风“木兰”配送延迟公告",
+            title: '台风"木兰"配送延迟公告',
             content: "受台风影响，7月15-18日 广东、福建产区发货及物流时效调整",
             affectedTimeRange: "7月15-18日",
             pausedServices: "汕头、汕尾、厦门产区直发",
@@ -266,7 +266,7 @@ const _sfc_main = {
             read: true,
             actionButtonText: ""
           }
-        ].sort((a, b) => /* @__PURE__ */ new Date(b.date + " " + b.time) - /* @__PURE__ */ new Date(a.date + " " + a.time));
+        ].sort(compareDates);
         orderMessages.value = mockData;
         updateUnreadCount();
         common_vendor.index.hideLoading();
@@ -356,7 +356,7 @@ const _sfc_main = {
             read: true,
             isNew: false
           }
-        ].sort((a, b) => /* @__PURE__ */ new Date(b.date + " " + b.time) - /* @__PURE__ */ new Date(a.date + " " + a.time));
+        ].sort(compareDates);
         promotionMessages.value = mockData;
         updateUnreadCount();
         common_vendor.index.hideLoading();
@@ -450,7 +450,7 @@ const _sfc_main = {
           {
             id: 305,
             title: "如何开电子发票？",
-            lastMessage: "请在“我的订单”中选择对应订单，点击“申请发票”即可。",
+            lastMessage: '请在"我的订单"中选择对应订单，点击"申请发票"即可。',
             time: "2025-07-13 10:00",
             date: "2025-07-13",
             unread: 0,
@@ -466,15 +466,12 @@ const _sfc_main = {
             priority: "normal",
             priorityIcon: ""
           }
-        ].sort((a, b) => /* @__PURE__ */ new Date(b.date + " " + b.time) - /* @__PURE__ */ new Date(a.date + " " + a.time));
+        ].sort(compareDates);
         serviceMessages.value = mockData;
         updateUnreadCount();
         common_vendor.index.hideLoading();
       }, 1e3);
     };
-    const groupedSystemMessages = common_vendor.computed(() => {
-      return groupMessagesByDate(systemMessages.value);
-    });
     const filteredOrderMessages = common_vendor.computed(() => {
       let filtered = orderMessages.value;
       if (filterStatus.value !== "all") {
@@ -527,54 +524,6 @@ const _sfc_main = {
       }
       return filtered;
     });
-    const groupedOrderMessages = common_vendor.computed(() => {
-      const sortedMessages = [...filteredOrderMessages.value].sort((a, b) => {
-        const dateA = /* @__PURE__ */ new Date(a.date + " " + a.time.replace("今天 ", "").replace("昨天 ", ""));
-        const dateB = /* @__PURE__ */ new Date(b.date + " " + b.time.replace("今天 ", "").replace("昨天 ", ""));
-        return dateB - dateA;
-      });
-      return groupMessagesByDate(sortedMessages);
-    });
-    const groupedPromotionMessages = common_vendor.computed(() => {
-      const sortedMessages = [...filteredPromotionMessages.value].sort((a, b) => {
-        const dateA = /* @__PURE__ */ new Date(a.date + " " + a.time.replace("今天 ", "").replace("昨天 ", ""));
-        const dateB = /* @__PURE__ */ new Date(b.date + " " + b.time.replace("今天 ", "").replace("昨天 ", ""));
-        return dateB - dateA;
-      });
-      return groupMessagesByDate(sortedMessages);
-    });
-    const groupedServiceMessages = common_vendor.computed(() => {
-      const sortedMessages = [...filteredServiceMessages.value].sort((a, b) => {
-        const dateA = /* @__PURE__ */ new Date(a.date + " " + a.time.replace("今天 ", "").replace("昨天 ", ""));
-        const dateB = /* @__PURE__ */ new Date(b.date + " " + b.time.replace("今天 ", "").replace("昨天 ", ""));
-        return dateB - dateA;
-      });
-      return groupMessagesByDate(sortedMessages);
-    });
-    const groupMessagesByDate = (messages) => {
-      const groups = {};
-      messages.forEach((message) => {
-        const displayDate = formatDisplayDate(message.date);
-        if (!groups[displayDate]) {
-          groups[displayDate] = [];
-        }
-        groups[displayDate].push(message);
-      });
-      return groups;
-    };
-    const formatDisplayDate = (dateString) => {
-      const today = /* @__PURE__ */ new Date();
-      const yesterday = new Date(today);
-      yesterday.setDate(today.getDate() - 1);
-      const messageDate = new Date(dateString);
-      if (messageDate.toDateString() === today.toDateString()) {
-        return "今天";
-      } else if (messageDate.toDateString() === yesterday.toDateString()) {
-        return "昨天";
-      } else {
-        return dateString;
-      }
-    };
     const hasMore = common_vendor.ref(false);
     const loading = common_vendor.ref(false);
     const startX = common_vendor.ref(0);
@@ -697,7 +646,7 @@ const _sfc_main = {
           queryParams = { messageData: encodeURIComponent(JSON.stringify(message)) };
           baseUrl = "/pages/messages/systemNotification/";
         } else {
-          common_vendor.index.__f__("warn", "at pages/messages/messages.vue:1148", "Non-specific system message, no corresponding detail page navigation logic.");
+          common_vendor.index.__f__("warn", "at pages/messages/messages.vue:1084", "Non-specific system message, no corresponding detail page navigation logic.");
           common_vendor.index.showToast({
             title: "非特定系统消息",
             icon: "none"
@@ -715,7 +664,7 @@ const _sfc_main = {
           url: `${baseUrl}${targetPage}${queryString ? "?" + queryString : ""}`
         });
       } else {
-        common_vendor.index.__f__("warn", "at pages/messages/messages.vue:1169", "Unknown message category or undefined navigation logic, cannot navigate:", category);
+        common_vendor.index.__f__("warn", "at pages/messages/messages.vue:1105", "Unknown message category or undefined navigation logic, cannot navigate:", category);
         common_vendor.index.showToast({
           title: "未知消息类型",
           icon: "none"
@@ -848,7 +797,7 @@ const _sfc_main = {
       messageTabs.value[3].unread = serviceMessages.value.reduce((total, service) => total + (service.unread || 0), 0);
     };
     const onImageError = (type, item) => {
-      common_vendor.index.__f__("error", "at pages/messages/messages.vue:1324", `Failed to load ${type} type image, item:`, item);
+      common_vendor.index.__f__("error", "at pages/messages/messages.vue:1260", `Failed to load ${type} type image, item:`, item);
       if (type === "product") {
         item.productImage = "https://placehold.co/100x100/FF0000/FFFFFF?text=Error";
       } else if (type === "promotion") {
@@ -893,6 +842,24 @@ const _sfc_main = {
       fetchPromotionMessages();
       fetchServiceMessages();
     });
+    const parseDate = (dateStr, timeStr) => {
+      try {
+        let processedTime = timeStr;
+        if (timeStr.includes("今天 ") || timeStr.includes("昨天 ")) {
+          processedTime = timeStr.replace("今天 ", "").replace("昨天 ", "");
+        }
+        const isoString = `${dateStr}T${processedTime}:00`;
+        return new Date(isoString);
+      } catch (error) {
+        common_vendor.index.__f__("warn", "at pages/messages/messages.vue:1322", "日期解析失败，使用当前时间:", error);
+        return /* @__PURE__ */ new Date();
+      }
+    };
+    const compareDates = (a, b) => {
+      const dateA = parseDate(a.date, a.time);
+      const dateB = parseDate(b.date, b.time);
+      return dateB - dateA;
+    };
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: backendStaticBaseUrl.value + "/messages/clear_icon.png",
@@ -912,69 +879,64 @@ const _sfc_main = {
           });
         }),
         d: currentTab.value === 0
-      }, currentTab.value === 0 ? {
-        e: common_vendor.f(groupedSystemMessages.value, (group, date, i0) => {
-          return {
-            a: common_vendor.t(date),
-            b: common_vendor.f(group, (message, index, i1) => {
-              return common_vendor.e({
-                a: common_vendor.t(message.icon),
-                b: common_vendor.t(message.title),
-                c: common_vendor.t(message.time),
-                d: common_vendor.t(message.content),
-                e: message.type === "highRiskOp"
-              }, message.type === "highRiskOp" ? {
-                f: common_vendor.t(message.deviceIp),
-                g: common_vendor.t(message.operationType)
-              } : message.type === "platformOperation" ? {
-                i: common_vendor.t(message.maintenanceTime),
-                j: common_vendor.t(message.impactScope)
-              } : message.type === "ruleUpdate" ? {
-                l: common_vendor.t(message.effectiveTime),
-                m: common_vendor.t(message.newRule)
-              } : message.type === "riskWarning" ? {
-                o: common_vendor.t(message.riskObject),
-                p: common_vendor.t(message.potentialImpact)
-              } : message.type === "globalAnnouncement" ? {
-                r: common_vendor.t(message.affectedTimeRange),
-                s: common_vendor.t(message.pausedServices)
-              } : {}, {
-                h: message.type === "platformOperation",
-                k: message.type === "ruleUpdate",
-                n: message.type === "riskWarning",
-                q: message.type === "globalAnnouncement",
-                t: !message.read
-              }, !message.read ? {} : {}, {
-                v: common_vendor.n(
-                  // 根据消息类型添加特定颜色类和边框
-                  message.type === "highRiskOp" ? "high-risk-card" : ""
-                ),
-                w: common_vendor.n(message.type === "riskWarning" ? "high-risk-card" : ""),
-                x: common_vendor.n(message.type === "platformOperation" ? "maintenance-card" : ""),
-                y: common_vendor.n(message.type === "ruleUpdate" ? "rule-card" : ""),
-                z: common_vendor.n(message.type === "globalAnnouncement" ? "announcement-card" : ""),
-                A: index,
-                B: common_vendor.o(($event) => handleMessageClick(message, "system"), index)
-              });
-            }),
-            c: date
-          };
-        })
-      } : {}, {
-        f: currentTab.value === 1
+      }, currentTab.value === 0 ? common_vendor.e({
+        e: common_vendor.f(systemMessages.value, (message, index, i0) => {
+          return common_vendor.e({
+            a: common_vendor.t(message.icon),
+            b: common_vendor.t(message.title),
+            c: common_vendor.t(message.time),
+            d: common_vendor.t(message.content),
+            e: message.type === "highRiskOp"
+          }, message.type === "highRiskOp" ? {
+            f: common_vendor.t(message.deviceIp),
+            g: common_vendor.t(message.operationType)
+          } : message.type === "platformOperation" ? {
+            i: common_vendor.t(message.maintenanceTime),
+            j: common_vendor.t(message.impactScope)
+          } : message.type === "ruleUpdate" ? {
+            l: common_vendor.t(message.effectiveTime),
+            m: common_vendor.t(message.newRule)
+          } : message.type === "riskWarning" ? {
+            o: common_vendor.t(message.riskObject),
+            p: common_vendor.t(message.potentialImpact)
+          } : message.type === "globalAnnouncement" ? {
+            r: common_vendor.t(message.affectedTimeRange),
+            s: common_vendor.t(message.pausedServices)
+          } : {}, {
+            h: message.type === "platformOperation",
+            k: message.type === "ruleUpdate",
+            n: message.type === "riskWarning",
+            q: message.type === "globalAnnouncement",
+            t: !message.read
+          }, !message.read ? {} : {}, {
+            v: common_vendor.n(
+              // 根据消息类型添加特定颜色类和边框
+              message.type === "highRiskOp" ? "high-risk-card" : ""
+            ),
+            w: common_vendor.n(message.type === "riskWarning" ? "high-risk-card" : ""),
+            x: common_vendor.n(message.type === "platformOperation" ? "maintenance-card" : ""),
+            y: common_vendor.n(message.type === "ruleUpdate" ? "rule-card" : ""),
+            z: common_vendor.n(message.type === "globalAnnouncement" ? "announcement-card" : ""),
+            A: message.id || index,
+            B: common_vendor.o(($event) => handleMessageClick(message, "system"), message.id || index)
+          });
+        }),
+        f: systemMessages.value.length === 0
+      }, systemMessages.value.length === 0 ? {} : {}) : {}, {
+        g: currentTab.value === 1
       }, currentTab.value === 1 ? common_vendor.e({
-        g: common_vendor.o(performSearch),
-        h: searchQuery.value,
-        i: common_vendor.o(($event) => searchQuery.value = $event.detail.value),
-        j: searchQuery.value
+        h: common_vendor.o(performSearch),
+        i: searchQuery.value,
+        j: common_vendor.o(($event) => searchQuery.value = $event.detail.value),
+        k: searchQuery.value
       }, searchQuery.value ? {
-        k: common_vendor.o(clearSearch)
+        l: common_vendor.o(clearSearch)
       } : {}, {
-        l: debouncedSearchQuery.value
+        m: debouncedSearchQuery.value
       }, debouncedSearchQuery.value ? {
-        m: common_vendor.t(debouncedSearchQuery.value)
+        n: common_vendor.t(debouncedSearchQuery.value)
       } : {}, {
-        n: common_vendor.f(orderFilterOptions.value, (status, sIndex, i0) => {
+        o: common_vendor.f(orderFilterOptions.value, (status, sIndex, i0) => {
           return {
             a: common_vendor.t(status.label),
             b: sIndex,
@@ -982,65 +944,59 @@ const _sfc_main = {
             d: common_vendor.o(($event) => filterByStatus(status.value), sIndex)
           };
         }),
-        o: common_vendor.f(groupedOrderMessages.value, (group, date, i0) => {
+        p: common_vendor.f(filteredOrderMessages.value, (message, k0, i0) => {
           return common_vendor.e({
-            a: common_vendor.t(date),
-            b: common_vendor.f(group, (message, k1, i1) => {
-              return common_vendor.e({
-                a: common_vendor.t(message.title),
-                b: common_vendor.t(message.time),
-                c: message.alertIcon
-              }, message.alertIcon ? {
-                d: common_vendor.t(message.alertIcon)
-              } : {}, {
-                e: message.productImage
-              }, message.productImage ? {
-                f: message.productImage,
-                g: common_vendor.o(($event) => onImageError("product", message), message.id)
-              } : {}, {
-                h: common_vendor.t(message.productName),
-                i: common_vendor.t(message.productSpec),
-                j: common_vendor.t(message.status),
-                k: common_vendor.n(message.statusClass),
-                l: common_vendor.t(message.orderId),
-                m: !message.read
-              }, !message.read ? {} : {}, {
-                n: message.actionButtonText
-              }, message.actionButtonText ? {
-                o: common_vendor.t(message.actionButtonText),
-                p: common_vendor.n(message.actionButtonClass),
-                q: common_vendor.o(($event) => handleOrderAction(message), message.id)
-              } : {}, {
-                r: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
-                s: common_vendor.o(($event) => deleteOrderMessage(message.id), message.id),
-                t: message.id,
-                v: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
-                w: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
-                x: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
-                y: common_vendor.o(($event) => handleMessageClick(message, "order"), message.id)
-              });
-            }),
-            c: group.length === 0 && searchQuery.value === "" && filterStatus.value === "all"
-          }, group.length === 0 && searchQuery.value === "" && filterStatus.value === "all" ? {} : group.length === 0 ? {} : {}, {
-            d: group.length === 0,
-            e: date
+            a: common_vendor.t(message.title),
+            b: common_vendor.t(message.time),
+            c: message.alertIcon
+          }, message.alertIcon ? {
+            d: common_vendor.t(message.alertIcon)
+          } : {}, {
+            e: message.productImage
+          }, message.productImage ? {
+            f: message.productImage,
+            g: common_vendor.o(($event) => onImageError("product", message), message.id)
+          } : {}, {
+            h: common_vendor.t(message.productName),
+            i: common_vendor.t(message.productSpec),
+            j: common_vendor.t(message.status),
+            k: common_vendor.n(message.statusClass),
+            l: common_vendor.t(message.orderId),
+            m: !message.read
+          }, !message.read ? {} : {}, {
+            n: message.actionButtonText
+          }, message.actionButtonText ? {
+            o: common_vendor.t(message.actionButtonText),
+            p: common_vendor.n(message.actionButtonClass),
+            q: common_vendor.o(($event) => handleOrderAction(message), message.id)
+          } : {}, {
+            r: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
+            s: common_vendor.o(($event) => deleteOrderMessage(message.id), message.id),
+            t: message.id,
+            v: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
+            w: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
+            x: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
+            y: common_vendor.o(($event) => handleMessageClick(message, "order"), message.id)
           });
-        })
+        }),
+        q: filteredOrderMessages.value.length === 0 && searchQuery.value === "" && filterStatus.value === "all"
+      }, filteredOrderMessages.value.length === 0 && searchQuery.value === "" && filterStatus.value === "all" ? {} : filteredOrderMessages.value.length === 0 ? {} : {}, {
+        r: filteredOrderMessages.value.length === 0
       }) : {}, {
-        p: currentTab.value === 2
+        s: currentTab.value === 2
       }, currentTab.value === 2 ? common_vendor.e({
-        q: common_vendor.o(performActivitySearch),
-        r: activitySearchQuery.value,
-        s: common_vendor.o(($event) => activitySearchQuery.value = $event.detail.value),
-        t: activitySearchQuery.value
+        t: common_vendor.o(performActivitySearch),
+        v: activitySearchQuery.value,
+        w: common_vendor.o(($event) => activitySearchQuery.value = $event.detail.value),
+        x: activitySearchQuery.value
       }, activitySearchQuery.value ? {
-        v: common_vendor.o(clearActivitySearch)
+        y: common_vendor.o(clearActivitySearch)
       } : {}, {
-        w: debouncedActivitySearchQuery.value
+        z: debouncedActivitySearchQuery.value
       }, debouncedActivitySearchQuery.value ? {
-        x: common_vendor.t(debouncedActivitySearchQuery.value)
+        A: common_vendor.t(debouncedActivitySearchQuery.value)
       } : {}, {
-        y: common_vendor.f(activityFilterOptions.value, (type, tIndex, i0) => {
+        B: common_vendor.f(activityFilterOptions.value, (type, tIndex, i0) => {
           return {
             a: common_vendor.t(type.label),
             b: tIndex,
@@ -1048,55 +1004,49 @@ const _sfc_main = {
             d: common_vendor.o(($event) => filterByActivityStatus(type.value), tIndex)
           };
         }),
-        z: common_vendor.f(groupedPromotionMessages.value, (group, date, i0) => {
+        C: common_vendor.f(filteredPromotionMessages.value, (message, k0, i0) => {
           return common_vendor.e({
-            a: common_vendor.t(date),
-            b: common_vendor.f(group, (message, k1, i1) => {
-              return common_vendor.e({
-                a: message.image,
-                b: common_vendor.o(($event) => onImageError("promotion", message), message.id),
-                c: common_vendor.t(message.title),
-                d: common_vendor.t(message.time),
-                e: message.isNew
-              }, message.isNew ? {} : !message.read ? {} : {}, {
-                f: !message.read,
-                g: common_vendor.t(message.type),
-                h: common_vendor.n(message.typeClass),
-                i: common_vendor.t(message.sender),
-                j: common_vendor.t(message.benefitSummary),
-                k: common_vendor.t(message.validity),
-                l: common_vendor.t(message.targetAudience),
-                m: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
-                n: common_vendor.o(($event) => deletePromotionMessage(message.id), message.id),
-                o: message.id,
-                p: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
-                q: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
-                r: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
-                s: common_vendor.o(($event) => handleMessageClick(message, "activity"), message.id)
-              });
-            }),
-            c: group.length === 0 && activitySearchQuery.value === "" && activityFilterStatus.value === "all"
-          }, group.length === 0 && activitySearchQuery.value === "" && activityFilterStatus.value === "all" ? {} : group.length === 0 ? {} : {}, {
-            d: group.length === 0,
-            e: date
+            a: message.image,
+            b: common_vendor.o(($event) => onImageError("promotion", message), message.id),
+            c: common_vendor.t(message.title),
+            d: common_vendor.t(message.time),
+            e: message.isNew
+          }, message.isNew ? {} : !message.read ? {} : {}, {
+            f: !message.read,
+            g: common_vendor.t(message.type),
+            h: common_vendor.n(message.typeClass),
+            i: common_vendor.t(message.sender),
+            j: common_vendor.t(message.benefitSummary),
+            k: common_vendor.t(message.validity),
+            l: common_vendor.t(message.targetAudience),
+            m: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
+            n: common_vendor.o(($event) => deletePromotionMessage(message.id), message.id),
+            o: message.id,
+            p: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
+            q: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
+            r: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
+            s: common_vendor.o(($event) => handleMessageClick(message, "activity"), message.id)
           });
-        })
+        }),
+        D: filteredPromotionMessages.value.length === 0 && activitySearchQuery.value === "" && activityFilterStatus.value === "all"
+      }, filteredPromotionMessages.value.length === 0 && activitySearchQuery.value === "" && activityFilterStatus.value === "all" ? {} : filteredPromotionMessages.value.length === 0 ? {} : {}, {
+        E: filteredPromotionMessages.value.length === 0
       }) : {}, {
-        A: currentTab.value === 3
+        F: currentTab.value === 3
       }, currentTab.value === 3 ? common_vendor.e({
-        B: common_vendor.o(startNewCustomerServiceChat),
-        C: common_vendor.o(performCsSearch),
-        D: csSearchQuery.value,
-        E: common_vendor.o(($event) => csSearchQuery.value = $event.detail.value),
-        F: csSearchQuery.value
+        G: common_vendor.o(startNewCustomerServiceChat),
+        H: common_vendor.o(performCsSearch),
+        I: csSearchQuery.value,
+        J: common_vendor.o(($event) => csSearchQuery.value = $event.detail.value),
+        K: csSearchQuery.value
       }, csSearchQuery.value ? {
-        G: common_vendor.o(clearSearch)
+        L: common_vendor.o(clearSearch)
       } : {}, {
-        H: debouncedCsSearchQuery.value
+        M: debouncedCsSearchQuery.value
       }, debouncedCsSearchQuery.value ? {
-        I: common_vendor.t(debouncedCsSearchQuery.value)
+        N: common_vendor.t(debouncedCsSearchQuery.value)
       } : {}, {
-        J: common_vendor.f(csFilterStatusOptions.value, (status, sIndex, i0) => {
+        O: common_vendor.f(csFilterStatusOptions.value, (status, sIndex, i0) => {
           return {
             a: common_vendor.t(status.label),
             b: sIndex,
@@ -1104,7 +1054,7 @@ const _sfc_main = {
             d: common_vendor.o(($event) => filterByCsStatus(status.value), sIndex)
           };
         }),
-        K: common_vendor.f(csIssueTypeOptions.value, (type, tIndex, i0) => {
+        P: common_vendor.f(csIssueTypeOptions.value, (type, tIndex, i0) => {
           return {
             a: common_vendor.t(type.label),
             b: tIndex,
@@ -1112,58 +1062,52 @@ const _sfc_main = {
             d: common_vendor.o(($event) => filterByCsIssueType(type.value), tIndex)
           };
         }),
-        L: common_vendor.f(groupedServiceMessages.value, (group, date, i0) => {
+        Q: common_vendor.f(filteredServiceMessages.value, (message, k0, i0) => {
           return common_vendor.e({
-            a: common_vendor.t(date),
-            b: common_vendor.f(group, (message, k1, i1) => {
-              return common_vendor.e({
-                a: message.avatar,
-                b: common_vendor.o(($event) => onImageError("service", message), message.id),
-                c: common_vendor.t(message.title),
-                d: common_vendor.t(message.time),
-                e: message.priorityIcon
-              }, message.priorityIcon ? {
-                f: common_vendor.t(message.priorityIcon)
-              } : {}, {
-                g: message.senderType === "agent"
-              }, message.senderType === "agent" ? {
-                h: common_vendor.t(message.senderName)
-              } : {
-                i: common_vendor.t(message.senderType)
-              }, {
-                j: message.orderId
-              }, message.orderId ? {
-                k: common_vendor.t(message.orderId)
-              } : {}, {
-                l: common_vendor.t(message.lastMessage),
-                m: common_vendor.t(message.issueType),
-                n: common_vendor.n(message.issueTypeClass),
-                o: common_vendor.t(message.status),
-                p: common_vendor.n(message.statusClass),
-                q: message.unread > 0
-              }, message.unread > 0 ? {
-                r: common_vendor.t(message.unread)
-              } : {}, {
-                s: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
-                t: common_vendor.o(($event) => deleteServiceMessage(message.id), message.id),
-                v: message.id,
-                w: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
-                x: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
-                y: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
-                z: common_vendor.o(($event) => handleMessageClick(message, "customerService"), message.id)
-              });
-            }),
-            c: group.length === 0 && csSearchQuery.value === "" && csFilterStatus.value === "all" && csFilterIssueType.value === "all"
-          }, group.length === 0 && csSearchQuery.value === "" && csFilterStatus.value === "all" && csFilterIssueType.value === "all" ? {} : group.length === 0 ? {} : {}, {
-            d: group.length === 0,
-            e: date
+            a: message.avatar,
+            b: common_vendor.o(($event) => onImageError("service", message), message.id),
+            c: common_vendor.t(message.title),
+            d: common_vendor.t(message.time),
+            e: message.priorityIcon
+          }, message.priorityIcon ? {
+            f: common_vendor.t(message.priorityIcon)
+          } : {}, {
+            g: message.senderType === "agent"
+          }, message.senderType === "agent" ? {
+            h: common_vendor.t(message.senderName)
+          } : {
+            i: common_vendor.t(message.senderType)
+          }, {
+            j: message.orderId
+          }, message.orderId ? {
+            k: common_vendor.t(message.orderId)
+          } : {}, {
+            l: common_vendor.t(message.lastMessage),
+            m: common_vendor.t(message.issueType),
+            n: common_vendor.n(message.issueTypeClass),
+            o: common_vendor.t(message.status),
+            p: common_vendor.n(message.statusClass),
+            q: message.unread > 0
+          }, message.unread > 0 ? {
+            r: common_vendor.t(message.unread)
+          } : {}, {
+            s: `translateX(${swipeStates.value[message.id] || 0}rpx)`,
+            t: common_vendor.o(($event) => deleteServiceMessage(message.id), message.id),
+            v: message.id,
+            w: common_vendor.o(($event) => onTouchStart($event, message.id), message.id),
+            x: common_vendor.o(($event) => onTouchMove($event, message.id), message.id),
+            y: common_vendor.o(($event) => onTouchEnd($event, message.id), message.id),
+            z: common_vendor.o(($event) => handleMessageClick(message, "customerService"), message.id)
           });
-        })
+        }),
+        R: filteredServiceMessages.value.length === 0 && csSearchQuery.value === "" && csFilterStatus.value === "all" && csFilterIssueType.value === "all"
+      }, filteredServiceMessages.value.length === 0 && csSearchQuery.value === "" && csFilterStatus.value === "all" && csFilterIssueType.value === "all" ? {} : filteredServiceMessages.value.length === 0 ? {} : {}, {
+        S: filteredServiceMessages.value.length === 0
       }) : {}, {
-        M: hasMore.value
+        T: hasMore.value
       }, hasMore.value ? {} : {}, {
-        N: common_vendor.o(loadMore),
-        O: common_vendor.o(onRefresh)
+        U: common_vendor.o(loadMore),
+        V: common_vendor.o(onRefresh)
       });
     };
   }

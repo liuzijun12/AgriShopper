@@ -5,11 +5,10 @@ import { store } from '../store.js'
 const cartApi = {
   /**
    * 获取当前登录用户ID
-   * @returns {number} 用户ID，如果未登录返回默认用户ID=1
+   * @returns {number} 用户ID，测试阶段默认使用用户ID=1
    */
   getCurrentUserId() {
-    const userInfo = store.getUserInfo()
-    return userInfo ? userInfo.id : 1  // 默认使用用户ID=1
+    return 1  // 测试阶段默认使用用户ID=1
   },
 
   /**

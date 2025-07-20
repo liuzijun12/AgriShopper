@@ -141,17 +141,8 @@ page {
 .message-section {
   padding: 0 20rpx;
 }
-.message-group {
-  margin-bottom: 30rpx;
-}
-.date-divider {
-  padding: 20rpx 0;
-  font-size: 26rpx;
-  color: #999999;
-  font-weight: 500;
-  text-align: left;
-  margin-left: 10rpx;
-}
+
+
 
 /* Swipe Wrapper for Order Messages */
 .swipe-wrapper {

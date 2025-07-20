@@ -26,4 +26,5 @@ com\agrishopper\utils\ProductCodeGenerator.class
 com\agrishopper\common\ApiResponse.class
 com\agrishopper\model\Category.class
 com\agrishopper\model\Admin.class
+com\agrishopper\model\UserAddress.class
 com\agrishopper\dto\LoginResponse$AdminInfo.class

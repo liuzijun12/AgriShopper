@@ -48,7 +48,7 @@ public class ProductController {
             
             if (productCode != null && !productCode.trim().isEmpty()) {
                 products = products.stream()
-                    .filter(p -> p.getProductCode().toLowerCase().contains(productCode.toLowerCase()))
+                    .filter(p -> p.getProductCode().equals(productCode))
                     .collect(java.util.stream.Collectors.toList());
             }
             
