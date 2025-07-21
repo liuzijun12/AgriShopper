@@ -303,5 +303,31 @@ export const customerServiceApi = {
         }
       })
     })
-  }
+  },
+
+  // 获取会话非用户未读消息数（客服、AI、系统消息）
+  countSessionUnreadNonUserMessages(sessionId) {
+    const url = env.getApiUrl(`/customer-service/stats/session/${sessionId}/unread/non-user`)
+    
+    return new Promise((resolve, reject) => {
+      uni.request({
+        url: url,
+        method: 'GET',
+        header: {
+          'Content-Type': 'application/json'
+        },
+        success: (res) => {
+          if (res.statusCode === 200) {
+            resolve(res.data)
+          } else {
+            reject(new Error(`请求失败: ${res.statusCode}`))
+          }
+        },
+        fail: (err) => {
+          reject(new Error(`网络请求失败: ${err.errMsg}`))
+        }
+      })
+    })
+  },
+
 } 

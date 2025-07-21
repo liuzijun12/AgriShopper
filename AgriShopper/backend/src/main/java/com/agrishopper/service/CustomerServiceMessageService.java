@@ -53,6 +53,26 @@ public interface CustomerServiceMessageService {
     long countUnreadMessagesByUserId(Long userId);
     
     /**
+     * 统计会话中客服未读消息数量（只统计客服消息，不包括AI和系统消息）
+     */
+    long countUnreadAgentMessagesBySessionId(Long sessionId);
+    
+    /**
+     * 统计用户所有会话的客服未读消息数量（只统计客服消息，不包括AI和系统消息）
+     */
+    long countUnreadAgentMessagesByUserId(Long userId);
+    
+    /**
+     * 统计会话中非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）
+     */
+    long countUnreadNonUserMessagesBySessionId(Long sessionId);
+    
+    /**
+     * 统计用户所有会话的非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）
+     */
+    long countUnreadNonUserMessagesByUserId(Long userId);
+    
+    /**
      * 获取会话最后一条消息
      */
     CustomerServiceMessage getLastMessageBySessionId(Long sessionId);

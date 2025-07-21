@@ -71,7 +71,7 @@
 .fixed-tabs.data-v-ecc172b4 {
   display: flex;
   background-color: #ffffff;
-  padding: 20rpx 0;
+  padding: 40rpx 30rpx; /* 增加上下内边距，确保徽章不被截断 */
   border-bottom: 1rpx solid #e0e0e0;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
   position: fixed;
@@ -80,30 +80,33 @@
   right: 0;
   width: 100%;
   z-index: 999;
-  height: 120rpx; /* 增加高度 */
+  height: 180rpx; /* 增加高度，确保有足够空间显示徽章 */
   box-sizing: border-box;
-  justify-content: center;
+  justify-content: space-between; /* 改为space-between，让标签项均匀分布 */
   align-items: center;
 }
 .tab-item.data-v-ecc172b4 {
-  flex: 0 0 auto;
+  flex: 1; /* 让每个标签项平均分配空间 */
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   position: relative;
-  padding: 20rpx 30rpx;
+  padding: 20rpx 10rpx; /* 调整内边距 */
   transition: all 0.3s ease;
   box-sizing: border-box;
-  margin: 0 30rpx;
+  margin: 0 15rpx; /* 减少外边距，让space-between控制间距 */
+  min-height: 100rpx; /* 确保最小高度 */
+  max-width: 160rpx; /* 限制最大宽度，避免过宽 */
 }
 .tab-item.data-v-ecc172b4:active {
   transform: scale(0.95);
 }
 .tab-icon.data-v-ecc172b4 {
-  width: 56rpx;
-  height: 56rpx;
-  min-height: 56rpx;
-  margin-bottom: 10rpx;
+  width: 64rpx;
+  height: 64rpx;
+  min-height: 64rpx;
+  margin-bottom: 15rpx;
   opacity: 0.6;
   transition: all 0.3s ease;
   object-fit: contain;
@@ -111,11 +114,12 @@
   box-sizing: border-box;
 }
 .tab-label.data-v-ecc172b4 {
-  font-size: 24rpx;
+  font-size: 26rpx;
   color: #666666;
   font-weight: 500;
   transition: all 0.3s ease;
   box-sizing: border-box;
+  line-height: 1.2;
 }
 .tab-item.active .tab-icon.data-v-ecc172b4 {
   opacity: 1;
@@ -125,28 +129,59 @@
   color: #4CAF50;
   font-weight: 600;
 }
+
+/* 未读消息数字样式 */
 .unread-badge.data-v-ecc172b4 {
   position: absolute;
-  top: 25rpx;
-  right: 50%;
-  transform: translateX(50%);
-  background-color: #ff4444;
-  color: #ffffff;
-  font-size: 20rpx;
-  padding: 4rpx 8rpx;
+  top: 5rpx; /* 调整位置，确保不被截断 */
+  right: 50%; /* 相对于标签项居中 */
+  transform: translateX(50%); /* 水平居中 */
+  min-width: 40rpx;
+  height: 40rpx;
+  background: linear-gradient(135deg, #ff4444 0%, #ff6666 100%);
   border-radius: 20rpx;
-  min-width: 32rpx;
-  text-align: center;
-  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0 8rpx;
   box-sizing: border-box;
   z-index: 10;
+  box-shadow: 0 4rpx 12rpx rgba(255, 68, 68, 0.4);
+  border: 2rpx solid #ffffff;
+  animation: pulse-ecc172b4 2s infinite;
+}
+.unread-number.data-v-ecc172b4 {
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  box-sizing: border-box;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.3);
+}
+
+/* 徽章脉冲动画 */
+@keyframes pulse-ecc172b4 {
+0% {
+    transform: scale(1);
+    box-shadow: 0 4rpx 12rpx rgba(255, 68, 68, 0.4);
+}
+50% {
+    transform: scale(1.05);
+    box-shadow: 0 6rpx 16rpx rgba(255, 68, 68, 0.6);
+}
+100% {
+    transform: scale(1);
+    box-shadow: 0 4rpx 12rpx rgba(255, 68, 68, 0.4);
+}
 }
 
 /* 固定内容区域 */
 .fixed-content.data-v-ecc172b4 {
   flex: 1;
-  margin-top: 240rpx; /* 调整间距 */
-  height: calc(100vh - 240rpx); /* 调整高度 */
+  margin-top: 300rpx; /* 调整间距，适应新的标签页高度 */
+  height: calc(100vh - 300rpx); /* 调整高度，适应新的标签页高度 */
   width: 100%;
   overflow: hidden; /* 防止内容区域滚动 */
   position: relative;
@@ -238,19 +273,29 @@
   transition: all 0.3s ease;
   border: 1rpx solid #f0f0f0;
   box-sizing: border-box;
+  position: relative; /* 添加相对定位 */
 }
 .message-item.data-v-ecc172b4:active {
   transform: scale(0.98);
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
 }
-.message-icon.data-v-ecc172b4 {
+.message-icon-container.data-v-ecc172b4 {
+  position: relative;
   width: 100rpx;
   height: 100rpx;
   min-height: 100rpx;
-  border-radius: 16rpx;
+  border-radius: 50%;
+  overflow: hidden;
   margin-right: 20rpx;
   background-color: #f8f8f8;
-  padding: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+.message-icon.data-v-ecc172b4 {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
   box-sizing: border-box;
@@ -294,14 +339,8 @@
   -webkit-box-orient: vertical;
   box-sizing: border-box;
 }
-.unread-dot.data-v-ecc172b4 {
-  width: 16rpx;
-  height: 16rpx;
-  background-color: #ff4444;
-  border-radius: 50%;
-  margin-left: 20rpx;
-  box-sizing: border-box;
-}
+
+
 
 /* 客服消息头像样式 */
 .message-avatar.data-v-ecc172b4 {
@@ -309,13 +348,13 @@
   height: 80rpx;
   min-height: 80rpx;
   border-radius: 50%;
-  overflow: hidden;
   margin-right: 20rpx;
   background-color: #f8f8f8;
   display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  position: relative; /* 添加相对定位 */
 }
 .product-avatar.data-v-ecc172b4 {
   width: 100%;
@@ -333,11 +372,82 @@
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
+  position: relative; /* 添加相对定位 */
 }
 .service-avatar-text.data-v-ecc172b4 {
   color: #ffffff;
   font-size: 36rpx;
   font-weight: 600;
+  box-sizing: border-box;
+}
+
+/* 未读消息统计样式 */
+.unread-summary.data-v-ecc172b4 {
+  width: 100%;
+  padding: 20rpx;
+  background-color: #f8f8f8;
+  border-top: 1rpx solid #e0e0e0;
+  box-sizing: border-box;
+}
+.unread-summary-content.data-v-ecc172b4 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+.unread-summary-text.data-v-ecc172b4 {
+  font-size: 26rpx;
+  color: #ff4444;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+.mark-all-read-btn.data-v-ecc172b4 {
+  font-size: 24rpx;
+  color: #4CAF50;
+  text-decoration: underline;
+  padding: 10rpx 15rpx;
+  border-radius: 8rpx;
+  background-color: rgba(76, 175, 80, 0.1);
+  box-sizing: border-box;
+}
+
+/* 红点指示器样式 */
+.unread-dot.data-v-ecc172b4 {
+  position: absolute;
+  top: 50rpx;
+  right: 30rpx;
+  width: 16rpx;
+  height: 16rpx;
+  background-color: #ff4444;
+  border-radius: 50%;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+/* QQ风格红点指示器样式 - 放在时间下方 */
+.unread-dot-qq.data-v-ecc172b4 {
+  position: absolute;
+  top: 80rpx; /* 放在时间下方 */
+  right: 30rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  background-color: #ff4444;
+  border-radius: 16rpx;
+  z-index: 10;
+  box-sizing: border-box;
+  box-shadow: 0 2rpx 4rpx rgba(255, 68, 68, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+  border: 2rpx solid #ffffff;
+}
+.unread-number-qq.data-v-ecc172b4 {
+  color: #ffffff;
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
   box-sizing: border-box;
 }
 
@@ -351,26 +461,43 @@
     font-size: 32rpx;
 }
 .fixed-tabs.data-v-ecc172b4 {
-    padding: 15rpx 0;
-    height: 100rpx;
+    padding: 25rpx 20rpx; /* 调整小屏幕下的内边距 */
+    height: 160rpx; /* 增加小屏幕下的高度 */
     top: 100rpx;
 }
 .tab-item.data-v-ecc172b4 {
-    padding: 15rpx 0;
+    padding: 15rpx 8rpx; /* 调整小屏幕下的内边距 */
+    min-height: 90rpx; /* 确保小屏幕下的最小高度 */
+    margin: 0 10rpx; /* 调整小屏幕下的外边距 */
+    max-width: 140rpx; /* 限制小屏幕下的最大宽度 */
 }
 .tab-icon.data-v-ecc172b4 {
-    width: 52rpx;
-    height: 52rpx;
-    min-height: 52rpx;
+    width: 56rpx;
+    height: 56rpx;
+    min-height: 56rpx;
+    margin-bottom: 12rpx;
     object-fit: contain;
     display: block;
 }
 .tab-label.data-v-ecc172b4 {
+    font-size: 24rpx;
+}
+.unread-badge.data-v-ecc172b4 {
+    top: 3rpx; /* 调整小屏幕下的位置 */
+    right: 50%; /* 相对于标签项居中 */
+    transform: translateX(50%); /* 水平居中 */
+    min-width: 36rpx;
+    height: 36rpx;
+    border-radius: 18rpx;
+    border: 2rpx solid #ffffff;
+}
+.unread-number.data-v-ecc172b4 {
     font-size: 22rpx;
+    font-weight: 700;
 }
 .fixed-content.data-v-ecc172b4 {
-    margin-top: 200rpx;
-    height: calc(100vh - 200rpx);
+    margin-top: 260rpx; /* 调整小屏幕下的间距 */
+    height: calc(100vh - 260rpx);
 }
 .message-list-content.data-v-ecc172b4 {
     padding: 15rpx;
@@ -379,11 +506,15 @@
     padding: 25rpx;
     margin-bottom: 15rpx;
 }
-.message-icon.data-v-ecc172b4 {
+.message-icon-container.data-v-ecc172b4 {
     width: 80rpx;
     height: 80rpx;
     min-height: 80rpx;
     margin-right: 15rpx;
+}
+.message-icon.data-v-ecc172b4 {
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     display: block;
 }
@@ -392,5 +523,16 @@
 }
 .message-preview.data-v-ecc172b4 {
     font-size: 24rpx;
+}
+.unread-dot-qq.data-v-ecc172b4 {
+    top: 70rpx; /* 小屏幕下调整位置 */
+    right: 25rpx;
+    min-width: 28rpx;
+    height: 28rpx;
+    border-radius: 14rpx;
+    padding: 0 6rpx;
+}
+.unread-number-qq.data-v-ecc172b4 {
+    font-size: 18rpx;
 }
 }

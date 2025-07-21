@@ -57,6 +57,30 @@ public interface CustomerServiceMessageRepository extends JpaRepository<Customer
     long countUnreadMessagesByUserId(@Param("userId") Long userId);
     
     /**
+     * 统计会话中客服未读消息数量（未删除，只统计客服消息，不包括AI和系统消息）
+     */
+    @Query("SELECT COUNT(m) FROM CustomerServiceMessage m WHERE m.sessionId = :sessionId AND m.isRead = false AND m.senderType = 2 AND (m.isDeleted = false OR m.isDeleted IS NULL)")
+    long countUnreadAgentMessagesBySessionId(@Param("sessionId") Long sessionId);
+    
+    /**
+     * 统计用户所有会话的客服未读消息数量（未删除，只统计客服消息，不包括AI和系统消息）
+     */
+    @Query("SELECT COUNT(m) FROM CustomerServiceMessage m JOIN CustomerServiceSession s ON m.sessionId = s.id WHERE s.userId = :userId AND m.isRead = false AND m.senderType = 2 AND (m.isDeleted = false OR m.isDeleted IS NULL) AND (s.isDeleted = false OR s.isDeleted IS NULL)")
+    long countUnreadAgentMessagesByUserId(@Param("userId") Long userId);
+    
+    /**
+     * 统计会话中非用户未读消息数量（未删除，包括客服、AI和系统消息，不包括用户消息）
+     */
+    @Query("SELECT COUNT(m) FROM CustomerServiceMessage m WHERE m.sessionId = :sessionId AND m.isRead = false AND m.senderType != 1 AND (m.isDeleted = false OR m.isDeleted IS NULL)")
+    long countUnreadNonUserMessagesBySessionId(@Param("sessionId") Long sessionId);
+    
+    /**
+     * 统计用户所有会话的非用户未读消息数量（未删除，包括客服、AI和系统消息，不包括用户消息）
+     */
+    @Query("SELECT COUNT(m) FROM CustomerServiceMessage m JOIN CustomerServiceSession s ON m.sessionId = s.id WHERE s.userId = :userId AND m.isRead = false AND m.senderType != 1 AND (m.isDeleted = false OR m.isDeleted IS NULL) AND (s.isDeleted = false OR s.isDeleted IS NULL)")
+    long countUnreadNonUserMessagesByUserId(@Param("userId") Long userId);
+    
+    /**
      * 标记会话消息为已读（未删除）
      */
     @Modifying

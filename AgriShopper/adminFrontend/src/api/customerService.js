@@ -75,6 +75,22 @@ export const customerServiceApi = {
       method: 'get'
     })
   },
+  
+  // 获取会话客服未读消息数
+  countSessionUnreadAgentMessages(sessionId) {
+    return request({
+      url: `/api/customer-service/stats/session/${sessionId}/unread/agent`,
+      method: 'get'
+    })
+  },
+  
+  // 获取会话非用户未读消息数
+  countSessionUnreadNonUserMessages(sessionId) {
+    return request({
+      url: `/api/customer-service/stats/session/${sessionId}/unread/non-user`,
+      method: 'get'
+    })
+  },
 
   // 获取客服会话列表
   getAgentSessions(agentId) {

@@ -75,4 +75,24 @@ public interface CustomerServiceService {
      * 统计会话未读消息数量
      */
     long countSessionUnreadMessages(Long sessionId);
+    
+    /**
+     * 统计会话中客服未读消息数量（只统计客服消息，不包括AI和系统消息）
+     */
+    long countSessionUnreadAgentMessages(Long sessionId);
+    
+    /**
+     * 统计用户所有会话的客服未读消息数量（只统计客服消息，不包括AI和系统消息）
+     */
+    long countUserUnreadAgentMessages(Long userId);
+    
+    /**
+     * 统计会话中非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）
+     */
+    long countSessionUnreadNonUserMessages(Long sessionId);
+    
+    /**
+     * 统计用户所有会话的非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）
+     */
+    long countUserUnreadNonUserMessages(Long userId);
 } 

@@ -124,6 +124,30 @@ public class CustomerServiceMessageServiceImpl implements CustomerServiceMessage
     
     @Override
     @Transactional(readOnly = true)
+    public long countUnreadAgentMessagesBySessionId(Long sessionId) {
+        return messageRepository.countUnreadAgentMessagesBySessionId(sessionId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countUnreadAgentMessagesByUserId(Long userId) {
+        return messageRepository.countUnreadAgentMessagesByUserId(userId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countUnreadNonUserMessagesBySessionId(Long sessionId) {
+        return messageRepository.countUnreadNonUserMessagesBySessionId(sessionId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countUnreadNonUserMessagesByUserId(Long userId) {
+        return messageRepository.countUnreadNonUserMessagesByUserId(userId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
     public CustomerServiceMessage getLastMessageBySessionId(Long sessionId) {
         Pageable pageable = Pageable.ofSize(1);
         List<CustomerServiceMessage> messages = messageRepository.findLastMessageBySessionId(sessionId, pageable);

@@ -140,8 +140,8 @@ const sendMessage = async () => {
       // 重新加载消息列表，确保显示最新的消息
       await loadSessionMessages()
       
-      // 标记消息已读
-      await markMessagesAsRead()
+      // 注意：只在发送用户消息后标记已读，客服消息不应该标记为已读
+      // await markMessagesAsRead()
     } else {
       console.error('消息发送失败:', response.message)
       uni.showToast({
@@ -180,6 +180,9 @@ const loadSessionMessages = async () => {
       nextTick(() => {
         scrollToBottom()
       })
+      
+      // 立即标记为已读，用户进入聊天页面就表示已查看
+      await markMessagesAsRead()
     } else {
       console.error('加载消息失败:', response.message)
       messages.value = []
@@ -325,8 +328,8 @@ onMounted(async () => {
     }
   }
   
-  // 标记消息已读
-  await markMessagesAsRead()
+  // 注意：移除这里的自动标记已读，改为在用户真正查看消息时标记
+  // await markMessagesAsRead()
   
   nextTick(() => {
     scrollToBottom()

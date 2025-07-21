@@ -242,4 +242,28 @@ public class CustomerServiceServiceImpl implements CustomerServiceService {
     public long countSessionUnreadMessages(Long sessionId) {
         return messageService.countUnreadMessagesBySessionId(sessionId);
     }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countSessionUnreadAgentMessages(Long sessionId) {
+        return messageService.countUnreadAgentMessagesBySessionId(sessionId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countUserUnreadAgentMessages(Long userId) {
+        return messageService.countUnreadAgentMessagesByUserId(userId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countSessionUnreadNonUserMessages(Long sessionId) {
+        return messageService.countUnreadNonUserMessagesBySessionId(sessionId);
+    }
+    
+    @Override
+    @Transactional(readOnly = true)
+    public long countUserUnreadNonUserMessages(Long userId) {
+        return messageService.countUnreadNonUserMessagesByUserId(userId);
+    }
 } 

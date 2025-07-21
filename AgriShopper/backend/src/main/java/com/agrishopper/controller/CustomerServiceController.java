@@ -240,4 +240,64 @@ public class CustomerServiceController {
             return ApiResponse.error(500, "获取会话未读消息数失败: " + e.getMessage());
         }
     }
+    
+    @GetMapping("/stats/session/{sessionId}/unread/agent")
+    @Operation(summary = "获取会话客服未读消息数", description = "获取指定会话的客服未读消息数量（不包括AI和系统消息）")
+    public ApiResponse<Long> countSessionUnreadAgentMessages(@PathVariable Long sessionId) {
+        try {
+            log.info("获取会话客服未读消息数 - 会话ID: {}", sessionId);
+            
+            long count = customerServiceService.countSessionUnreadAgentMessages(sessionId);
+            
+            return ApiResponse.success(count);
+        } catch (Exception e) {
+            log.error("获取会话客服未读消息数失败", e);
+            return ApiResponse.error(500, "获取会话客服未读消息数失败: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/stats/user/{userId}/unread/agent")
+    @Operation(summary = "获取用户客服未读消息数", description = "获取指定用户的所有会话的客服未读消息数量（不包括AI和系统消息）")
+    public ApiResponse<Long> countUserUnreadAgentMessages(@PathVariable Long userId) {
+        try {
+            log.info("获取用户客服未读消息数 - 用户ID: {}", userId);
+            
+            long count = customerServiceService.countUserUnreadAgentMessages(userId);
+            
+            return ApiResponse.success(count);
+        } catch (Exception e) {
+            log.error("获取用户客服未读消息数失败", e);
+            return ApiResponse.error(500, "获取用户客服未读消息数失败: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/stats/session/{sessionId}/unread/non-user")
+    @Operation(summary = "获取会话非用户未读消息数", description = "获取指定会话的非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）")
+    public ApiResponse<Long> countSessionUnreadNonUserMessages(@PathVariable Long sessionId) {
+        try {
+            log.info("获取会话非用户未读消息数 - 会话ID: {}", sessionId);
+            
+            long count = customerServiceService.countSessionUnreadNonUserMessages(sessionId);
+            
+            return ApiResponse.success(count);
+        } catch (Exception e) {
+            log.error("获取会话非用户未读消息数失败", e);
+            return ApiResponse.error(500, "获取会话非用户未读消息数失败: " + e.getMessage());
+        }
+    }
+    
+    @GetMapping("/stats/user/{userId}/unread/non-user")
+    @Operation(summary = "获取用户非用户未读消息数", description = "获取指定用户的所有会话的非用户未读消息数量（包括客服、AI和系统消息，不包括用户消息）")
+    public ApiResponse<Long> countUserUnreadNonUserMessages(@PathVariable Long userId) {
+        try {
+            log.info("获取用户非用户未读消息数 - 用户ID: {}", userId);
+            
+            long count = customerServiceService.countUserUnreadNonUserMessages(userId);
+            
+            return ApiResponse.success(count);
+        } catch (Exception e) {
+            log.error("获取用户非用户未读消息数失败", e);
+            return ApiResponse.error(500, "获取用户非用户未读消息数失败: " + e.getMessage());
+        }
+    }
 } 

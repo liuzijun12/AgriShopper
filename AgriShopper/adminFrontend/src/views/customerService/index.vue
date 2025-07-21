@@ -55,70 +55,38 @@
           </template>
           
           <div class="session-list" v-loading="loading">
-            <div
-              v-for="session in sessionList"
+            <div 
+              v-for="session in sessionList" 
               :key="session.id"
               class="session-item"
               :class="{ active: selectedSession?.id === session.id }"
               @click="selectSession(session)"
             >
               <div class="session-avatar">
-                <el-image
-                  v-if="session.productImage"
-                  :src="getImageUrl(session.productImage)"
-                  class="product-avatar"
-                  fit="cover"
+                <img 
+                  v-if="session.productImage" 
+                  :src="session.productImage" 
+                  :alt="session.title"
                 />
-                <div v-else class="service-avatar">
-                  <el-icon><Service /></el-icon>
+                <div v-else class="default-avatar">
+                  <Service />
                 </div>
               </div>
-              
               <div class="session-info">
                 <div class="session-title">
                   {{ session.title }}
-                  <el-tag v-if="session.unreadCount > 0" type="danger" size="small">
-                    {{ session.unreadCount }}
-                  </el-tag>
+                  <span v-if="session.agentName" class="agent-name">({{ session.agentName }})</span>
                 </div>
-                <div class="session-preview">{{ session.lastMessage || '暂无消息' }}</div>
-                <div class="session-meta">
-                  <span class="session-time">{{ formatTime(session.lastMessageTime) }}</span>
-                  <span v-if="session.assignedAgentId" class="assigned-agent">
-                    分配给: {{ session.agentName || `客服${session.assignedAgentId}` }}
-                  </span>
-                  <span v-else class="unassigned">
-                    未分配
-                  </span>
-                </div>
+                <div class="session-message">{{ session.lastMessage }}</div>
+                <div class="session-time">{{ formatTime(session.lastMessageTime) }}</div>
               </div>
-              
               <div class="session-status">
-                <el-tag :type="getStatusType(session.sessionStatus)" size="small">
-                  {{ getStatusText(session.sessionStatus) }}
-                </el-tag>
-              </div>
-              
-              <!-- 会话操作按钮 -->
-              <div class="session-actions">
-                <el-dropdown @command="(command) => handleSessionAction(command, session)" trigger="click">
-                  <el-button type="text" size="small">
-                    <el-icon><MoreFilled /></el-icon>
-                  </el-button>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item command="assign" v-if="!session.assignedAgentId">
-                        分配给我
-                      </el-dropdown-item>
-                      <el-dropdown-item command="reassign" v-if="session.assignedAgentId">
-                        重新分配
-                      </el-dropdown-item>
-                      <el-dropdown-item command="end" divided>
-                        结束会话
-                      </el-dropdown-item>
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
+                <!-- 调试信息：显示未读消息数 -->
+                <div class="debug-info" style="font-size: 10px; color: #999;">
+                  未读: {{ session.unreadCount }}
+                </div>
+                <!-- 红点指示器 -->
+                <div v-if="session.unreadCount > 0" class="unread-indicator"></div>
               </div>
             </div>
           </div>
@@ -192,17 +160,22 @@
             
             <!-- 输入区域 - 固定在底部 -->
             <div v-if="selectedSession" class="chat-input">
-              <el-input
-                v-model="inputMessage"
-                type="textarea"
-                :rows="3"
-                placeholder="请输入回复内容..."
-                @keydown.ctrl.enter="sendMessage"
-              />
-              <div class="input-actions">
-                <el-button type="primary" @click="sendMessage" :loading="sending">
-                  发送 (Ctrl+Enter)
-                </el-button>
+              <div class="input-container">
+                <div class="input-row">
+                  <el-input
+                    v-model="inputMessage"
+                    type="textarea"
+                    :rows="2"
+                    placeholder="请输入回复内容..."
+                    @keydown.ctrl.enter="sendMessage"
+                    class="message-input"
+                  />
+                  <div class="input-actions">
+                    <el-button type="primary" @click="sendMessage" :loading="sending" size="default">
+                      发送
+                    </el-button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -215,7 +188,7 @@
 <script setup>
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Search, Refresh, Service, UserFilled, MoreFilled } from '@element-plus/icons-vue'
+import { Search, Refresh, Service, UserFilled } from '@element-plus/icons-vue'
 import { customerServiceApi } from '@/api/customerService'
 
 // 响应式数据
@@ -273,48 +246,95 @@ const loadSessions = async () => {
 
 // 获取会话详细信息
 const loadSessionDetails = async () => {
+  console.log('=== 开始加载会话详细信息 ===')
+  console.log('会话列表:', sessionList.value.map(s => ({ id: s.id, title: s.title })))
+  
   for (const session of sessionList.value) {
     try {
-      // 获取未读消息数
-      const unreadResponse = await customerServiceApi.countSessionUnreadMessages(session.id)
+      console.log(`\n--- 处理会话 ${session.id} ---`)
+      
+      // 获取非用户未读消息数（包括客服、AI和系统消息，不包括用户消息）
+      console.log(`调用API: countSessionUnreadNonUserMessages(${session.id})`)
+      const unreadResponse = await customerServiceApi.countSessionUnreadNonUserMessages(session.id)
+      console.log(`API响应:`, unreadResponse)
+      
       if (unreadResponse.code === 200) {
         session.unreadCount = unreadResponse.data || 0
+        console.log(`✅ 会话 ${session.id} 的非用户未读消息数: ${session.unreadCount}`)
+      } else {
+        console.error(`❌ 获取会话 ${session.id} 未读消息数失败:`, unreadResponse)
+        session.unreadCount = 0
       }
       
       // 获取最后一条消息
+      console.log(`调用API: getSessionMessages(${session.id})`)
       const messagesResponse = await customerServiceApi.getSessionMessages(session.id)
+      console.log(`消息API响应:`, messagesResponse)
+      
       if (messagesResponse.code === 200 && messagesResponse.data.length > 0) {
         const lastMessage = messagesResponse.data[messagesResponse.data.length - 1]
         session.lastMessage = lastMessage.messageContent
         session.lastMessageTime = lastMessage.createTime
+        console.log(`✅ 会话 ${session.id} 的最后消息:`, lastMessage.messageContent)
+      } else {
+        session.lastMessage = '暂无消息'
+        session.lastMessageTime = null
       }
       
       // 获取商品信息
       if (session.productId) {
-        const productResponse = await fetch(`/api/products/${session.productId}`)
-        if (productResponse.ok) {
-          const productData = await productResponse.json()
-          if (productData.code === 200) {
-            session.title = `商品咨询：${productData.data.productName}`
-            session.productImage = productData.data.mainImageUrl
+        console.log(`获取商品信息: productId = ${session.productId}`)
+        try {
+          const productResponse = await fetch(`/api/products/${session.productId}`)
+          if (productResponse.ok) {
+            const productData = await productResponse.json()
+            if (productData.code === 200) {
+              session.title = `商品咨询：${productData.data.productName}`
+              session.productImage = productData.data.mainImageUrl
+              console.log(`✅ 会话 ${session.id} 的商品信息:`, productData.data.productName)
+            }
           }
+        } catch (error) {
+          console.error(`获取商品信息失败:`, error)
         }
       }
       
       // 获取客服信息
       if (session.assignedAgentId) {
-        const agentResponse = await fetch(`/api/admins/${session.assignedAgentId}`)
-        if (agentResponse.ok) {
-          const agentData = await agentResponse.json()
-          if (agentData.code === 200) {
-            session.agentName = agentData.data.nickname || `客服${session.assignedAgentId}`
+        console.log(`获取客服信息: agentId = ${session.assignedAgentId}`)
+        try {
+          const agentResponse = await fetch(`/api/admins/${session.assignedAgentId}`)
+          if (agentResponse.ok) {
+            const agentData = await agentResponse.json()
+            if (agentData.code === 200) {
+              session.agentName = agentData.data.nickname || `客服${session.assignedAgentId}`
+              console.log(`✅ 会话 ${session.id} 的客服信息:`, session.agentName)
+            }
           }
+        } catch (error) {
+          console.error(`获取客服信息失败:`, error)
         }
       }
     } catch (error) {
-      console.error(`获取会话 ${session.id} 详情失败:`, error)
+      console.error(`❌ 获取会话 ${session.id} 详情失败:`, error)
+      session.unreadCount = 0
+      session.lastMessage = '获取消息失败'
     }
   }
+  
+  // 显示所有会话的未读消息数
+  console.log('\n=== 最终结果 ===')
+  console.log('所有会话的未读消息数:', sessionList.value.map(s => ({ 
+    id: s.id, 
+    title: s.title,
+    unreadCount: s.unreadCount,
+    hasRedDot: s.unreadCount > 0 
+  })))
+  
+  // 检查哪些会话应该显示红点
+  const sessionsWithRedDot = sessionList.value.filter(s => s.unreadCount > 0)
+  console.log(`应该显示红点的会话数量: ${sessionsWithRedDot.length}`)
+  console.log('应该显示红点的会话:', sessionsWithRedDot.map(s => ({ id: s.id, title: s.title, unreadCount: s.unreadCount })))
 }
 
 // 选择会话
@@ -331,12 +351,13 @@ const loadMessages = async (sessionId) => {
     
     if (response.code === 200) {
       messageList.value = response.data
-      // 标记消息为已读
-      await customerServiceApi.markMessagesAsRead(sessionId)
+      // 注意：移除自动标记已读，让用户端来决定何时标记已读
+      // await customerServiceApi.markMessagesAsRead(sessionId)
       // 更新会话列表中的未读数
       const session = sessionList.value.find(s => s.id === sessionId)
       if (session) {
-        session.unreadCount = 0
+        // 不强制设置为0，保持原有的未读状态
+        // session.unreadCount = 0
       }
     }
   } catch (error) {
@@ -359,7 +380,14 @@ const sendMessage = async () => {
     
     if (response.code === 200) {
       inputMessage.value = ''
-      await loadMessages(selectedSession.value.id)
+      // 注意：不要重新加载消息，避免触发标记已读
+      // await loadMessages(selectedSession.value.id)
+      
+      // 直接将新消息添加到当前消息列表
+      if (response.data) {
+        messageList.value.push(response.data)
+      }
+      
       scrollToBottom()
       ElMessage.success('消息发送成功')
     } else {
@@ -436,44 +464,6 @@ const handleAssignAll = async () => {
   }
 }
 
-// 会话操作处理
-const handleSessionAction = async (command, session) => {
-  try {
-    switch (command) {
-      case 'assign':
-        await customerServiceApi.assignAgent(session.id, 1) // 假设当前管理员ID为1
-        ElMessage.success('会话已分配')
-        await loadSessions()
-        break
-      case 'reassign':
-        await ElMessageBox.confirm('确定要重新分配这个会话吗？', '重新分配', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-        await customerServiceApi.assignAgent(session.id, 1) // 假设当前管理员ID为1
-        ElMessage.success('会话已重新分配')
-        await loadSessions()
-        break
-      case 'end':
-        await ElMessageBox.confirm('确定要结束这个会话吗？', '结束会话', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        })
-        await customerServiceApi.endSession(session.id)
-        ElMessage.success('会话已结束')
-        await loadSessions()
-        break
-    }
-  } catch (error) {
-    if (error !== 'cancel') {
-      console.error('会话操作失败:', error)
-      ElMessage.error('操作失败')
-    }
-  }
-}
-
 // 搜索
 const handleSearch = () => {
   loadSessions()
@@ -508,35 +498,6 @@ const formatTime = (time) => {
   if (!time) return ''
   const date = new Date(time)
   return date.toLocaleString('zh-CN')
-}
-
-// 获取状态类型
-const getStatusType = (status) => {
-  switch (status) {
-    case 1: return 'success'
-    case 2: return 'info'
-    case 3: return 'danger'
-    default: return 'info'
-  }
-}
-
-// 获取状态文本
-const getStatusText = (status) => {
-  switch (status) {
-    case 1: return '进行中'
-    case 2: return '已结束'
-    case 3: return '已关闭'
-    default: return '未知'
-  }
-}
-
-// 获取图片URL
-const getImageUrl = (url) => {
-  if (!url) return ''
-  if (url.startsWith('http://') || url.startsWith('https://')) {
-    return url
-  }
-  return `${import.meta.env.VITE_API_BASE_URL}/${url}`
 }
 
 // 获取发送者名称
@@ -642,9 +603,10 @@ onMounted(() => {
 }
 
 .session-list {
-  max-height: 600px;
+  max-height: calc(100vh - 300px); /* 调整高度与聊天区域一致 */
   overflow-y: auto;
   padding: 10px;
+  min-height: 500px; /* 最小高度 */
 }
 
 .session-list::-webkit-scrollbar {
@@ -694,15 +656,19 @@ onMounted(() => {
   overflow: hidden;
   margin-right: 15px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.product-avatar {
+.session-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
-.service-avatar {
+.default-avatar {
   width: 100%;
   height: 100%;
   background-color: #409eff;
@@ -711,20 +677,43 @@ onMounted(() => {
   justify-content: center;
   color: #fff;
   font-size: 20px;
+  border-radius: 50%;
 }
 
 .session-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 .session-title {
   font-weight: 600;
   color: #303133;
-  margin-bottom: 5px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.agent-name {
+  color: #409eff;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.session-message {
+  color: #606266;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-time {
+  color: #909399;
+  font-size: 12px;
 }
 
 .session-preview {
@@ -745,23 +734,24 @@ onMounted(() => {
   font-size: 12px;
 }
 
-.session-time {
-  color: #909399;
-  font-size: 12px;
-}
-
-.assigned-agent {
-  color: #409eff;
-  font-weight: 600;
-}
-
-.unassigned {
-  color: #f56c6c;
-  font-weight: 600;
-}
-
 .session-status {
-  margin-left: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.debug-info {
+  font-size: 10px;
+  color: #999;
+}
+
+.unread-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: #f56c6c;
+  border-radius: 50%;
+  margin-left: 5px;
 }
 
 .session-actions {
@@ -799,7 +789,9 @@ onMounted(() => {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: calc(100vh - 320px); /* 稍微调整高度 */
+  min-height: 600px; /* 增加最小高度 */
+  max-height: calc(100vh - 200px); /* 添加最大高度限制 */
 }
 
 .chat-messages {
@@ -808,6 +800,7 @@ onMounted(() => {
   padding: 20px;
   background-color: #f5f5f5;
   min-height: 0;
+  max-height: calc(100vh - 450px); /* 增加为输入框留出的空间 */
 }
 
 .chat-messages::-webkit-scrollbar {
@@ -890,14 +883,102 @@ onMounted(() => {
 
 .chat-input {
   flex-shrink: 0;
-  padding: 20px;
+  padding: 15px;
   border-top: 1px solid #e4e7ed;
   background-color: #fff;
+  min-height: 100px; /* 减少最小高度 */
+}
+
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-row {
+  display: flex;
+  align-items: flex-end; /* 底部对齐 */
+  gap: 10px;
+}
+
+.message-input {
+  flex: 1;
+  min-width: 0; /* 防止输入框溢出 */
+}
+
+.message-input .el-textarea__inner {
+  resize: vertical; /* 只允许垂直调整大小 */
+  min-height: 60px; /* 设置最小高度 */
+  max-height: 120px; /* 设置最大高度 */
 }
 
 .input-actions {
   display: flex;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 0;
+  min-height: 32px; /* 确保按钮有足够高度 */
+  flex-shrink: 0; /* 防止按钮被压缩 */
+}
+
+/* 响应式设计 */
+@media (max-height: 800px) {
+  .chat-container {
+    height: calc(100vh - 280px);
+    min-height: 500px;
+  }
+  
+  .chat-messages {
+    max-height: calc(100vh - 400px);
+  }
+  
+  .chat-input {
+    min-height: 80px;
+    padding: 10px;
+  }
+  
+  .input-row {
+    gap: 8px;
+  }
+}
+
+@media (max-height: 600px) {
+  .chat-container {
+    height: calc(100vh - 250px);
+    min-height: 400px;
+  }
+  
+  .chat-messages {
+    max-height: calc(100vh - 350px);
+  }
+  
+  .chat-input {
+    min-height: 70px;
+    padding: 8px;
+  }
+  
+  .input-container {
+    gap: 8px;
+  }
+  
+  .input-row {
+    gap: 6px;
+  }
+  
+  .message-input .el-textarea__inner {
+    min-height: 50px;
+    max-height: 100px;
+  }
+}
+
+/* 超小屏幕适配 */
+@media (max-width: 768px) {
+  .input-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .input-actions {
+    justify-content: center;
+  }
 }
 </style> 
