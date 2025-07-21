@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 
 @Tag(name = "管理员管理", description = "管理员登录和用户管理相关接口")
 @RestController
@@ -72,6 +73,28 @@ public class AdminController {
         try {
             List<Admin> admins = adminService.getAllAdmins();
             return ResponseEntity.ok(createSuccessResponse(admins));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse(e.getMessage()));
+        }
+    }
+    
+    @Operation(summary = "获取管理员详情", description = "根据管理员ID获取管理员详细信息")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "成功获取管理员信息"),
+        @ApiResponse(responseCode = "404", description = "管理员不存在")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getAdminById(
+            @Parameter(description = "管理员ID") @PathVariable Long id) {
+        try {
+            Optional<Admin> admin = adminService.getAdminById(id);
+            if (admin.isPresent()) {
+                return ResponseEntity.ok(createSuccessResponse(admin.get()));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(createErrorResponse("管理员不存在"));
+            }
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(createErrorResponse(e.getMessage()));

@@ -1,46 +1,54 @@
 <template>
   <div class="products-container">
-    <!-- 页面标题 -->
-    <div class="page-header">
-      <h1>商品管理</h1>
-      <div style="display: flex; gap: 10px;">
-        <el-button type="info" @click="debugCategories" size="small">
-          调试分类
-        </el-button>
-        <el-button type="primary" @click="handleAdd">
-          <el-icon><Plus /></el-icon>添加商品
-        </el-button>
+    <!-- 固定头部区域 -->
+    <div class="fixed-header">
+      <!-- 页面标题 -->
+      <div class="page-header">
+        <h1>商品管理</h1>
+        <div style="display: flex; gap: 10px;">
+          <el-button type="info" @click="debugCategories" size="small">
+            调试分类
+          </el-button>
+          <el-button type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>添加商品
+          </el-button>
+        </div>
       </div>
+
+      <!-- 搜索栏 -->
+      <el-card class="search-card" shadow="never">
+        <el-form :inline="true" :model="searchForm">
+          <el-form-item label="商品名称">
+            <el-input v-model="searchForm.productName" placeholder="请输入商品名称" clearable />
+          </el-form-item>
+          <el-form-item label="商品编码">
+            <el-input v-model="searchForm.productCode" placeholder="请输入商品编码" clearable />
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="handleSearch">
+              <el-icon><Search /></el-icon>搜索
+            </el-button>
+            <el-button @click="resetSearch">
+              <el-icon><Refresh /></el-icon>重置
+            </el-button>
+          </el-form-item>
+        </el-form>
+      </el-card>
     </div>
 
-    <!-- 搜索栏 -->
-    <el-card class="search-card" shadow="never">
-      <el-form :inline="true" :model="searchForm">
-        <el-form-item label="商品名称">
-          <el-input v-model="searchForm.productName" placeholder="请输入商品名称" clearable />
-        </el-form-item>
-        <el-form-item label="商品编码">
-          <el-input v-model="searchForm.productCode" placeholder="请输入商品编码" clearable />
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">
-            <el-icon><Search /></el-icon>搜索
-          </el-button>
-          <el-button @click="resetSearch">
-            <el-icon><Refresh /></el-icon>重置
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <!-- 商品列表 -->
-    <el-card class="product-list-card" shadow="never">
-      <el-table
-        :data="productList"
-        border
-        style="width: 100%"
-        v-loading="loading"
-      >
+    <!-- 可滚动内容区域 -->
+    <div class="scrollable-content">
+      <!-- 商品列表 -->
+      <el-card class="product-list-card" shadow="never">
+        <el-table
+          :data="productList"
+          border
+          style="width: 100%"
+          v-loading="loading"
+          height="100%"
+          max-height="calc(100vh - 400px)"
+          :scrollbar-always-on="true"
+        >
         <el-table-column label="商品图片" width="100" align="center">
           <template #default="{ row }">
             <el-image
@@ -94,20 +102,23 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <!-- 分页 -->
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :page-sizes="[10, 20, 50, 100]"
-          :total="total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
     </el-card>
+  </div>
+
+  <!-- 固定底部分页 -->
+  <div class="fixed-footer">
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
+  </div>
 
     <!-- 添加/编辑商品对话框 -->
     <el-dialog
@@ -731,9 +742,34 @@ export default {
 
 <style scoped>
 .products-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   background: #fff;
   border-radius: 8px;
+}
+
+.fixed-header {
+  flex-shrink: 0;
+  padding: 20px 20px 0 20px;
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+.scrollable-content {
+  flex: 1;
+  overflow: hidden; /* 改为hidden，让表格自己处理滚动 */
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 重要：允许flex子元素收缩 */
+}
+
+.fixed-footer {
+  flex-shrink: 0;
+  padding: 20px;
+  background: #fff;
+  border-top: 1px solid #e6e6e6;
 }
 
 .page-header {
@@ -751,16 +787,50 @@ export default {
 
 .search-card {
   margin-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .product-list-card {
-  margin-bottom: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 重要：允许flex子元素收缩 */
+  height: calc(100vh - 400px); /* 设置固定高度 */
+}
+
+.product-list-card .el-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* 重要：允许flex子元素收缩 */
+  padding: 20px; /* 恢复一些padding，让表格有适当的边距 */
+}
+
+.product-list-card .el-table {
+  flex: 1;
+  height: 100% !important;
+  min-height: 0; /* 重要：允许flex子元素收缩 */
+}
+
+.product-list-card .el-table__body-wrapper {
+  overflow-y: auto !important;
+  max-height: calc(100vh - 400px) !important;
+  flex: 1;
+  min-height: 0; /* 重要：允许flex子元素收缩 */
+}
+
+/* 确保表格头部固定 */
+.product-list-card .el-table__header-wrapper {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1 !important;
+  background: #fff !important;
+  flex-shrink: 0; /* 防止头部被压缩 */
 }
 
 .pagination-container {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
 }
 
 .avatar-uploader {

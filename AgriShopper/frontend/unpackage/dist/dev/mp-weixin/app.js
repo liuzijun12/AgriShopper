@@ -6,13 +6,7 @@ if (!Math) {
   "./pages/index/index.js";
   "./pages/productList/productList.js";
   "./pages/messages/messages.js";
-  "./pages/messages/systemNotification/accountSecurity.js";
-  "./pages/messages/systemNotification/platformOperation.js";
-  "./pages/messages/systemNotification/ruleUpdate.js";
-  "./pages/messages/systemNotification/globalAnnouncement.js";
-  "./pages/messages/orderDetail/orderDetail.js";
-  "./pages/messages/activityDetail/activityDetail.js";
-  "./pages/messages/costomerServiceChat/costomerServiceChat.js";
+  "./pages/messages/customerServiceChat/customerServiceChat.js";
   "./pages/shoppingCart/shoppingCart.js";
   "./pages/my/my.js";
   "./pages/searchProduct/searchProduct.js";
@@ -20,6 +14,7 @@ if (!Math) {
   "./pages/favorites/favorites.js";
   "./pages/address/add.js";
   "./pages/address/edit.js";
+  "./pages/test/customerServiceTest.js";
 }
 const _sfc_main = {
   globalData: {

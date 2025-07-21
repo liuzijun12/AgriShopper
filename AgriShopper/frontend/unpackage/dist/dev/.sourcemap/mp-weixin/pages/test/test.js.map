@@ -1,1 +1,0 @@
-{"version":3,"file":"test.js","sources":["../../../../edge下载/HBuilderX.4.45.2025010502/HBuilderX/plugins/uniapp-cli-vite/uniPage:/cGFnZXMvdGVzdC90ZXN0LnZ1ZQ"],"sourcesContent":["import MiniProgramPage from 'E:/agrishopper/AgriShopper/AgriShopper/frontend/pages/test/test.vue'\nwx.createPage(MiniProgramPage)"],"names":["MiniProgramPage"],"mappings":";;;;;;;;;AACA,GAAG,WAAWA,SAAe;"}

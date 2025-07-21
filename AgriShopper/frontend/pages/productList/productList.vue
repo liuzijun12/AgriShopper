@@ -85,14 +85,9 @@
           </view>
         </view>
 
-        <!-- 加载更多 -->
-        <view v-if="hasMore && !loading" class="load-more">
-          <uni-load-more status="more" :content-text="loadMoreText"></uni-load-more>
-        </view>
-
-        <!-- 没有更多数据 -->
-        <view v-if="!hasMore && products.length > 0" class="no-more">
-          <uni-load-more status="noMore" :content-text="noMoreText"></uni-load-more>
+        <!-- 商品总数显示 -->
+        <view v-if="products.length > 0" class="product-count">
+          <text class="count-text">共找到 {{ products.length }} 个商品</text>
         </view>
 
       </scroll-view>
@@ -156,10 +151,10 @@ const getImageUrl = (url) => {
   return config.baseUrl + url;
 };
 
-// 分页参数
+// 分页参数 - 设置更大的页面大小以显示更多商品
 const pageParams = reactive({
   page: 0,
-  size: 10
+  size: 50 // 增加页面大小，一次加载更多商品
 });
 
 // 主分类列表 - 从数据库获取
@@ -168,23 +163,11 @@ const categories = ref([
 ]);
 const categoriesLoading = ref(false);
 
-// 加载文本配置
+// 加载文本配置 - 简化版本
 const loadingText = {
-  contentdown: '上拉显示更多',
+  contentdown: '正在加载商品...',
   contentrefresh: '正在加载...',
-  contentnomore: '没有更多数据了'
-};
-
-const loadMoreText = {
-  contentdown: '上拉显示更多',
-  contentrefresh: '正在加载...',
-  contentnomore: '没有更多数据了'
-};
-
-const noMoreText = {
-  contentdown: '上拉显示更多',
-  contentrefresh: '正在加载...',
-  contentnomore: '没有更多数据了'
+  contentnomore: '加载完成'
 };
 
 // 加载商品列表
@@ -201,34 +184,29 @@ const loadProducts = async (reset = false) => {
       hasMore.value = true;
     }
     
+    // 获取所有商品，不分页
     const params = {
-      page: pageParams.page,
-      size: pageParams.size
+      page: 0,
+      size: 1000 // 设置一个很大的数字，确保获取所有商品
     };
     
-    // 获取所有商品，然后在前端按分类过滤
     const response = await productsApi.getProductList(params);
     
     if (response.code === 200 && response.data) {
-      let filteredProducts = response.data.content || [];
+      let allProducts = response.data.content || [];
       
       // 如果选择了特定分类，按分类ID过滤商品
       if (currentCategory.value > 0) {
         const categoryId = categories.value[currentCategory.value].id;
-        filteredProducts = filteredProducts.filter(product => product.categoryId === categoryId);
+        allProducts = allProducts.filter(product => product.categoryId === categoryId);
       }
       
-      // 创建新的响应对象
-      const filteredResponse = {
-        ...response,
-        data: {
-          ...response.data,
-          content: filteredProducts,
-          totalElements: filteredProducts.length
-        }
-      };
+      // 直接设置所有商品，不分页
+      products.value = allProducts;
+      hasMore.value = false; // 一次性加载所有商品，不需要分页
       
-      handleProductResponse(filteredResponse, reset);
+      console.log(`加载了 ${allProducts.length} 个商品`);
+      
     } else {
       throw new Error(response.message || '获取商品数据失败');
     }
@@ -244,30 +222,7 @@ const loadProducts = async (reset = false) => {
   }
 };
 
-// 处理商品响应数据
-const handleProductResponse = (response, reset) => {
-  if (response.code === 200 && response.data) {
-    const newProducts = response.data.content || [];
-    
-    if (reset) {
-      products.value = newProducts;
-    } else {
-      products.value.push(...newProducts);
-    }
-    
-    // 检查是否还有更多数据
-    const totalElements = response.data.totalElements || 0;
-    const currentTotal = products.value.length;
-    hasMore.value = currentTotal < totalElements;
-    
-    // 如果还有更多数据，增加页码
-    if (hasMore.value) {
-      pageParams.page++;
-    }
-  } else {
-    throw new Error(response.message || '获取商品数据失败');
-  }
-};
+// 处理商品响应数据 - 已简化，不再需要分页处理
 
 // 切换分类
 const changeCategory = (index) => {
@@ -277,11 +232,10 @@ const changeCategory = (index) => {
   loadProducts(true); // 重置并重新加载
 };
 
-// 加载更多
+// 加载更多 - 现在一次性加载所有商品，不需要分页加载
 const loadMore = () => {
-  if (hasMore.value && !loading.value) {
-    loadProducts(false);
-  }
+  // 一次性加载所有商品，不需要分页
+  console.log('所有商品已加载完成');
 };
 
 // 跳转到商品详情
@@ -566,11 +520,20 @@ page {
   font-size: 14px;
 }
 
-/* 加载更多 */
-.load-more, .no-more {
+/* 商品总数显示 */
+.product-count {
   display: flex;
   justify-content: center;
   padding: 20rpx;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+  margin: 20rpx 0;
+}
+
+.count-text {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
 }
 
 .product-item {

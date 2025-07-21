@@ -53,6 +53,10 @@
             <el-icon><User /></el-icon>
             <span>用户管理</span>
           </el-menu-item>
+          <el-menu-item index="/customer-service">
+            <el-icon><Service /></el-icon>
+            <span>客服管理</span>
+          </el-menu-item>
         </el-menu>
       </el-aside>
 
@@ -68,7 +72,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowDown, DataBoard, Goods, List, User } from '@element-plus/icons-vue'
+import { ArrowDown, DataBoard, Goods, List, User, Service } from '@element-plus/icons-vue'
 
 export default {
   name: 'AdminLayout',
@@ -77,7 +81,8 @@ export default {
     DataBoard,
     Goods,
     List,
-    User
+    User,
+    Service
   },
   setup() {
     const router = useRouter()
@@ -223,6 +228,9 @@ export default {
 .admin-main {
   background: #f0f2f5;
   padding: 20px;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
 }
 </style> 

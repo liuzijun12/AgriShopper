@@ -42,26 +42,17 @@ const _sfc_main = {
     };
     const pageParams = common_vendor.reactive({
       page: 0,
-      size: 10
+      size: 50
+      // 增加页面大小，一次加载更多商品
     });
     const categories = common_vendor.ref([
       { name: "全部", id: 0 }
     ]);
     const categoriesLoading = common_vendor.ref(false);
     const loadingText = {
-      contentdown: "上拉显示更多",
+      contentdown: "正在加载商品...",
       contentrefresh: "正在加载...",
-      contentnomore: "没有更多数据了"
-    };
-    const loadMoreText = {
-      contentdown: "上拉显示更多",
-      contentrefresh: "正在加载...",
-      contentnomore: "没有更多数据了"
-    };
-    const noMoreText = {
-      contentdown: "上拉显示更多",
-      contentrefresh: "正在加载...",
-      contentnomore: "没有更多数据了"
+      contentnomore: "加载完成"
     };
     const loadProducts = async (reset = false) => {
       if (loading.value)
@@ -75,54 +66,31 @@ const _sfc_main = {
           hasMore.value = true;
         }
         const params = {
-          page: pageParams.page,
-          size: pageParams.size
+          page: 0,
+          size: 1e3
+          // 设置一个很大的数字，确保获取所有商品
         };
         const response = await api_products.productsApi.getProductList(params);
         if (response.code === 200 && response.data) {
-          let filteredProducts = response.data.content || [];
+          let allProducts = response.data.content || [];
           if (currentCategory.value > 0) {
             const categoryId = categories.value[currentCategory.value].id;
-            filteredProducts = filteredProducts.filter((product) => product.categoryId === categoryId);
+            allProducts = allProducts.filter((product) => product.categoryId === categoryId);
           }
-          const filteredResponse = {
-            ...response,
-            data: {
-              ...response.data,
-              content: filteredProducts,
-              totalElements: filteredProducts.length
-            }
-          };
-          handleProductResponse(filteredResponse, reset);
+          products.value = allProducts;
+          hasMore.value = false;
+          common_vendor.index.__f__("log", "at pages/productList/productList.vue:208", `加载了 ${allProducts.length} 个商品`);
         } else {
           throw new Error(response.message || "获取商品数据失败");
         }
       } catch (err) {
-        common_vendor.index.__f__("error", "at pages/productList/productList.vue:237", "加载商品失败:", err);
+        common_vendor.index.__f__("error", "at pages/productList/productList.vue:215", "加载商品失败:", err);
         error.value = err.message || "加载商品失败，请重试";
         if (reset) {
           products.value = [];
         }
       } finally {
         loading.value = false;
-      }
-    };
-    const handleProductResponse = (response, reset) => {
-      if (response.code === 200 && response.data) {
-        const newProducts = response.data.content || [];
-        if (reset) {
-          products.value = newProducts;
-        } else {
-          products.value.push(...newProducts);
-        }
-        const totalElements = response.data.totalElements || 0;
-        const currentTotal = products.value.length;
-        hasMore.value = currentTotal < totalElements;
-        if (hasMore.value) {
-          pageParams.page++;
-        }
-      } else {
-        throw new Error(response.message || "获取商品数据失败");
       }
     };
     const changeCategory = (index) => {
@@ -132,9 +100,7 @@ const _sfc_main = {
       loadProducts(true);
     };
     const loadMore = () => {
-      if (hasMore.value && !loading.value) {
-        loadProducts(false);
-      }
+      common_vendor.index.__f__("log", "at pages/productList/productList.vue:238", "所有商品已加载完成");
     };
     const goToProductDetail = (productId) => {
       common_vendor.index.navigateTo({
@@ -171,13 +137,13 @@ const _sfc_main = {
             { name: "全部", id: 0 },
             ...dbCategories
           ];
-          common_vendor.index.__f__("log", "at pages/productList/productList.vue:340", "分类加载成功:", categories.value);
+          common_vendor.index.__f__("log", "at pages/productList/productList.vue:294", "分类加载成功:", categories.value);
         } else {
-          common_vendor.index.__f__("error", "at pages/productList/productList.vue:342", "获取分类失败:", response.message);
+          common_vendor.index.__f__("error", "at pages/productList/productList.vue:296", "获取分类失败:", response.message);
           loadDefaultCategories();
         }
       } catch (error2) {
-        common_vendor.index.__f__("error", "at pages/productList/productList.vue:347", "获取分类出错:", error2);
+        common_vendor.index.__f__("error", "at pages/productList/productList.vue:301", "获取分类出错:", error2);
         loadDefaultCategories();
       } finally {
         categoriesLoading.value = false;
@@ -240,21 +206,11 @@ const _sfc_main = {
             l: common_vendor.o(($event) => goToProductDetail(product.id), product.id)
           });
         }),
-        k: hasMore.value && !loading.value
-      }, hasMore.value && !loading.value ? {
-        l: common_vendor.p({
-          status: "more",
-          ["content-text"]: loadMoreText
-        })
+        k: products.value.length > 0
+      }, products.value.length > 0 ? {
+        l: common_vendor.t(products.value.length)
       } : {}, {
-        m: !hasMore.value && products.value.length > 0
-      }, !hasMore.value && products.value.length > 0 ? {
-        n: common_vendor.p({
-          status: "noMore",
-          ["content-text"]: noMoreText
-        })
-      } : {}, {
-        o: common_vendor.o(loadMore)
+        m: common_vendor.o(loadMore)
       });
     };
   }

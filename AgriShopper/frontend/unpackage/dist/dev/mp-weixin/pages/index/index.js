@@ -8,7 +8,31 @@ if (!Math) {
 const WxLoginModal = () => "../../components/WxLoginModal.js";
 const _sfc_main = {
   __name: "index",
-  setup(__props) {
+  setup(__props, { expose: __expose }) {
+    const getImageUrl = (url) => {
+      if (!url)
+        return "/static/default-product.png";
+      if (url.startsWith("http://") || url.startsWith("https://")) {
+        return url;
+      }
+      const config = config_env.env.getConfig();
+      if (url.startsWith("icon/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("tabbar/")) {
+        return config.baseUrl + "/" + url;
+      }
+      if (url.startsWith("Carousel/")) {
+        return config.baseUrl + "/static/" + url;
+      }
+      if (url.startsWith("/static/uploads/")) {
+        return config.baseUrl + url;
+      }
+      if (!url.startsWith("/")) {
+        return config.baseUrl + "/static/uploads/" + url;
+      }
+      return config.baseUrl + url;
+    };
     const bannerList = common_vendor.ref([]);
     common_vendor.ref([
       { name: "饲料" },
@@ -23,7 +47,8 @@ const _sfc_main = {
     common_vendor.ref(1);
     const isLoggedIn = common_vendor.ref(false);
     const showLoginModal = common_vendor.ref(false);
-    const userAvatar = common_vendor.ref("/static/tabbar/user.png");
+    const userAvatar = common_vendor.ref(getImageUrl("icon/登录.png"));
+    const refreshing = common_vendor.ref(false);
     const onSwiperChange = (e) => {
       currentSwiper.value = e.detail.current;
     };
@@ -44,11 +69,8 @@ const _sfc_main = {
           try {
             const personalizedResponse = await new Promise((resolve, reject) => {
               common_vendor.index.request({
-                url: config_env.env.getApiUrl(`/user-behavior/recommendations/${userInfo.id || 1}`),
+                url: config_env.env.getApiUrl(`/user-behavior/recommendations/${userInfo.id || 1}?limit=8`),
                 method: "GET",
-                data: {
-                  limit: 8
-                },
                 success: (res) => {
                   resolve(res);
                 },
@@ -59,19 +81,14 @@ const _sfc_main = {
             });
             if (personalizedResponse.statusCode === 200 && personalizedResponse.data.code === 200) {
               const recommendedProductCodes = personalizedResponse.data.data || [];
-              common_vendor.index.__f__("log", "at pages/index/index.vue:192", "个性化推荐商品编码:", recommendedProductCodes);
+              common_vendor.index.__f__("log", "at pages/index/index.vue:248", "个性化推荐商品编码:", recommendedProductCodes);
               if (recommendedProductCodes.length > 0) {
                 for (const productCode of recommendedProductCodes) {
                   try {
                     const productResponse = await new Promise((resolve, reject) => {
                       common_vendor.index.request({
-                        url: config_env.env.getApiUrl(`/products`),
+                        url: config_env.env.getApiUrl(`/products?productCode=${productCode}&page=0&size=1`),
                         method: "GET",
-                        data: {
-                          productCode,
-                          page: 0,
-                          size: 1
-                        },
                         success: (res) => {
                           resolve(res);
                         },
@@ -87,7 +104,7 @@ const _sfc_main = {
                       }
                     }
                   } catch (error) {
-                    common_vendor.index.__f__("error", "at pages/index/index.vue:223", "获取推荐商品详情失败:", error);
+                    common_vendor.index.__f__("error", "at pages/index/index.vue:274", "获取推荐商品详情失败:", error);
                   }
                 }
               }
@@ -96,19 +113,15 @@ const _sfc_main = {
               }
             }
           } catch (error) {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:233", "获取个性化推荐失败:", error);
+            common_vendor.index.__f__("error", "at pages/index/index.vue:284", "获取个性化推荐失败:", error);
           }
         }
         if (productList.length === 0) {
           try {
             const hotResponse = await new Promise((resolve, reject) => {
               common_vendor.index.request({
-                url: config_env.env.getApiUrl("/user-behavior/popular"),
+                url: config_env.env.getApiUrl("/user-behavior/popular?limit=8&days=7"),
                 method: "GET",
-                data: {
-                  limit: 8,
-                  days: 7
-                },
                 success: (res) => {
                   resolve(res);
                 },
@@ -119,18 +132,13 @@ const _sfc_main = {
             });
             if (hotResponse.statusCode === 200 && hotResponse.data.code === 200) {
               const hotProductCodes = hotResponse.data.data || [];
-              common_vendor.index.__f__("log", "at pages/index/index.vue:259", "热门推荐商品编码:", hotProductCodes);
+              common_vendor.index.__f__("log", "at pages/index/index.vue:306", "热门推荐商品编码:", hotProductCodes);
               for (const productCode of hotProductCodes) {
                 try {
                   const productResponse = await new Promise((resolve, reject) => {
                     common_vendor.index.request({
-                      url: config_env.env.getApiUrl(`/products`),
+                      url: config_env.env.getApiUrl(`/products?productCode=${productCode}&page=0&size=1`),
                       method: "GET",
-                      data: {
-                        productCode,
-                        page: 0,
-                        size: 1
-                      },
                       success: (res) => {
                         resolve(res);
                       },
@@ -146,7 +154,7 @@ const _sfc_main = {
                     }
                   }
                 } catch (error) {
-                  common_vendor.index.__f__("error", "at pages/index/index.vue:289", "获取热门商品详情失败:", error);
+                  common_vendor.index.__f__("error", "at pages/index/index.vue:331", "获取热门商品详情失败:", error);
                 }
               }
               if (productList.length > 0) {
@@ -154,35 +162,96 @@ const _sfc_main = {
               }
             }
           } catch (error) {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:298", "获取热门推荐失败:", error);
+            common_vendor.index.__f__("error", "at pages/index/index.vue:340", "获取热门推荐失败:", error);
+          }
+        }
+        if (productList.length < 8) {
+          try {
+            const defaultResponse = await new Promise((resolve, reject) => {
+              common_vendor.index.request({
+                url: config_env.env.getApiUrl("/user-behavior/default-recommendations?limit=8"),
+                method: "GET",
+                success: (res) => {
+                  resolve(res);
+                },
+                fail: (err) => {
+                  reject(err);
+                }
+              });
+            });
+            if (defaultResponse.statusCode === 200 && defaultResponse.data.code === 200) {
+              const defaultProductCodes = defaultResponse.data.data || [];
+              common_vendor.index.__f__("log", "at pages/index/index.vue:362", "默认推荐商品编码:", defaultProductCodes);
+              const existingProductCodes = new Set(productList.map((p) => p.productCode));
+              for (const productCode of defaultProductCodes) {
+                if (!existingProductCodes.has(productCode)) {
+                  try {
+                    const productResponse = await new Promise((resolve, reject) => {
+                      common_vendor.index.request({
+                        url: config_env.env.getApiUrl(`/products?productCode=${productCode}&page=0&size=1`),
+                        method: "GET",
+                        success: (res) => {
+                          resolve(res);
+                        },
+                        fail: (err) => {
+                          reject(err);
+                        }
+                      });
+                    });
+                    if (productResponse.statusCode === 200 && productResponse.data.code === 200) {
+                      const products2 = productResponse.data.data.content || [];
+                      if (products2.length > 0) {
+                        productList.push(products2[0]);
+                      }
+                    }
+                  } catch (error) {
+                    common_vendor.index.__f__("error", "at pages/index/index.vue:391", "获取默认推荐商品详情失败:", error);
+                  }
+                }
+              }
+              if (productList.length > 0 && recommendationType.value !== "personalized" && recommendationType.value !== "popular") {
+                recommendationType.value = "sales-stock";
+              }
+            }
+          } catch (error) {
+            common_vendor.index.__f__("error", "at pages/index/index.vue:401", "获取默认推荐失败:", error);
+          }
+        }
+        if (productList.length < 8) {
+          try {
+            const response = await new Promise((resolve, reject) => {
+              common_vendor.index.request({
+                url: config_env.env.getApiUrl("/products?page=0&size=8"),
+                method: "GET",
+                success: (res) => {
+                  resolve(res);
+                },
+                fail: (err) => {
+                  reject(err);
+                }
+              });
+            });
+            if (response.statusCode === 200 && response.data.code === 200) {
+              const allProducts = response.data.data.content || [];
+              const existingProductCodes = new Set(productList.map((p) => p.productCode));
+              for (const product of allProducts) {
+                if (!existingProductCodes.has(product.productCode)) {
+                  productList.push(product);
+                }
+              }
+              if (productList.length > 0 && recommendationType.value !== "personalized" && recommendationType.value !== "popular" && recommendationType.value !== "sales-stock") {
+                recommendationType.value = "default";
+              }
+            }
+          } catch (error) {
+            common_vendor.index.__f__("error", "at pages/index/index.vue:439", "获取普通商品列表失败:", error);
           }
         }
         if (productList.length === 0) {
-          const response = await new Promise((resolve, reject) => {
-            common_vendor.index.request({
-              url: config_env.env.getApiUrl("/products"),
-              method: "GET",
-              data: {
-                page: 0,
-                size: 8
-              },
-              success: (res) => {
-                resolve(res);
-              },
-              fail: (err) => {
-                reject(err);
-              }
-            });
-          });
-          if (response.statusCode === 200 && response.data.code === 200) {
-            productList = response.data.data.content || [];
-            recommendationType.value = "default";
-          } else {
-            common_vendor.index.__f__("error", "at pages/index/index.vue:325", "获取商品列表失败:", response.data);
-            loadDefaultProducts();
-            recommendationType.value = "default";
-            return;
-          }
+          common_vendor.index.__f__("error", "at pages/index/index.vue:445", "所有推荐系统都失败，使用默认商品数据");
+          loadDefaultProducts();
+          recommendationType.value = "default";
+          return;
         }
         products.value = productList.map((product) => ({
           id: product.id,
@@ -195,11 +264,11 @@ const _sfc_main = {
           isHotProduct: product.isHotProduct,
           isNewProduct: product.isNewProduct
         }));
-        common_vendor.index.__f__("log", "at pages/index/index.vue:345", "推荐商品加载成功:", products.value);
-        common_vendor.index.__f__("log", "at pages/index/index.vue:346", "推荐类型:", recommendationType.value);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:464", "推荐商品加载成功:", products.value);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:465", "推荐类型:", recommendationType.value);
         recordViewRecommendPage();
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:352", "获取推荐商品出错:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:471", "获取推荐商品出错:", error);
         loadDefaultProducts();
         recommendationType.value = "default";
       } finally {
@@ -226,17 +295,17 @@ const _sfc_main = {
         });
         if (response.statusCode === 200 && response.data.code === 200) {
           recommendationStats.value = response.data.data;
-          common_vendor.index.__f__("log", "at pages/index/index.vue:384", "推荐统计信息:", recommendationStats.value);
+          common_vendor.index.__f__("log", "at pages/index/index.vue:503", "推荐统计信息:", recommendationStats.value);
         }
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:387", "获取推荐统计信息失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:506", "获取推荐统计信息失败:", error);
       }
     };
     const recordViewRecommendPage = async () => {
       try {
         const userInfo = store.store.getUserInfo();
         if (!userInfo || !userInfo.openid) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:396", "用户未登录，跳过行为记录");
+          common_vendor.index.__f__("log", "at pages/index/index.vue:515", "用户未登录，跳过行为记录");
           return;
         }
         await common_vendor.index.request({
@@ -250,18 +319,21 @@ const _sfc_main = {
             sourcePage: "home"
           }
         });
-        common_vendor.index.__f__("log", "at pages/index/index.vue:412", "记录查看推荐页面行为成功");
+        common_vendor.index.__f__("log", "at pages/index/index.vue:531", "记录查看推荐页面行为成功");
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:414", "记录查看推荐页面行为失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:533", "记录查看推荐页面行为失败:", error);
       }
     };
     const recordClickProduct = async (product) => {
       try {
         const userInfo = store.store.getUserInfo();
         if (!userInfo || !userInfo.openid) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:423", "用户未登录，跳过行为记录");
+          common_vendor.index.__f__("log", "at pages/index/index.vue:542", "用户未登录，跳过行为记录");
           return;
         }
+        const pages = getCurrentPages();
+        const currentPage = pages[pages.length - 1];
+        const sourcePage = currentPage ? currentPage.route : "unknown";
         await common_vendor.index.request({
           url: config_env.env.getApiUrl("/user-behavior/click-product"),
           method: "POST",
@@ -270,21 +342,24 @@ const _sfc_main = {
             // 默认使用用户ID=1
             productCode: product.productCode,
             productName: product.name,
-            sourcePage: "home"
+            sourcePage
           }
         });
-        common_vendor.index.__f__("log", "at pages/index/index.vue:439", "记录点击商品行为成功:", product.name);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:563", "记录点击商品行为成功:", product.name, "来源页面:", sourcePage);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:441", "记录点击商品行为失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:565", "记录点击商品行为失败:", error);
       }
     };
     const recordViewProduct = async (product) => {
       try {
         const userInfo = store.store.getUserInfo();
         if (!userInfo || !userInfo.openid) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:450", "用户未登录，跳过行为记录");
+          common_vendor.index.__f__("log", "at pages/index/index.vue:574", "用户未登录，跳过行为记录");
           return;
         }
+        const pages = getCurrentPages();
+        const currentPage = pages[pages.length - 1];
+        const sourcePage = currentPage ? currentPage.route : "unknown";
         await common_vendor.index.request({
           url: config_env.env.getApiUrl("/user-behavior/view-product"),
           method: "POST",
@@ -293,21 +368,24 @@ const _sfc_main = {
             // 默认使用用户ID=1
             productCode: product.productCode,
             productName: product.name,
-            sourcePage: "home"
+            sourcePage
           }
         });
-        common_vendor.index.__f__("log", "at pages/index/index.vue:466", "记录查看商品行为成功:", product.name);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:595", "记录查看商品行为成功:", product.name, "来源页面:", sourcePage);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:468", "记录查看商品行为失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:597", "记录查看商品行为失败:", error);
       }
     };
     const recordSearchBehavior = async () => {
       try {
         const userInfo = store.store.getUserInfo();
         if (!userInfo || !userInfo.openid) {
-          common_vendor.index.__f__("log", "at pages/index/index.vue:477", "用户未登录，跳过行为记录");
+          common_vendor.index.__f__("log", "at pages/index/index.vue:606", "用户未登录，跳过行为记录");
           return;
         }
+        const pages = getCurrentPages();
+        const currentPage = pages[pages.length - 1];
+        const sourcePage = currentPage ? currentPage.route : "unknown";
         await common_vendor.index.request({
           url: config_env.env.getApiUrl("/user-behavior/search"),
           method: "POST",
@@ -315,50 +393,29 @@ const _sfc_main = {
             userId: userInfo.id || 1,
             // 默认使用用户ID=1
             keyword: "搜索框点击",
-            sourcePage: "home"
+            sourcePage
           }
         });
-        common_vendor.index.__f__("log", "at pages/index/index.vue:492", "记录搜索行为成功");
+        common_vendor.index.__f__("log", "at pages/index/index.vue:626", "记录搜索行为成功，来源页面:", sourcePage);
       } catch (error) {
-        common_vendor.index.__f__("error", "at pages/index/index.vue:494", "记录搜索行为失败:", error);
+        common_vendor.index.__f__("error", "at pages/index/index.vue:628", "记录搜索行为失败:", error);
       }
-    };
-    const getImageUrl = (url) => {
-      if (!url)
-        return "/static/default-product.png";
-      if (url.startsWith("http://") || url.startsWith("https://")) {
-        return url;
-      }
-      const config = config_env.env.getConfig();
-      if (url.startsWith("icon/")) {
-        return config.baseUrl + "/" + url;
-      }
-      if (url.startsWith("tabbar/")) {
-        return config.baseUrl + "/" + url;
-      }
-      if (url.startsWith("Carousel/")) {
-        return config.baseUrl + "/static/" + url;
-      }
-      if (url.startsWith("/static/uploads/")) {
-        return config.baseUrl + url;
-      }
-      if (!url.startsWith("/")) {
-        return config.baseUrl + "/static/uploads/" + url;
-      }
-      return config.baseUrl + url;
     };
     const initBannerList = () => {
-      bannerList.value = [
-        {
-          imageUrl: getImageUrl("Carousel/siliao.jpg")
-        },
-        {
-          imageUrl: getImageUrl("Carousel/shucai.jpg")
-        },
-        {
-          imageUrl: getImageUrl("Carousel/baojian.jpg")
-        }
-      ];
+      return new Promise((resolve) => {
+        bannerList.value = [
+          {
+            imageUrl: getImageUrl("Carousel/siliao.jpg")
+          },
+          {
+            imageUrl: getImageUrl("Carousel/shucai.jpg")
+          },
+          {
+            imageUrl: getImageUrl("Carousel/baojian.jpg")
+          }
+        ];
+        resolve();
+      });
     };
     const loadDefaultProducts = () => {
       products.value = [
@@ -433,20 +490,31 @@ const _sfc_main = {
           isLoggedIn.value = true;
           if (userInfo.avatar) {
             userAvatar.value = userInfo.avatar;
+          } else {
+            userAvatar.value = "/static/tabbar/user.png";
           }
         } else {
           isLoggedIn.value = false;
+          userAvatar.value = getImageUrl("icon/登录.png");
         }
       } catch (error) {
-        common_vendor.index.__f__("log", "at pages/index/index.vue:639", "检查登录状态失败:", error);
+        common_vendor.index.__f__("log", "at pages/index/index.vue:741", "检查登录状态失败:", error);
         isLoggedIn.value = false;
+        userAvatar.value = getImageUrl("icon/登录.png");
       }
     };
     const handleUserClick = () => {
       if (isLoggedIn.value) {
-        common_vendor.index.switchTab({
-          url: "/pages/my/my"
+        common_vendor.index.showToast({
+          title: "欢迎回来",
+          icon: "none",
+          duration: 1500
         });
+        setTimeout(() => {
+          common_vendor.index.switchTab({
+            url: "/pages/my/my"
+          });
+        }, 500);
       } else {
         showLoginModal.value = true;
       }
@@ -455,9 +523,16 @@ const _sfc_main = {
       showLoginModal.value = false;
     };
     const handleLoginSuccess = (userInfo) => {
-      common_vendor.index.__f__("log", "at pages/index/index.vue:664", "登录成功:", userInfo);
+      common_vendor.index.__f__("log", "at pages/index/index.vue:775", "登录成功:", userInfo);
       checkLoginStatus();
       showLoginModal.value = false;
+      fetchRecommendProducts();
+      fetchRecommendationStats();
+      common_vendor.index.showToast({
+        title: "登录成功",
+        icon: "success",
+        duration: 2e3
+      });
     };
     const goToProductDetail = (product) => {
       recordClickProduct(product);
@@ -475,46 +550,101 @@ const _sfc_main = {
     const handleImageError = (e) => {
       e.target.src = "/static/default-product.png";
     };
+    const handleAvatarError = (e) => {
+      if (isLoggedIn.value) {
+        e.target.src = "/static/tabbar/user.png";
+      } else {
+        e.target.src = getImageUrl("icon/登录.png");
+      }
+    };
     common_vendor.onMounted(() => {
       initBannerList();
       checkLoginStatus();
       fetchRecommendProducts();
       fetchRecommendationStats();
     });
+    const onShow = () => {
+      common_vendor.index.__f__("log", "at pages/index/index.vue:842", "页面显示，刷新数据");
+      checkLoginStatus();
+      fetchRecommendProducts();
+      fetchRecommendationStats();
+    };
+    const onRefresh = async () => {
+      common_vendor.index.__f__("log", "at pages/index/index.vue:850", "触发下拉刷新");
+      refreshing.value = true;
+      try {
+        await Promise.all([
+          initBannerList(),
+          fetchRecommendProducts(),
+          fetchRecommendationStats()
+        ]);
+        checkLoginStatus();
+        common_vendor.index.showToast({
+          title: "刷新成功",
+          icon: "success",
+          duration: 1500
+        });
+      } catch (error) {
+        common_vendor.index.__f__("error", "at pages/index/index.vue:869", "刷新失败:", error);
+        common_vendor.index.showToast({
+          title: "刷新失败",
+          icon: "error",
+          duration: 1500
+        });
+      } finally {
+        refreshing.value = false;
+      }
+    };
+    common_vendor.watch(() => store.store.state.refreshTrigger, (newVal, oldVal) => {
+      if (newVal !== oldVal) {
+        common_vendor.index.__f__("log", "at pages/index/index.vue:883", "检测到用户信息更新，刷新页面数据");
+        checkLoginStatus();
+        fetchRecommendProducts();
+        fetchRecommendationStats();
+      }
+    });
+    __expose({
+      onShow
+    });
     return (_ctx, _cache) => {
       return common_vendor.e({
         a: getImageUrl("icon/4.png"),
         b: common_vendor.o(goToSearch),
-        c: userAvatar.value,
-        d: !isLoggedIn.value
-      }, !isLoggedIn.value ? {} : {}, {
-        e: common_vendor.o(handleUserClick),
-        f: common_vendor.f(bannerList.value, (item, index, i0) => {
+        c: !isLoggedIn.value
+      }, !isLoggedIn.value ? {
+        d: userAvatar.value,
+        e: common_vendor.o(handleAvatarError)
+      } : {
+        f: userAvatar.value,
+        g: common_vendor.o(handleAvatarError)
+      }, {
+        h: common_vendor.o(handleUserClick),
+        i: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: item.imageUrl,
             b: index
           };
         }),
-        g: currentSwiper.value,
-        h: common_vendor.o(onSwiperChange),
-        i: common_vendor.f(bannerList.value, (item, index, i0) => {
+        j: currentSwiper.value,
+        k: common_vendor.o(onSwiperChange),
+        l: common_vendor.f(bannerList.value, (item, index, i0) => {
           return {
             a: index,
             b: common_vendor.n(currentSwiper.value === index ? "active" : "")
           };
         }),
-        j: getImageUrl("icon/1.png"),
-        k: common_vendor.o(prevSwiper),
-        l: getImageUrl("icon/3.png"),
-        m: common_vendor.o(nextSwiper),
-        n: recommendationType.value === "personalized"
+        m: getImageUrl("icon/1.png"),
+        n: common_vendor.o(prevSwiper),
+        o: getImageUrl("icon/3.png"),
+        p: common_vendor.o(nextSwiper),
+        q: recommendationType.value === "personalized"
       }, recommendationType.value === "personalized" ? {} : recommendationType.value === "popular" ? {} : {}, {
-        o: recommendationType.value === "popular",
-        p: productsLoading.value
+        r: recommendationType.value === "popular",
+        s: productsLoading.value
       }, productsLoading.value ? {} : {}, {
-        q: productsLoading.value
+        t: productsLoading.value
       }, productsLoading.value ? {} : {
-        r: common_vendor.f(products.value, (product, index, i0) => {
+        v: common_vendor.f(products.value, (product, index, i0) => {
           return common_vendor.e({
             a: product.imageUrl,
             b: common_vendor.o(handleImageError, product.id || index),
@@ -531,11 +661,13 @@ const _sfc_main = {
           });
         })
       }, {
-        s: !productsLoading.value && products.value.length === 0
+        w: !productsLoading.value && products.value.length === 0
       }, !productsLoading.value && products.value.length === 0 ? {} : {}, {
-        t: common_vendor.o(handleCloseLogin),
-        v: common_vendor.o(handleLoginSuccess),
-        w: common_vendor.p({
+        x: refreshing.value,
+        y: common_vendor.o(onRefresh),
+        z: common_vendor.o(handleCloseLogin),
+        A: common_vendor.o(handleLoginSuccess),
+        B: common_vendor.p({
           visible: showLoginModal.value
         })
       });

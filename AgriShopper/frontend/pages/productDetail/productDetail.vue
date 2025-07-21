@@ -59,8 +59,8 @@
         </view>
         
         <view class="product-main-info">
-          <text class="product-name">{{ product.productName }}</text>
-                  <view class="price-section">
+        <text class="product-name">{{ product.productName }}</text>
+        <view class="price-section">
           <view class="price-row">
             <text class="current-price">¥{{ product.productPrice }}</text>
           </view>
@@ -68,7 +68,7 @@
             <text class="price-tag">产地直供</text>
             <text class="price-tag">新鲜采摘</text>
           </view>
-        </view>
+          </view>
         </view>
       </view>
 
@@ -92,33 +92,33 @@
             <view class="spec-icon">📦</view>
             <view class="spec-content">
               <text class="spec-label">规格</text>
-              <text class="spec-value">{{ product.productSpec || '暂无规格信息' }}</text>
-            </view>
+            <text class="spec-value">{{ product.productSpec || '暂无规格信息' }}</text>
+          </view>
           </view>
           <view class="spec-item-card">
             <view class="spec-icon">⚖️</view>
             <view class="spec-content">
               <text class="spec-label">单位</text>
-              <text class="spec-value">{{ product.productUnit || '件' }}</text>
-            </view>
+            <text class="spec-value">{{ product.productUnit || '件' }}</text>
+          </view>
           </view>
           <view class="spec-item-card">
             <view class="spec-icon">📊</view>
             <view class="spec-content">
               <text class="spec-label">库存</text>
-              <text class="spec-value" :class="{ 'low-stock': product.stockQuantity <= 10 }">
-                {{ product.stockQuantity }}件
-              </text>
-            </view>
+            <text class="spec-value" :class="{ 'low-stock': product.stockQuantity <= 10 }">
+              {{ product.stockQuantity }}件
+            </text>
+          </view>
           </view>
           <view class="spec-item-card">
             <view class="spec-icon">🛒</view>
             <view class="spec-content">
               <text class="spec-label">起订量</text>
-              <text class="spec-value">{{ product.minOrderQuantity }}件</text>
-            </view>
+            <text class="spec-value">{{ product.minOrderQuantity }}件</text>
           </view>
         </view>
+      </view>
       </view>
 
       <!-- 推荐商品 -->
@@ -154,6 +154,10 @@
           <image :src="getImageUrl('icon/cart.png')" class="action-icon" mode="aspectFit"></image>
           <text class="action-text">购物车</text>
         </view>
+        <view class="action-btn cursor-pointer" @click="contactService">
+          <image :src="getImageUrl('icon/客服.png')" class="action-icon" mode="aspectFit"></image>
+          <text class="action-text">客服</text>
+        </view>
       </view>
       <view class="buy-buttons">
         <view class="add-cart-btn cursor-pointer" @click="showPurchaseModal('cart')">
@@ -177,6 +181,25 @@
         </view>
         
         <view class="modal-body">
+          <!-- 地址选择 -->
+          <view class="address-section">
+            <text class="address-label">收货地址</text>
+            <view class="address-selector" @click="selectAddress">
+              <view v-if="selectedAddress" class="selected-address">
+                <view class="address-info">
+                  <text class="receiver-name">{{ selectedAddress.receiverName }}</text>
+                  <text class="receiver-phone">{{ selectedAddress.receiverPhone }}</text>
+                </view>
+                <text class="address-detail">{{ selectedAddress.province }}{{ selectedAddress.city }}{{ selectedAddress.district }}{{ selectedAddress.detailAddress }}</text>
+              </view>
+              <view v-else class="no-address">
+                <text class="no-address-text">请选择收货地址</text>
+                <text class="add-address-text">+ 添加新地址</text>
+              </view>
+              <view class="address-arrow">></view>
+            </view>
+          </view>
+          
           <!-- 商品信息 -->
           <view class="product-summary">
             <image :src="product.mainImageUrl ? getImageUrl(product.mainImageUrl) : '/static/default-product.png'" 
@@ -239,9 +262,11 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue';
+import { store } from '../../store.js';
 import productsApi from '../../api/products.js';
 import cartApi from '../../api/cart.js';
 import favoritesApi from '../../api/favorites.js';
+import addressApi from '../../api/address.js';
 import env from '../../config/env.js';
 
 // 响应式数据
@@ -257,6 +282,10 @@ const showModal = ref(false);
 const modalType = ref('buy'); // 'buy' 或 'cart'
 const modalQuantity = ref(1);
 
+// 地址相关
+const selectedAddress = ref(null);
+const userAddresses = ref([]);
+
 // 计算属性
 const productImages = computed(() => {
   if (!product.value.mainImageUrl) {
@@ -268,6 +297,38 @@ const productImages = computed(() => {
 const totalPrice = computed(() => {
   return (product.value.productPrice * modalQuantity.value).toFixed(2);
 });
+
+// 记录用户行为
+const recordUserBehavior = async (behaviorType, targetId, targetName, extraData = {}) => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.openid) {
+      console.log('用户未登录，跳过行为记录');
+      return;
+    }
+    
+    // 获取当前页面路径
+    const pages = getCurrentPages();
+    const currentPage = pages[pages.length - 1];
+    const sourcePage = currentPage ? currentPage.route : 'unknown';
+    
+    const requestData = {
+      userId: userInfo.id || 1,
+      ...extraData,
+      sourcePage: sourcePage
+    };
+    
+    await uni.request({
+      url: env.getApiUrl(`/user-behavior/${behaviorType}`),
+      method: 'POST',
+      data: requestData
+    });
+    
+    console.log(`记录${behaviorType}行为成功，来源页面:`, sourcePage);
+  } catch (error) {
+    console.error(`记录${behaviorType}行为失败:`, error);
+  }
+};
 
 // 获取商品详情
 const loadProductDetail = async () => {
@@ -288,6 +349,12 @@ const loadProductDetail = async () => {
       loadRecommendProducts();
       // 检查收藏状态
       checkFavoriteStatus();
+      
+      // 记录查看商品行为
+      await recordUserBehavior('view-product', product.value.productCode, product.value.productName, {
+        productCode: product.value.productCode,
+        productName: product.value.productName
+      });
     } else {
       throw new Error(response.message || '获取商品详情失败');
     }
@@ -340,6 +407,11 @@ const showPurchaseModal = (type) => {
   modalType.value = type;
   modalQuantity.value = 1;
   showModal.value = true;
+  
+  // 如果是立即购买，加载用户地址
+  if (type === 'buy') {
+    loadUserAddresses();
+  }
 };
 
 const closeModal = () => {
@@ -370,6 +442,52 @@ const onModalQuantityInput = (e) => {
   }
 };
 
+// 加载用户地址列表
+const loadUserAddresses = async () => {
+  try {
+    const userInfo = store.getUserInfo();
+    if (!userInfo || !userInfo.id) {
+      console.log('用户未登录，无法加载地址');
+      return;
+    }
+
+    const response = await addressApi.getAddressList(userInfo.id);
+    if (response.code === 200 && response.data) {
+      userAddresses.value = response.data;
+      // 自动选择默认地址
+      const defaultAddress = response.data.find(addr => addr.isDefault);
+      if (defaultAddress) {
+        selectedAddress.value = defaultAddress;
+      } else if (response.data.length > 0) {
+        selectedAddress.value = response.data[0];
+      }
+    }
+  } catch (error) {
+    console.error('加载地址列表失败:', error);
+  }
+};
+
+// 选择地址
+const selectAddress = () => {
+  if (userAddresses.value.length === 0) {
+    // 没有地址，跳转到添加地址页面
+    uni.navigateTo({
+      url: '/pages/address/add'
+    });
+    return;
+  }
+
+  // 显示地址选择弹窗
+  uni.showActionSheet({
+    itemList: userAddresses.value.map(addr => 
+      `${addr.receiverName} ${addr.receiverPhone} - ${addr.province}${addr.city}${addr.district}${addr.detailAddress}`
+    ),
+    success: (res) => {
+      selectedAddress.value = userAddresses.value[res.tapIndex];
+    }
+  });
+};
+
 // 确认购买
 const confirmPurchase = async () => {
   if (modalQuantity.value > product.value.stockQuantity) {
@@ -380,10 +498,25 @@ const confirmPurchase = async () => {
     return;
   }
   
+  // 如果是立即购买，需要验证地址
+  if (modalType.value === 'buy' && !selectedAddress.value) {
+    uni.showToast({
+      title: '请选择收货地址',
+      icon: 'error'
+    });
+    return;
+  }
+  
   try {
     if (modalType.value === 'cart') {
       // 添加到购物车
       await cartApi.addToCart(product.value.id, modalQuantity.value);
+      
+      // 记录加入购物车行为
+      await recordUserBehavior('add-to-cart', product.value.productCode, product.value.productName, {
+        productCode: product.value.productCode,
+        productName: product.value.productName
+      });
       
       uni.showToast({
         title: '已添加到购物车',
@@ -392,10 +525,10 @@ const confirmPurchase = async () => {
       });
     } else {
       // 立即购买
-      uni.showToast({
-        title: '功能开发中',
-        icon: 'none'
-      });
+  uni.showToast({
+    title: '功能开发中',
+    icon: 'none'
+  });
     }
     
     closeModal();
@@ -408,12 +541,18 @@ const confirmPurchase = async () => {
     });
   }
 };
-
+  
 // 直接添加到购物车（保留原有功能）
 const addToCart = async () => {
   try {
     // 调用购物车API添加商品，默认数量为1
     await cartApi.addToCart(product.value.id, 1);
+    
+    // 记录加入购物车行为
+    await recordUserBehavior('add-to-cart', product.value.productCode, product.value.productName, {
+      productCode: product.value.productCode,
+      productName: product.value.productName
+    });
     
     uni.showToast({
       title: '已添加到购物车',
@@ -449,17 +588,24 @@ const checkFavoriteStatus = async () => {
 const toggleFavorite = async () => {
   try {
     if (!product.value.productCode) {
-      uni.showToast({
+    uni.showToast({
         title: '商品信息不完整',
-        icon: 'error'
-      });
-      return;
-    }
-    
+      icon: 'error'
+    });
+    return;
+  }
+  
     if (isFavorited.value) {
       // 取消收藏
       await favoritesApi.removeFavorite(favoritesApi.getCurrentUserId(), product.value.productCode);
       isFavorited.value = false;
+      
+      // 记录取消收藏行为
+      await recordUserBehavior('remove-from-favorite', product.value.productCode, product.value.productName, {
+        productCode: product.value.productCode,
+        productName: product.value.productName
+      });
+      
       uni.showToast({
         title: '已取消收藏',
         icon: 'success'
@@ -468,10 +614,17 @@ const toggleFavorite = async () => {
       // 添加收藏
       await favoritesApi.addFavorite(favoritesApi.getCurrentUserId(), product.value.productCode);
       isFavorited.value = true;
-      uni.showToast({
-        title: '已收藏',
-        icon: 'success'
+      
+      // 记录添加收藏行为
+      await recordUserBehavior('add-to-favorite', product.value.productCode, product.value.productName, {
+        productCode: product.value.productCode,
+        productName: product.value.productName
       });
+      
+  uni.showToast({
+    title: '已收藏',
+    icon: 'success'
+  });
     }
   } catch (error) {
     console.error('收藏操作失败:', error);
@@ -519,6 +672,19 @@ const getImageUrl = (path) => {
 // 处理图片加载错误
 const handleImageError = (e) => {
   e.target.src = '/static/default-product.png';
+};
+
+// 联系客服
+const contactService = () => {
+  // 记录用户点击客服行为
+  recordUserBehavior('click-service', product.value.id, product.value.productName, {
+    productCode: product.value.productCode
+  });
+  
+  // 跳转到新的客服聊天页面，传递产品信息
+  uni.navigateTo({
+    url: `/pages/messages/customerServiceChat/customerServiceChat?productId=${product.value.id}&productName=${encodeURIComponent(product.value.productName)}&productCode=${product.value.productCode}&userId=1`
+  });
 };
 
 // 页面加载
@@ -911,7 +1077,7 @@ page {
   }
   50% {
     opacity: 0.7;
-  }
+}
   100% {
     opacity: 1;
   }
@@ -1151,6 +1317,93 @@ page {
   padding: 32rpx;
   max-height: 50vh;
   overflow-y: auto;
+}
+
+/* 地址选择样式 */
+.address-section {
+  margin-bottom: 32rpx;
+  padding: 24rpx;
+  background-color: #f8f9fa;
+  border-radius: 16rpx;
+}
+
+.address-label {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+  margin-bottom: 16rpx;
+  display: block;
+}
+
+.address-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx;
+  background-color: #ffffff;
+  border-radius: 12rpx;
+  border: 2rpx solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.address-selector:active {
+  background-color: #f5f5f5;
+  border-color: #4CAF50;
+}
+
+.selected-address {
+  flex: 1;
+}
+
+.address-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8rpx;
+}
+
+.receiver-name {
+  font-size: 28rpx;
+  color: #333333;
+  font-weight: 600;
+  margin-right: 16rpx;
+}
+
+.receiver-phone {
+  font-size: 26rpx;
+  color: #666666;
+}
+
+.address-detail {
+  font-size: 26rpx;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.no-address {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.no-address-text {
+  font-size: 28rpx;
+  color: #999999;
+  margin-bottom: 8rpx;
+}
+
+.add-address-text {
+  font-size: 26rpx;
+  color: #4CAF50;
+  font-weight: 500;
+}
+
+.address-arrow {
+  font-size: 24rpx;
+  color: #999999;
+  margin-left: 16rpx;
 }
 
 .product-summary {

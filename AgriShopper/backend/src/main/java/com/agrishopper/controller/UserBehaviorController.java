@@ -115,6 +115,22 @@ public class UserBehaviorController {
         }
     }
 
+    @Operation(summary = "获取默认推荐", description = "根据销量和库存获取默认推荐商品（销量优先，库存次之）")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "成功获取默认推荐")
+    })
+    @GetMapping("/default-recommendations")
+    public ResponseEntity<?> getDefaultRecommendations(
+            @Parameter(description = "推荐数量") @RequestParam(defaultValue = "8") int limit) {
+        try {
+            List<String> recommendations = userBehaviorService.getDefaultRecommendationsBySalesAndStock(limit);
+            return ResponseEntity.ok(createSuccessResponse(recommendations));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(createErrorResponse(e.getMessage()));
+        }
+    }
+
     @Operation(summary = "获取实时推荐", description = "获取基于实时行为的推荐")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "成功获取实时推荐")
@@ -153,12 +169,13 @@ public class UserBehaviorController {
         @ApiResponse(responseCode = "200", description = "记录成功")
     })
     @PostMapping("/view-product")
-    public ResponseEntity<?> recordViewProduct(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "商品编码") @RequestParam String productCode,
-            @Parameter(description = "商品名称") @RequestParam String productName,
-            @Parameter(description = "来源页面") @RequestParam(defaultValue = "product-detail") String sourcePage) {
+    public ResponseEntity<?> recordViewProduct(@RequestBody Map<String, Object> request) {
         try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String productCode = request.get("productCode").toString();
+            String productName = request.get("productName").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "product-detail").toString();
+            
             userBehaviorService.recordViewProduct(userId, productCode, productName, sourcePage);
             return ResponseEntity.ok(createSuccessResponse("记录成功"));
         } catch (Exception e) {
@@ -172,12 +189,13 @@ public class UserBehaviorController {
         @ApiResponse(responseCode = "200", description = "记录成功")
     })
     @PostMapping("/click-product")
-    public ResponseEntity<?> recordClickProduct(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "商品编码") @RequestParam String productCode,
-            @Parameter(description = "商品名称") @RequestParam String productName,
-            @Parameter(description = "来源页面") @RequestParam(defaultValue = "product-list") String sourcePage) {
+    public ResponseEntity<?> recordClickProduct(@RequestBody Map<String, Object> request) {
         try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String productCode = request.get("productCode").toString();
+            String productName = request.get("productName").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "product-list").toString();
+            
             userBehaviorService.recordClickProduct(userId, productCode, productName, sourcePage);
             return ResponseEntity.ok(createSuccessResponse("记录成功"));
         } catch (Exception e) {
@@ -191,12 +209,13 @@ public class UserBehaviorController {
         @ApiResponse(responseCode = "200", description = "记录成功")
     })
     @PostMapping("/add-to-cart")
-    public ResponseEntity<?> recordAddToCart(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "商品编码") @RequestParam String productCode,
-            @Parameter(description = "商品名称") @RequestParam String productName,
-            @Parameter(description = "来源页面") @RequestParam(defaultValue = "product-detail") String sourcePage) {
+    public ResponseEntity<?> recordAddToCart(@RequestBody Map<String, Object> request) {
         try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String productCode = request.get("productCode").toString();
+            String productName = request.get("productName").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "product-detail").toString();
+            
             userBehaviorService.recordAddToCart(userId, productCode, productName, sourcePage);
             return ResponseEntity.ok(createSuccessResponse("记录成功"));
         } catch (Exception e) {
@@ -210,12 +229,13 @@ public class UserBehaviorController {
         @ApiResponse(responseCode = "200", description = "记录成功")
     })
     @PostMapping("/add-to-favorite")
-    public ResponseEntity<?> recordAddToFavorite(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "商品编码") @RequestParam String productCode,
-            @Parameter(description = "商品名称") @RequestParam String productName,
-            @Parameter(description = "来源页面") @RequestParam(defaultValue = "product-detail") String sourcePage) {
+    public ResponseEntity<?> recordAddToFavorite(@RequestBody Map<String, Object> request) {
         try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String productCode = request.get("productCode").toString();
+            String productName = request.get("productName").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "product-detail").toString();
+            
             userBehaviorService.recordAddToFavorite(userId, productCode, productName, sourcePage);
             return ResponseEntity.ok(createSuccessResponse("记录成功"));
         } catch (Exception e) {
@@ -229,12 +249,33 @@ public class UserBehaviorController {
         @ApiResponse(responseCode = "200", description = "记录成功")
     })
     @PostMapping("/search")
-    public ResponseEntity<?> recordSearchProduct(
-            @Parameter(description = "用户ID") @RequestParam Long userId,
-            @Parameter(description = "搜索关键词") @RequestParam String keyword,
-            @Parameter(description = "来源页面") @RequestParam(defaultValue = "search") String sourcePage) {
+    public ResponseEntity<?> recordSearchProduct(@RequestBody Map<String, Object> request) {
         try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String keyword = request.get("keyword").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "search").toString();
+            
             userBehaviorService.recordSearchProduct(userId, keyword, sourcePage);
+            return ResponseEntity.ok(createSuccessResponse("记录成功"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(createErrorResponse(e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "记录查看页面行为", description = "记录用户查看页面的行为")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "记录成功")
+    })
+    @PostMapping("/view-page")
+    public ResponseEntity<?> recordViewPage(@RequestBody Map<String, Object> request) {
+        try {
+            Long userId = Long.valueOf(request.get("userId").toString());
+            String pagePath = request.get("pagePath").toString();
+            String pageTitle = request.get("pageTitle").toString();
+            String sourcePage = request.getOrDefault("sourcePage", "unknown").toString();
+            
+            userBehaviorService.recordViewPage(userId, pagePath, pageTitle, sourcePage);
             return ResponseEntity.ok(createSuccessResponse("记录成功"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

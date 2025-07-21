@@ -10,7 +10,7 @@
 			<view class="login-content">
 				<!-- Logo和标题 -->
 				<view class="header-section">
-					<image class="logo" src="/static/logo.png" mode="aspectFit"></image>
+					<image class="logo" :src="getImageUrl('icon/logo.png')" mode="aspectFit"></image>
 					<text class="title">农康优选</text>
 					<text class="subtitle">欢迎使用微信登录</text>
 				</view>
@@ -70,9 +70,37 @@ export default {
 			if (path.startsWith('http://') || path.startsWith('https://')) {
 				return path;
 			}
+			
 			// 使用环境配置中的baseUrl
 			const config = env.getConfig();
-			return `${config.baseUrl}/${path}`;
+			
+			// 如果是icon图片，直接拼接后端地址
+			if (path.startsWith('icon/')) {
+				return config.baseUrl + '/static/' + path;
+			}
+			
+			// 如果是tabbar图片，直接拼接后端地址
+			if (path.startsWith('tabbar/')) {
+				return config.baseUrl + '/' + path;
+			}
+			
+			// 如果是Carousel轮播图，直接拼接后端地址
+			if (path.startsWith('Carousel/')) {
+				return config.baseUrl + '/static/' + path;
+			}
+			
+			// 如果已经是 /static/uploads/ 开头的路径，直接拼接后端地址
+			if (path.startsWith('/static/uploads/')) {
+				return config.baseUrl + path;
+			}
+			
+			// 如果是文件名，拼接完整的静态资源路径
+			if (!path.startsWith('/')) {
+				return config.baseUrl + '/static/uploads/' + path;
+			}
+			
+			// 其他情况，拼接后端地址和路径
+			return config.baseUrl + path;
 		},
 		
 		// 处理遮罩点击

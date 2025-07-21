@@ -136,6 +136,12 @@ public interface UserBehaviorService {
      * 获取全局热门商品
      */
     List<String> getGlobalHotProducts(int limit, int days);
+
+    /**
+     * 根据销量和库存获取默认推荐商品
+     * 销量优先，库存次之
+     */
+    List<String> getDefaultRecommendationsBySalesAndStock(int limit);
     
     /**
      * 获取最近热门商品
@@ -203,6 +209,11 @@ public interface UserBehaviorService {
      */
     Map<String, Object> getUserBehaviorTrend(Long userId, int days);
     
+    /**
+     * 清理过期数据
+     */
+    void cleanExpiredData(int days);
+    
     // ==================== 推荐算法评估方法 ====================
     
     /**
@@ -221,11 +232,6 @@ public interface UserBehaviorService {
     Double calculateRecommendationDiversity(List<String> recommendedProducts);
     
     // ==================== 数据清理和维护方法 ====================
-    
-    /**
-     * 清理过期数据
-     */
-    void cleanExpiredData(int days);
     
     /**
      * 数据统计和汇总

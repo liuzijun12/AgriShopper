@@ -6,14 +6,17 @@ const store = {
     isAppReady: false,
     currentTab: 0,
     cartItems: [],
-    favorites: []
+    favorites: [],
+    refreshTrigger: 0
+    // 添加刷新触发器
   }),
   setUserInfo(userInfo) {
     this.state.userInfo = userInfo;
+    this.state.refreshTrigger++;
     try {
       common_vendor.index.setStorageSync("userInfo", userInfo);
     } catch (error) {
-      common_vendor.index.__f__("error", "at store.js:18", "保存用户信息失败:", error);
+      common_vendor.index.__f__("error", "at store.js:21", "保存用户信息失败:", error);
     }
   },
   getUserInfo() {
@@ -27,16 +30,17 @@ const store = {
         return userInfo;
       }
     } catch (error) {
-      common_vendor.index.__f__("error", "at store.js:35", "获取用户信息失败:", error);
+      common_vendor.index.__f__("error", "at store.js:38", "获取用户信息失败:", error);
     }
     return null;
   },
   clearUserInfo() {
     this.state.userInfo = null;
+    this.state.refreshTrigger++;
     try {
       common_vendor.index.removeStorageSync("userInfo");
     } catch (error) {
-      common_vendor.index.__f__("error", "at store.js:46", "清除用户信息失败:", error);
+      common_vendor.index.__f__("error", "at store.js:51", "清除用户信息失败:", error);
     }
   },
   clearAllData() {
@@ -46,7 +50,7 @@ const store = {
     try {
       common_vendor.index.clearStorageSync();
     } catch (error) {
-      common_vendor.index.__f__("error", "at store.js:60", "清除所有数据失败:", error);
+      common_vendor.index.__f__("error", "at store.js:65", "清除所有数据失败:", error);
     }
   },
   setAppReady(ready) {

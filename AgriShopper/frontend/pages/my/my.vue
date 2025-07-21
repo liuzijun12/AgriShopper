@@ -8,7 +8,7 @@
     <!-- 用户信息模块 -->
     <view class="user-info-card" @click="handleUserClick">
       <view class="user-info">
-        <image class="avatar" :src="userAvatar" mode="aspectFill"></image>
+        <image class="avatar" :src="userAvatar" mode="aspectFill" @error="handleAvatarError"></image>
         <view class="user-details">
           <text class="username">{{ username }}</text>
           <text class="user-status">{{ isLoggedIn ? '已登录' : '点击登录' }}</text>
@@ -99,6 +99,15 @@ import { ref, onMounted } from 'vue';
 import { store } from '../../store.js';
 import WxLoginModal from '../../components/WxLoginModal.vue';
 import addressApi from '../../api/address.js';
+import env from '../../config/env.js';
+
+// 获取图片URL的函数
+const getImageUrl = (path) => {
+  const config = env.getConfig();
+  const fullUrl = `${config.baseUrl}/static/${path}`;
+  console.log('getImageUrl:', path, '->', fullUrl);
+  return fullUrl;
+};
 
 // 登录状态
 const isLoggedIn = ref(false);
@@ -106,7 +115,7 @@ const showLoginModal = ref(false);
 
 // 用户信息
 const username = ref('张先生');
-const userAvatar = ref('https://readdy.ai/api/search-image?query=A%20realistic%20portrait%20photo%20of%20a%20middle-aged%20Chinese%20man%20with%20short%20black%20hair%20and%20a%20friendly%20smile%2C%20wearing%20casual%20clothing%2C%20warm%20expression%2C%20natural%20lighting%2C%20high-quality%20detailed%20photo%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=120&height=120&seq=1&orientation=squarish');
+const userAvatar = ref(getImageUrl('icon/未登录.png')); // 使用后端的未登录图片
 
 // 订单快捷入口
 const orderItems = ref([
@@ -280,13 +289,21 @@ const checkLoginStatus = () => {
       username.value = userInfo.nickname || '微信用户';
       if (userInfo.avatar) {
         userAvatar.value = userInfo.avatar;
+      } else {
+        userAvatar.value = '/static/tabbar/user.png'; // 默认用户头像
       }
     } else {
       isLoggedIn.value = false;
+      userAvatar.value = getImageUrl('icon/未登录.png'); // 未登录时显示未登录图片
+      username.value = '点击登录';
+      console.log('未登录状态，设置头像为:', userAvatar.value);
     }
   } catch (error) {
     console.log('检查登录状态失败:', error);
     isLoggedIn.value = false;
+    userAvatar.value = getImageUrl('icon/未登录.png'); // 出错时也显示未登录图片
+    username.value = '点击登录';
+    console.log('出错状态，设置头像为:', userAvatar.value);
   }
 };
 
@@ -355,7 +372,7 @@ const handleLogout = () => {
           // 重置页面状态
           isLoggedIn.value = false;
           username.value = '点击登录';
-          userAvatar.value = 'https://readdy.ai/api/search-image?query=A%20realistic%20portrait%20photo%20of%20a%20middle-aged%20Chinese%20man%20with%20short%20black%20hair%20and%20a%20friendly%20smile%2C%20wearing%20casual%20clothing%2C%20warm%20expression%2C%20natural%20lighting%2C%20high-quality%20detailed%20photo%2C%20subject%20fills%2080%20percent%20of%20frame%2C%20isolated%20on%20white%20background%2C%20centered%20composition&width=120&height=120&seq=1&orientation=squarish';
+          userAvatar.value = getImageUrl('icon/未登录.png');
           
           // 显示退出成功提示
           uni.showToast({
@@ -385,8 +402,20 @@ const handleLogout = () => {
   });
 };
 
+// 处理头像加载失败
+const handleAvatarError = (e) => {
+  if (isLoggedIn.value) {
+    // 已登录用户头像加载失败，使用默认用户头像
+    e.target.src = '/static/tabbar/user.png';
+  } else {
+    // 未登录时头像加载失败，使用未登录图片
+    e.target.src = getImageUrl('icon/未登录.png');
+  }
+};
+
 // 页面加载时检查登录状态
 onMounted(() => {
+  console.log('my.vue 页面加载，初始头像URL:', userAvatar.value);
   checkLoginStatus();
   // 如果已登录，加载地址列表
   if (isLoggedIn.value) {

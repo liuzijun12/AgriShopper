@@ -74,6 +74,11 @@ public class Product {
     @Comment("当前库存（默认0）")
     private Integer stockQuantity = 0;
 
+    @Schema(description = "销量", example = "150")
+    @Column(nullable = false)
+    @Comment("销量（默认0）")
+    private Integer salesCount = 0;
+
     @Schema(description = "最小起订量", example = "1")
     @Column(nullable = false)
     @Comment("最小起订量（默认1）")

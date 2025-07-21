@@ -2618,21 +2618,21 @@ function injectHook(type, hook, target = currentInstance, prepend = false) {
     );
   }
 }
-const createHook$1 = (lifecycle) => (hook, target = currentInstance) => (
+const createHook = (lifecycle) => (hook, target = currentInstance) => (
   // post-create lifecycle registrations are noops during SSR (except for serverPrefetch)
   (!isInSSRComponentSetup || lifecycle === "sp") && injectHook(lifecycle, (...args) => hook(...args), target)
 );
-const onBeforeMount = createHook$1("bm");
-const onMounted = createHook$1("m");
-const onBeforeUpdate = createHook$1("bu");
-const onUpdated = createHook$1("u");
-const onBeforeUnmount = createHook$1("bum");
-const onUnmounted = createHook$1("um");
-const onServerPrefetch = createHook$1("sp");
-const onRenderTriggered = createHook$1(
+const onBeforeMount = createHook("bm");
+const onMounted = createHook("m");
+const onBeforeUpdate = createHook("bu");
+const onUpdated = createHook("u");
+const onBeforeUnmount = createHook("bum");
+const onUnmounted = createHook("um");
+const onServerPrefetch = createHook("sp");
+const onRenderTriggered = createHook(
   "rtg"
 );
-const onRenderTracked = createHook$1(
+const onRenderTracked = createHook(
   "rtc"
 );
 function onErrorCaptured(hook, target = currentInstance) {
@@ -5165,10 +5165,6 @@ function vFor(source, renderItem) {
   }
   return ret;
 }
-function setRef(ref2, id, opts = {}) {
-  const { $templateRefs } = getCurrentInstance();
-  $templateRefs.push({ i: id, r: ref2, k: opts.k, f: opts.f });
-}
 function withModelModifiers(fn, { number, trim }, isComponent = false) {
   if (isComponent) {
     return (...args) => {
@@ -5196,7 +5192,6 @@ const e = (target, ...sources) => extend(target, ...sources);
 const n = (value) => normalizeClass(value);
 const t = (val) => toDisplayString(val);
 const p = (props) => renderProps(props);
-const sr = (ref2, id, opts) => setRef(ref2, id, opts);
 const m = (fn, modifiers, isComponent = false) => withModelModifiers(fn, modifiers, isComponent);
 function createApp$1(rootComponent, rootProps = null) {
   rootComponent && (rootComponent.mpType = "app");
@@ -6895,7 +6890,7 @@ function initOnError() {
 function initRuntimeSocketService() {
   const hosts = "172.27.32.1,172.21.96.1,192.168.31.248,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_cqLiVY";
+  const id = "mp-weixin_7QwF7q";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -7827,11 +7822,6 @@ const createSubpackageApp = initCreateSubpackageApp();
   wx.createPluginApp = global.createPluginApp = createPluginApp;
   wx.createSubpackageApp = global.createSubpackageApp = createSubpackageApp;
 }
-const createHook = (lifecycle) => (hook, target = getCurrentInstance()) => {
-  !isInSSRComponentSetup && injectHook(lifecycle, hook, target);
-};
-const onShow = /* @__PURE__ */ createHook(ON_SHOW);
-const onLoad = /* @__PURE__ */ createHook(ON_LOAD);
 exports._export_sfc = _export_sfc;
 exports.computed = computed;
 exports.createSSRApp = createSSRApp;
@@ -7842,14 +7832,11 @@ exports.m = m;
 exports.n = n;
 exports.nextTick$1 = nextTick$1;
 exports.o = o;
-exports.onLoad = onLoad;
 exports.onMounted = onMounted;
-exports.onShow = onShow;
 exports.p = p;
 exports.reactive = reactive;
 exports.ref = ref;
 exports.resolveComponent = resolveComponent;
-exports.sr = sr;
 exports.t = t;
 exports.watch = watch;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/common/vendor.js.map

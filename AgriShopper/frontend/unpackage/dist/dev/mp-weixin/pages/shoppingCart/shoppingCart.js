@@ -255,7 +255,7 @@ const _sfc_main = {
         d: common_vendor.o((...args) => _ctx.selectAddress && _ctx.selectAddress(...args)),
         e: loading.value
       }, loading.value ? {} : cartItems.value.length === 0 ? {
-        g: common_assets._imports_0$1,
+        g: common_assets._imports_0,
         h: common_vendor.o(goShopping)
       } : {
         i: isShopAllSelected(1),

@@ -180,11 +180,19 @@ page {
   font-size: 14px;
 }
 
-/* 加载更多 */
-.load-more, .no-more {
+/* 商品总数显示 */
+.product-count {
   display: flex;
   justify-content: center;
   padding: 20rpx;
+  background-color: #f8f8f8;
+  border-radius: 8rpx;
+  margin: 20rpx 0;
+}
+.count-text {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
 }
 .product-item {
   display: flex;

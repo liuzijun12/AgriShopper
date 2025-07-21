@@ -1,7 +1,9 @@
 package com.agrishopper.service.impl;
 
 import com.agrishopper.model.UserBehavior;
+import com.agrishopper.model.Product;
 import com.agrishopper.repository.UserBehaviorRepository;
+import com.agrishopper.repository.ProductRepository;
 import com.agrishopper.service.UserBehaviorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,9 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
 
     @Autowired
     private UserBehaviorRepository userBehaviorRepository;
+
+    @Autowired
+    private ProductRepository productRepository;
 
     // ==================== 基础CRUD操作 ====================
     
@@ -222,6 +227,25 @@ public class UserBehaviorServiceImpl implements UserBehaviorService {
                 .limit(limit)
                 .map(result -> (String) result[0])
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getDefaultRecommendationsBySalesAndStock(int limit) {
+        // 根据销量和库存排序获取推荐商品（销量优先，库存次之）
+        List<Product> products = productRepository.findTopProductsBySalesAndStock();
+        
+        // 如果商品总数 >= limit，返回前limit个（销量高库存多的）
+        // 如果商品总数 < limit，返回全部商品
+        if (products.size() >= limit) {
+            return products.stream()
+                    .limit(limit)
+                    .map(Product::getProductCode)
+                    .collect(Collectors.toList());
+        } else {
+            return products.stream()
+                    .map(Product::getProductCode)
+                    .collect(Collectors.toList());
+        }
     }
     
     @Override

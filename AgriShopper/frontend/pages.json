@@ -18,51 +18,15 @@
 		{
 			"path": "pages/messages/messages",  
             "style": {
-				"navigationBarTitleText": "消息",
+				"navigationBarTitleText": "消息中心",
 				"enablePullDownRefresh": true,
 				"backgroundColor": "#f5f5f5"
 			}
 		},
-		{
-		 	"path": "pages/messages/systemNotification/accountSecurity", 
-		 	"style": {
-		 		"navigationBarTitleText": "账户安全详情"
-		 	}
-		},
-		{
-		 	"path": "pages/messages/systemNotification/platformOperation", 
-		 	"style": {
-		 		"navigationBarTitleText": "支付系统维护通知"
-		 	}
-		}, 
-		{
-		      "path": "pages/messages/systemNotification/ruleUpdate",  
-		      "style": {
-		        "navigationBarTitleText": "规则更新详情"
-		      }
-		},
-		{
-			"path": "pages/messages/systemNotification/globalAnnouncement", 
-			"style": {
-				"navigationBarTitleText": "公告详情"
-			  }
-		},
-		{
-		      "path": "pages/messages/orderDetail/orderDetail",
-		      "style": {
-		        "navigationBarTitleText": "订单详情"
-		      }
-		},
-		{
-		      "path": "pages/messages/activityDetail/activityDetail",
-		      "style": {
-		        "navigationBarTitleText": "活动详情"
-		      }
-		},
         {
-             "path": "pages/messages/costomerServiceChat/costomerServiceChat",
+             "path": "pages/messages/customerServiceChat/customerServiceChat",
              "style": {
-             "navigationBarTitleText": "客服会话"
+             "navigationBarTitleText": "客服咨询"
               }
         },
 		{
@@ -114,6 +78,13 @@
 			"path": "pages/address/edit",
 			"style": {
 				"navigationBarTitleText": "编辑地址",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/test/customerServiceTest",
+			"style": {
+				"navigationBarTitleText": "客服系统测试",
 				"enablePullDownRefresh": false
 			}
 		}

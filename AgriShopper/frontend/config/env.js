@@ -30,9 +30,8 @@ function getCurrentEnv() {
   
   // #ifndef MP-WEIXIN
   // 其他环境 - 可以根据需要手动切换
-  // return 'development'  // 本地调试
+  return 'development'  // 本地调试
   // return 'mobile'  // 真机调试
-  return 'mobile'
   // #endif
 }
 

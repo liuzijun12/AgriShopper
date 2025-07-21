@@ -1,22 +1,8 @@
 "use strict";
-const _imports_0$3 = "/static/messages/video_play_icon.png";
-const _imports_1$1 = "/static/messages/attachment_icon.png";
-const _imports_2 = "/static/messages/quick_phrase_icon.png";
-const _imports_3 = "/static/messages/order_associate_icon.png";
-const _imports_4 = "/static/messages/transfer_human_icon.png";
-const _imports_5 = "/static/messages/end_chat_icon.png";
 const _imports_0$2 = "/static/shoppingCart/empty-cart.png";
 const _imports_0$1 = "/static/no-result.png";
-const _imports_0 = "/static/logo.png";
-const _imports_1 = "/static/tabbar/user.png";
-exports._imports_0 = _imports_0$3;
-exports._imports_0$1 = _imports_0$2;
-exports._imports_0$2 = _imports_0$1;
-exports._imports_0$3 = _imports_0;
-exports._imports_1 = _imports_1$1;
-exports._imports_1$1 = _imports_1;
-exports._imports_2 = _imports_2;
-exports._imports_3 = _imports_3;
-exports._imports_4 = _imports_4;
-exports._imports_5 = _imports_5;
+const _imports_0 = "/static/tabbar/user.png";
+exports._imports_0 = _imports_0$2;
+exports._imports_0$1 = _imports_0$1;
+exports._imports_0$2 = _imports_0;
 //# sourceMappingURL=../../.sourcemap/mp-weixin/common/assets.js.map

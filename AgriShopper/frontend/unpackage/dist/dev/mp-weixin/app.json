@@ -3,20 +3,15 @@
     "pages/index/index",
     "pages/productList/productList",
     "pages/messages/messages",
-    "pages/messages/systemNotification/accountSecurity",
-    "pages/messages/systemNotification/platformOperation",
-    "pages/messages/systemNotification/ruleUpdate",
-    "pages/messages/systemNotification/globalAnnouncement",
-    "pages/messages/orderDetail/orderDetail",
-    "pages/messages/activityDetail/activityDetail",
-    "pages/messages/costomerServiceChat/costomerServiceChat",
+    "pages/messages/customerServiceChat/customerServiceChat",
     "pages/shoppingCart/shoppingCart",
     "pages/my/my",
     "pages/searchProduct/searchProduct",
     "pages/productDetail/productDetail",
     "pages/favorites/favorites",
     "pages/address/add",
-    "pages/address/edit"
+    "pages/address/edit",
+    "pages/test/customerServiceTest"
   ],
   "window": {
     "navigationBarTextStyle": "black",

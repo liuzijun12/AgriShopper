@@ -6,11 +6,14 @@ export const store = {
     isAppReady: false,
     currentTab: 0,
     cartItems: [],
-    favorites: []
+    favorites: [],
+    refreshTrigger: 0 // 添加刷新触发器
   }),
   
   setUserInfo(userInfo) {
     this.state.userInfo = userInfo
+    // 触发刷新
+    this.state.refreshTrigger++
     // 持久化存储用户信息
     try {
       uni.setStorageSync('userInfo', userInfo)
@@ -40,6 +43,8 @@ export const store = {
   
   clearUserInfo() {
     this.state.userInfo = null
+    // 触发刷新
+    this.state.refreshTrigger++
     try {
       uni.removeStorageSync('userInfo')
     } catch (error) {
