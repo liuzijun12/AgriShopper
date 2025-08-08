@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.system.mapper.IdCategoryMapper">
+
+    <!-- 获取分类关联分页列表 -->
+    <select id="getIdCategoryPage" resultType="com.youlai.boot.system.model.vo.IdCategoryVO">
+        SELECT
+        id,
+        product_id,
+        category_id
+        FROM
+        id_category
+        <where>
+        </where>
+    </select>
+
+</mapper>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.system.mapper.ProductTagsMapper">
+
+    <!-- 获取标签分页列表 -->
+    <select id="getProductTagsPage" resultType="com.youlai.boot.system.model.vo.ProductTagsVO">
+        SELECT
+        id,
+        name,
+        parent_id
+        FROM
+        product_tags
+        <where>
+        </where>
+    </select>
+
+</mapper>
