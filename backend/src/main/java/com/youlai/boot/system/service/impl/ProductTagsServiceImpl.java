@@ -2,11 +2,14 @@ package com.youlai.boot.system.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.youlai.boot.system.mapper.ProductTagsMapper;
 import com.youlai.boot.system.service.ProductTagsService;
+import com.youlai.boot.system.service.IdTagsService;
 import com.youlai.boot.system.model.entity.ProductTags;
 import com.youlai.boot.system.model.form.ProductTagsForm;
 import com.youlai.boot.system.model.query.ProductTagsQuery;
@@ -31,6 +34,7 @@ import cn.hutool.core.util.StrUtil;
 public class ProductTagsServiceImpl extends ServiceImpl<ProductTagsMapper, ProductTags> implements ProductTagsService {
 
     private final ProductTagsConverter productTagsConverter;
+    private final IdTagsService idTagsService;
 
     /**
      * 获取标签分页列表
@@ -91,13 +95,76 @@ public class ProductTagsServiceImpl extends ServiceImpl<ProductTagsMapper, Produ
      * @return 是否删除成功
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean deleteProductTagss(String ids) {
         Assert.isTrue(StrUtil.isNotBlank(ids), "删除的标签数据为空");
-        // 逻辑删除
+        
         List<Long> idList = Arrays.stream(ids.split(","))
                 .map(Long::parseLong)
                 .toList();
+        
+        // 删除标签前，先删除相关的商品关联
+        for (Long tagId : idList) {
+            // 删除该标签的所有商品关联
+            idTagsService.deleteByTagId(tagId.intValue());
+        }
+        
+        // 逻辑删除标签
         return this.removeByIds(idList);
+    }
+
+    /**
+     * 获取标签树形结构
+     *
+     * @return 标签树形结构列表
+     */
+    @Override
+    public List<ProductTagsVO> getTagTree() {
+        List<ProductTagsVO> allTags = this.baseMapper.getAllTags();
+        return buildTagTree(allTags, null);
+    }
+
+    /**
+     * 根据父级ID获取子标签
+     *
+     * @param parentId 父级标签ID
+     * @return 子标签列表
+     */
+    @Override
+    public List<ProductTagsVO> getTagsByParentId(Integer parentId) {
+        return this.baseMapper.getTagsByParentId(parentId);
+    }
+
+    /**
+     * 获取所有标签列表（用于下拉选择）
+     *
+     * @return 标签列表
+     */
+    @Override
+    public List<ProductTagsVO> getAllTags() {
+        return this.baseMapper.getAllTags();
+    }
+
+    /**
+     * 构建标签树形结构
+     *
+     * @param allTags 所有标签列表
+     * @param parentId 父级ID
+     * @return 树形结构列表
+     */
+    private List<ProductTagsVO> buildTagTree(List<ProductTagsVO> allTags, Integer parentId) {
+        return allTags.stream()
+                .filter(tag -> {
+                    if (parentId == null) {
+                        return tag.getParentId() == null || tag.getParentId() == 0;
+                    }
+                    return parentId.equals(tag.getParentId());
+                })
+                .map(tag -> {
+                    tag.setChildren(buildTagTree(allTags, tag.getId()));
+                    return tag;
+                })
+                .collect(Collectors.toList());
     }
 
 }

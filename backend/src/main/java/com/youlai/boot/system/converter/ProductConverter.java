@@ -4,6 +4,7 @@ import org.mapstruct.Mapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.system.model.entity.Product;
 import com.youlai.boot.system.model.form.ProductForm;
+import com.youlai.boot.system.model.vo.ProductVO;
 
 /**
  * 商品表对象转换器
@@ -17,4 +18,6 @@ public interface ProductConverter{
     ProductForm toForm(Product entity);
 
     Product toEntity(ProductForm formData);
+    
+    ProductVO toVO(Product entity);
 }

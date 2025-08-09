@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 分类关联服务实现类
@@ -98,6 +100,74 @@ public class IdCategoryServiceImpl extends ServiceImpl<IdCategoryMapper, IdCateg
                 .map(Long::parseLong)
                 .toList();
         return this.removeByIds(idList);
+    }
+
+    /**
+     * 批量保存商品分类关联
+     *
+     * @param productId 商品ID
+     * @param categoryIds 分类ID列表
+     * @return 是否保存成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveProductCategories(Integer productId, List<Integer> categoryIds) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
+            return true;
+        }
+        
+        // 先删除原有关联
+        this.baseMapper.deleteByProductId(productId);
+        
+        // 批量插入新关联
+        int result = this.baseMapper.batchInsert(productId, categoryIds);
+        return result > 0;
+    }
+
+    /**
+     * 根据商品ID删除分类关联
+     *
+     * @param productId 商品ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteByProductId(Integer productId) {
+        int result = this.baseMapper.deleteByProductId(productId);
+        return result >= 0;
+    }
+
+    /**
+     * 根据分类ID删除关联
+     *
+     * @param categoryId 分类ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteByCategoryId(Integer categoryId) {
+        int result = this.baseMapper.deleteByCategoryId(categoryId);
+        return result >= 0;
+    }
+
+    /**
+     * 根据商品ID获取关联的分类ID列表
+     *
+     * @param productId 商品ID
+     * @return 分类ID列表
+     */
+    @Override
+    public List<Integer> getCategoryIdsByProductId(Integer productId) {
+        return this.baseMapper.getCategoryIdsByProductId(productId);
+    }
+
+    /**
+     * 根据分类ID获取关联的商品ID列表
+     *
+     * @param categoryId 分类ID
+     * @return 商品ID列表
+     */
+    @Override
+    public List<Integer> getProductIdsByCategoryId(Integer categoryId) {
+        return this.baseMapper.getProductIdsByCategoryId(categoryId);
     }
 
 }

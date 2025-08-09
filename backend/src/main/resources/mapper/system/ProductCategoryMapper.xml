@@ -8,11 +8,28 @@
         id,
         name,
         icon,
-        parent_id
+        parent_id,
+        create_time,
+        update_time
         FROM
         product_category
         <where>
         </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取所有分类列表 -->
+    <select id="getAllCategories" resultType="com.youlai.boot.system.model.vo.ProductCategoryVO">
+        SELECT
+        id,
+        name,
+        icon,
+        parent_id,
+        create_time,
+        update_time
+        FROM
+        product_category
+        ORDER BY parent_id ASC, create_time ASC
     </select>
 
 </mapper>

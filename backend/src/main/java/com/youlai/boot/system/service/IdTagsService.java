@@ -6,6 +6,7 @@ import com.youlai.boot.system.model.query.IdTagsQuery;
 import com.youlai.boot.system.model.vo.IdTagsVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * 标签关联表服务类
@@ -54,5 +55,46 @@ public interface IdTagsService extends IService<IdTags> {
      * @return 是否删除成功
      */
     boolean deleteIdTagss(String ids);
+
+    /**
+     * 根据商品ID删除所有标签关联
+     *
+     * @param productId 商品ID
+     * @return 是否删除成功
+     */
+    boolean deleteByProductId(Integer productId);
+
+    /**
+     * 根据标签ID删除所有商品关联
+     *
+     * @param tagId 标签ID
+     * @return 是否删除成功
+     */
+    boolean deleteByTagId(Integer tagId);
+
+    /**
+     * 批量保存商品标签关联
+     *
+     * @param productId 商品ID
+     * @param tagIds 标签ID列表
+     * @return 是否保存成功
+     */
+    boolean saveProductTags(Integer productId, List<Integer> tagIds);
+
+    /**
+     * 根据商品ID获取关联的标签ID列表
+     *
+     * @param productId 商品ID
+     * @return 标签ID列表
+     */
+    List<Integer> getTagIdsByProductId(Integer productId);
+
+    /**
+     * 根据标签ID获取关联的商品ID列表
+     *
+     * @param tagId 标签ID
+     * @return 商品ID列表
+     */
+    List<Integer> getProductIdsByTagId(Integer tagId);
 
 }

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.system.model.query.ProductCategoryQuery;
 import com.youlai.boot.system.model.vo.ProductCategoryVO;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
 
 /**
  * 分类Mapper接口
@@ -24,5 +25,12 @@ public interface ProductCategoryMapper extends BaseMapper<ProductCategory> {
      * @return {@link Page<ProductCategoryVO>} 分类分页列表
      */
     Page<ProductCategoryVO> getProductCategoryPage(Page<ProductCategoryVO> page, ProductCategoryQuery queryParams);
+
+    /**
+     * 获取所有分类列表
+     *
+     * @return 分类列表
+     */
+    List<ProductCategoryVO> getAllCategories();
 
 }

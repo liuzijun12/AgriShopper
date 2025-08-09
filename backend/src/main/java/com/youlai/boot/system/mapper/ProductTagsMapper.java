@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.youlai.boot.system.model.query.ProductTagsQuery;
 import com.youlai.boot.system.model.vo.ProductTagsVO;
 import org.apache.ibatis.annotations.Mapper;
+import java.util.List;
 
 /**
  * 标签Mapper接口
@@ -24,5 +25,20 @@ public interface ProductTagsMapper extends BaseMapper<ProductTags> {
      * @return {@link Page<ProductTagsVO>} 标签分页列表
      */
     Page<ProductTagsVO> getProductTagsPage(Page<ProductTagsVO> page, ProductTagsQuery queryParams);
+
+    /**
+     * 获取所有标签列表
+     *
+     * @return 标签列表
+     */
+    List<ProductTagsVO> getAllTags();
+
+    /**
+     * 根据父级ID获取子标签
+     *
+     * @param parentId 父级标签ID
+     * @return 子标签列表
+     */
+    List<ProductTagsVO> getTagsByParentId(Integer parentId);
 
 }

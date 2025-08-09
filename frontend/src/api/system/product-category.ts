@@ -61,6 +61,30 @@ const ProductCategoryAPI = {
       url: `${PRODUCTCATEGORY_BASE_URL}/${ids}`,
       method: "delete",
     });
+  },
+
+  /**
+   * 获取所有分类列表
+   *
+   * @returns 分类列表
+   */
+  getAllCategories() {
+    return request<any, ProductCategoryVO[]>({
+      url: `${PRODUCTCATEGORY_BASE_URL}/all`,
+      method: "get",
+    });
+  },
+
+  /**
+   * 获取分类树形结构
+   *
+   * @returns 分类树形结构
+   */
+  getCategoryTree() {
+    return request<any, ProductCategoryVO[]>({
+      url: `${PRODUCTCATEGORY_BASE_URL}/tree`,
+      method: "get",
+    });
   }
 }
 
@@ -90,4 +114,21 @@ export interface ProductCategoryPageVO {
   icon?: string;
   /** 一级id */
   parentId?: number;
+}
+
+/** 分类对象 */
+export interface ProductCategoryVO {
+  id?: number;
+  /** 分类名称 */
+  name?: string;
+  /** 分类图释 */
+  icon?: string;
+  /** 父级ID */
+  parentId?: number;
+  /** 子分类列表 */
+  children?: ProductCategoryVO[];
+  /** 创建时间 */
+  createTime?: string;
+  /** 更新时间 */
+  updateTime?: string;
 }

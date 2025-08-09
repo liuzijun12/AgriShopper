@@ -2,6 +2,8 @@ package com.youlai.boot.system.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -98,6 +100,90 @@ public class IdTagsServiceImpl extends ServiceImpl<IdTagsMapper, IdTags> impleme
                 .map(Long::parseLong)
                 .toList();
         return this.removeByIds(idList);
+    }
+
+    /**
+     * 根据商品ID删除所有标签关联
+     *
+     * @param productId 商品ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteByProductId(Integer productId) {
+        return this.remove(new LambdaQueryWrapper<IdTags>()
+                .eq(IdTags::getProductId, productId));
+    }
+
+    /**
+     * 根据标签ID删除所有商品关联
+     *
+     * @param tagId 标签ID
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean deleteByTagId(Integer tagId) {
+        return this.remove(new LambdaQueryWrapper<IdTags>()
+                .eq(IdTags::getTagsId, tagId));
+    }
+
+    /**
+     * 批量保存商品标签关联
+     *
+     * @param productId 商品ID
+     * @param tagIds 标签ID列表
+     * @return 是否保存成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean saveProductTags(Integer productId, List<Integer> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return true;
+        }
+        
+        // 先删除原有关联
+        this.deleteByProductId(productId);
+        
+        // 批量插入新关联
+        List<IdTags> idTagsList = tagIds.stream()
+                .map(tagId -> {
+                    IdTags idTags = new IdTags();
+                    idTags.setProductId(productId);
+                    idTags.setTagsId(tagId);
+                    return idTags;
+                })
+                .collect(Collectors.toList());
+        
+        return this.saveBatch(idTagsList);
+    }
+
+    /**
+     * 根据商品ID获取关联的标签ID列表
+     *
+     * @param productId 商品ID
+     * @return 标签ID列表
+     */
+    @Override
+    public List<Integer> getTagIdsByProductId(Integer productId) {
+        List<IdTags> idTagsList = this.list(new LambdaQueryWrapper<IdTags>()
+                .eq(IdTags::getProductId, productId));
+        return idTagsList.stream()
+                .map(IdTags::getTagsId)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 根据标签ID获取关联的商品ID列表
+     *
+     * @param tagId 标签ID
+     * @return 商品ID列表
+     */
+    @Override
+    public List<Integer> getProductIdsByTagId(Integer tagId) {
+        List<IdTags> idTagsList = this.list(new LambdaQueryWrapper<IdTags>()
+                .eq(IdTags::getTagsId, tagId));
+        return idTagsList.stream()
+                .map(IdTags::getProductId)
+                .collect(Collectors.toList());
     }
 
 }

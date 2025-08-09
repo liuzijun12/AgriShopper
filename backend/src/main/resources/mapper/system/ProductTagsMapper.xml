@@ -7,11 +7,47 @@
         SELECT
         id,
         name,
-        parent_id
+        parent_id,
+        create_time,
+        update_time
         FROM
         product_tags
         <where>
+            <if test="queryParams.name != null and queryParams.name != ''">
+                AND name LIKE CONCAT('%', #{queryParams.name}, '%')
+            </if>
+            <if test="queryParams.parentId != null">
+                AND parent_id = #{queryParams.parentId}
+            </if>
         </where>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 获取所有标签列表 -->
+    <select id="getAllTags" resultType="com.youlai.boot.system.model.vo.ProductTagsVO">
+        SELECT
+        id,
+        name,
+        parent_id,
+        create_time,
+        update_time
+        FROM
+        product_tags
+        ORDER BY parent_id ASC, create_time ASC
+    </select>
+
+    <!-- 根据父级ID获取子标签 -->
+    <select id="getTagsByParentId" resultType="com.youlai.boot.system.model.vo.ProductTagsVO">
+        SELECT
+        id,
+        name,
+        parent_id,
+        create_time,
+        update_time
+        FROM
+        product_tags
+        WHERE parent_id = #{parentId}
+        ORDER BY create_time ASC
     </select>
 
 </mapper>

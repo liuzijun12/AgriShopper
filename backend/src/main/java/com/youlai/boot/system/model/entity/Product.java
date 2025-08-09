@@ -48,10 +48,7 @@ public class Product extends BaseEntity {
      * 销量
      */
     private Integer sales;
-    /**
-     * 标签，多个标签用逗号分隔
-     */
-    private String tags;
+
     /**
      * 产地
      */
@@ -60,14 +57,7 @@ public class Product extends BaseEntity {
      * 是否为热门推荐商品
      */
     private Integer isHot;
-    /**
-     * 创建时间
-     */
-    private LocalDateTime createdAt;
-    /**
-     * 更新时间
-     */
-    private LocalDateTime updatedAt;
+
     /**
      * 虚拟销量
 

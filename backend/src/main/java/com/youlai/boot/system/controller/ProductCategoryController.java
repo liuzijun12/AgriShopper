@@ -10,6 +10,7 @@ import com.youlai.boot.system.model.vo.ProductCategoryVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.youlai.boot.common.result.PageResult;
 import com.youlai.boot.common.result.Result;
+import java.util.List;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -77,5 +78,13 @@ public class ProductCategoryController  {
     ) {
         boolean result = productCategoryService.deleteProductCategorys(ids);
         return Result.judge(result);
+    }
+
+    @Operation(summary = "获取分类树形结构")
+    @GetMapping("/tree")
+    @PreAuthorize("@ss.hasPerm('system:product-category:query')")
+    public Result<List<ProductCategoryVO>> getCategoryTree() {
+        List<ProductCategoryVO> result = productCategoryService.getCategoryTree();
+        return Result.success(result);
     }
 }

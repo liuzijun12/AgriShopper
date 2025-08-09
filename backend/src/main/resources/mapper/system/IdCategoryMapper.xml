@@ -14,4 +14,33 @@
         </where>
     </select>
 
+    <!-- 批量插入商品分类关联 -->
+    <insert id="batchInsert">
+        INSERT INTO id_category (product_id, category_id)
+        VALUES
+        <foreach collection="categoryIds" item="categoryId" separator=",">
+            (#{productId}, #{categoryId})
+        </foreach>
+    </insert>
+
+    <!-- 根据商品ID删除关联 -->
+    <delete id="deleteByProductId">
+        DELETE FROM id_category WHERE product_id = #{productId}
+    </delete>
+
+    <!-- 根据分类ID删除关联 -->
+    <delete id="deleteByCategoryId">
+        DELETE FROM id_category WHERE category_id = #{categoryId}
+    </delete>
+
+    <!-- 根据商品ID获取分类ID列表 -->
+    <select id="getCategoryIdsByProductId" resultType="java.lang.Integer">
+        SELECT category_id FROM id_category WHERE product_id = #{productId}
+    </select>
+
+    <!-- 根据分类ID获取商品ID列表 -->
+    <select id="getProductIdsByCategoryId" resultType="java.lang.Integer">
+        SELECT product_id FROM id_category WHERE category_id = #{categoryId}
+    </select>
+
 </mapper>

@@ -61,6 +61,30 @@ const ProductTagsAPI = {
       url: `${PRODUCTTAGS_BASE_URL}/${ids}`,
       method: "delete",
     });
+  },
+
+  /**
+   * 获取所有标签列表
+   *
+   * @returns 标签列表
+   */
+  getAllTags() {
+    return request<any, ProductTagsVO[]>({
+      url: `${PRODUCTTAGS_BASE_URL}/all`,
+      method: "get",
+    });
+  },
+
+  /**
+   * 获取标签树形结构
+   *
+   * @returns 标签树形结构
+   */
+  getTagTree() {
+    return request<any, ProductTagsVO[]>({
+      url: `${PRODUCTTAGS_BASE_URL}/tree`,
+      method: "get",
+    });
   }
 }
 
@@ -86,4 +110,19 @@ export interface ProductTagsPageVO {
    */
   name?: string;
   parentId?: number;
+}
+
+/** 标签对象 */
+export interface ProductTagsVO {
+  id?: number;
+  /** 标签名 */
+  name?: string;
+  /** 父级ID */
+  parentId?: number;
+  /** 子标签列表 */
+  children?: ProductTagsVO[];
+  /** 创建时间 */
+  createTime?: string;
+  /** 更新时间 */
+  updateTime?: string;
 }

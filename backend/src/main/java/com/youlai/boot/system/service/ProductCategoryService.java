@@ -6,6 +6,7 @@ import com.youlai.boot.system.model.query.ProductCategoryQuery;
 import com.youlai.boot.system.model.vo.ProductCategoryVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * 分类服务类
@@ -54,5 +55,12 @@ public interface ProductCategoryService extends IService<ProductCategory> {
      * @return 是否删除成功
      */
     boolean deleteProductCategorys(String ids);
+
+    /**
+     * 获取分类树形结构
+     *
+     * @return 分类树形结构列表
+     */
+    List<ProductCategoryVO> getCategoryTree();
 
 }

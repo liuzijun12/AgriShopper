@@ -4,8 +4,11 @@ import com.youlai.boot.system.model.entity.Product;
 import com.youlai.boot.system.model.form.ProductForm;
 import com.youlai.boot.system.model.query.ProductQuery;
 import com.youlai.boot.system.model.vo.ProductVO;
+import com.youlai.boot.system.model.vo.TagVO;
+import com.youlai.boot.system.model.vo.ProductCategoryVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * 商品表服务类
@@ -54,5 +57,45 @@ public interface ProductService extends IService<Product> {
      * @return 是否删除成功
      */
     boolean deleteProducts(String ids);
+
+    /**
+     * 根据ID获取商品信息
+     *
+     * @param id 商品ID
+     * @return 商品信息
+     */
+    ProductVO getProductById(Long id);
+
+    /**
+     * 获取商品详情（包含标签）
+     *
+     * @param id 商品ID
+     * @return 商品详情
+     */
+    ProductVO getProductWithTags(Long id);
+
+    /**
+     * 通过商品ID获取标签列表
+     *
+     * @param productId 商品ID
+     * @return 标签列表
+     */
+    List<TagVO> getTagsByProductId(Long productId);
+
+    /**
+     * 获取商品详情（包含分类）
+     *
+     * @param id 商品ID
+     * @return 商品详情
+     */
+    ProductVO getProductWithCategories(Long id);
+
+    /**
+     * 通过商品ID获取分类列表
+     *
+     * @param productId 商品ID
+     * @return 分类列表
+     */
+    List<ProductCategoryVO> getCategoriesByProductId(Long productId);
 
 }

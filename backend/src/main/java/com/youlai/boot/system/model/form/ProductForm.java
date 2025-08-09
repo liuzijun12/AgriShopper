@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import jakarta.validation.constraints.*;
 
 /**
@@ -24,7 +25,6 @@ public class ProductForm implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Schema(description = "商品ID")
-    @NotNull(message = "商品ID不能为空")
     private Long id;
 
     @Schema(description = "商品名称")
@@ -55,9 +55,7 @@ public class ProductForm implements Serializable {
     @Schema(description = "销量")
     private Integer sales;
 
-    @Schema(description = "标签，多个标签用逗号分隔")
-    @Size(max=255, message="标签，多个标签用逗号分隔长度不能超过255个字符")
-    private String tags;
+
 
     @Schema(description = "产地")
     @Size(max=100, message="产地长度不能超过100个字符")
@@ -67,10 +65,10 @@ public class ProductForm implements Serializable {
     private Integer isHot;
 
     @Schema(description = "创建时间")
-    private LocalDateTime createdAt;
+    private LocalDateTime createTime;
 
     @Schema(description = "更新时间")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updateTime;
 
     @Schema(description = "虚拟销量")
     private Integer virtualSales;
@@ -87,5 +85,10 @@ public class ProductForm implements Serializable {
     @Schema(description = "视频")
     private String vedio;
 
+    @Schema(description = "分类ID列表")
+    private List<Long> categoryIds;
+
+    @Schema(description = "标签ID列表")
+    private List<Long> tagIds;
 
 }

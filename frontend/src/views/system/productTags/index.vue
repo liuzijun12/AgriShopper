@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+        <el-form-item label="标签名称" prop="name">
+          <el-input
+            v-model="queryParams.name"
+            placeholder="请输入标签名称"
+            clearable
+            style="width: 200px"
+            @keyup.enter="handleQuery"
+          />
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">
             <template #icon><Search /></template>
@@ -47,24 +56,35 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column
           key="id"
-          label=""
+          label="标签ID"
           prop="id"
-          min-width="150"
+          width="80"
           align="center"
         />
         <el-table-column
           key="name"
-          label="标签名
-"
+          label="标签名称"
           prop="name"
           min-width="150"
           align="center"
         />
         <el-table-column
           key="parentId"
-          label=""
+          label="父级标签"
           prop="parentId"
-          min-width="150"
+          width="120"
+          align="center"
+        >
+          <template #default="scope">
+            <span v-if="scope.row.parentId === 0 || !scope.row.parentId">根标签</span>
+            <span v-else>{{ scope.row.parentId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          key="createTime"
+          label="创建时间"
+          prop="createTime"
+          width="180"
           align="center"
         />
         <el-table-column fixed="right" label="操作" width="220">
@@ -110,27 +130,31 @@
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="" prop="id">
-          <el-input
-            v-model="formData.id"
-            placeholder=""
-          />
-        </el-form-item>
-
-        <el-form-item label="标签名
-" prop="name">
+        <el-form-item label="标签名称" prop="name">
           <el-input
             v-model="formData.name"
-            placeholder="标签名
-"
+            placeholder="请输入标签名称"
+            maxlength="50"
+            show-word-limit
           />
         </el-form-item>
 
-        <el-form-item label="" prop="parentId">
-          <el-input
+        <el-form-item label="父级标签" prop="parentId">
+          <el-select
             v-model="formData.parentId"
-            placeholder=""
-          />
+            placeholder="请选择父级标签"
+            clearable
+            style="width: 100%"
+          >
+            <el-option label="根标签" :value="0" />
+            <el-option
+              v-for="tag in parentTagOptions"
+              :key="tag.id"
+              :label="tag.name"
+              :value="tag.id"
+              :disabled="tag.id === formData.id"
+            />
+          </el-select>
         </el-form-item>
 
       </el-form>
@@ -176,9 +200,12 @@ const dialog = reactive({
 // 标签表单数据
 const formData = reactive<ProductTagsForm>({});
 
+// 父级标签选项
+const parentTagOptions = ref<ProductTagsPageVO[]>([]);
+
 // 标签表单校验规则
 const rules = reactive({
-  id: [{ required: true, message: "请输入", trigger: "blur" }],
+  name: [{ required: true, message: "请输入标签名称", trigger: "blur" }],
 });
 
 /** 查询标签 */
@@ -206,9 +233,21 @@ function handleSelectionChange(selection: any) {
   removeIds.value = selection.map((item: any) => item.id);
 }
 
+/** 获取父级标签选项 */
+function getParentTagOptions() {
+  ProductTagsAPI.getPage({ pageNum: 1, pageSize: 1000 })
+    .then((data) => {
+      parentTagOptions.value = data.list;
+    })
+    .catch(() => {
+      ElMessage.error("获取父级标签列表失败");
+    });
+}
+
 /** 打开标签弹窗 */
 function handleOpenDialog(id?: number) {
   dialog.visible = true;
+  getParentTagOptions();
   if (id) {
     dialog.title = "修改标签";
     ProductTagsAPI.getFormData(id).then((data) => {
@@ -251,7 +290,7 @@ function handleCloseDialog() {
   dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
-  formData.id = undefined;
+  Object.assign(formData, {});
 }
 
 /** 删除标签 */
@@ -286,3 +325,40 @@ onMounted(() => {
   handleQuery();
 });
 </script>
+
+<style lang="scss" scoped>
+.search-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.tag-tree-wrapper {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+:deep(.el-table) {
+  .el-table__header {
+    th {
+      background-color: #fafafa;
+      color: #606266;
+      font-weight: 600;
+    }
+  }
+}
+
+:deep(.el-dialog__title) {
+  color: #303133;
+  font-weight: 600;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+</style>

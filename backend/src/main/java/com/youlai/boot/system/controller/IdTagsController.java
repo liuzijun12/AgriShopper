@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import java.util.List;
 
 /**
  * 标签关联表前端控制层
@@ -77,5 +78,45 @@ public class IdTagsController  {
     ) {
         boolean result = idTagsService.deleteIdTagss(ids);
         return Result.judge(result);
+    }
+
+    @Operation(summary = "根据商品ID删除所有标签关联")
+    @DeleteMapping("/product/{productId}")
+    @PreAuthorize("@ss.hasPerm('system:id-tags:delete')")
+    public Result<Void> deleteByProductId(
+            @Parameter(description = "商品ID") @PathVariable Integer productId
+    ) {
+        boolean result = idTagsService.deleteByProductId(productId);
+        return Result.judge(result);
+    }
+
+    @Operation(summary = "根据标签ID删除所有商品关联")
+    @DeleteMapping("/tag/{tagId}")
+    @PreAuthorize("@ss.hasPerm('system:id-tags:delete')")
+    public Result<Void> deleteByTagId(
+            @Parameter(description = "标签ID") @PathVariable Integer tagId
+    ) {
+        boolean result = idTagsService.deleteByTagId(tagId);
+        return Result.judge(result);
+    }
+
+    @Operation(summary = "根据商品ID获取关联的标签ID列表")
+    @GetMapping("/product/{productId}/tags")
+    @PreAuthorize("@ss.hasPerm('system:id-tags:query')")
+    public Result<List<Integer>> getTagIdsByProductId(
+            @Parameter(description = "商品ID") @PathVariable Integer productId
+    ) {
+        List<Integer> result = idTagsService.getTagIdsByProductId(productId);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "根据标签ID获取关联的商品ID列表")
+    @GetMapping("/tag/{tagId}/products")
+    @PreAuthorize("@ss.hasPerm('system:id-tags:query')")
+    public Result<List<Integer>> getProductIdsByTagId(
+            @Parameter(description = "标签ID") @PathVariable Integer tagId
+    ) {
+        List<Integer> result = idTagsService.getProductIdsByTagId(tagId);
+        return Result.success(result);
     }
 }

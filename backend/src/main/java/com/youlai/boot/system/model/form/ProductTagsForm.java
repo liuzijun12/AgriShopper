@@ -24,10 +24,8 @@ public class ProductTagsForm implements Serializable {
     @NotNull(message = "不能为空")
     private Integer id;
 
-    @Schema(description = "标签名
-")
-    @Size(max=255, message="标签名
-    长度不能超过255个字符")
+    @Schema(description = "标签名")
+    @Size(max=255, message="标签名长度不能超过255个字符")
     private String name;
 
     private Integer parentId;

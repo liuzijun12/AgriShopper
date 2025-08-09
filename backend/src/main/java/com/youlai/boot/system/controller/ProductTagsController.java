@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
+import java.util.List;
 
 /**
  * 标签前端控制层
@@ -77,5 +78,31 @@ public class ProductTagsController  {
     ) {
         boolean result = productTagsService.deleteProductTagss(ids);
         return Result.judge(result);
+    }
+
+    @Operation(summary = "获取标签树形结构")
+    @GetMapping("/tree")
+    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    public Result<List<ProductTagsVO>> getTagTree() {
+        List<ProductTagsVO> result = productTagsService.getTagTree();
+        return Result.success(result);
+    }
+
+    @Operation(summary = "根据父级ID获取子标签")
+    @GetMapping("/children/{parentId}")
+    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    public Result<List<ProductTagsVO>> getTagsByParentId(
+            @Parameter(description = "父级标签ID") @PathVariable Integer parentId
+    ) {
+        List<ProductTagsVO> result = productTagsService.getTagsByParentId(parentId);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取所有标签列表")
+    @GetMapping("/all")
+    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    public Result<List<ProductTagsVO>> getAllTags() {
+        List<ProductTagsVO> result = productTagsService.getAllTags();
+        return Result.success(result);
     }
 }

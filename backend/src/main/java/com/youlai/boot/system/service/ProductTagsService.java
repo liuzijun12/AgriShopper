@@ -6,6 +6,7 @@ import com.youlai.boot.system.model.query.ProductTagsQuery;
 import com.youlai.boot.system.model.vo.ProductTagsVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * 标签服务类
@@ -54,5 +55,27 @@ public interface ProductTagsService extends IService<ProductTags> {
      * @return 是否删除成功
      */
     boolean deleteProductTagss(String ids);
+
+    /**
+     * 获取标签树形结构
+     *
+     * @return 标签树形结构列表
+     */
+    List<ProductTagsVO> getTagTree();
+
+    /**
+     * 根据父级ID获取子标签
+     *
+     * @param parentId 父级标签ID
+     * @return 子标签列表
+     */
+    List<ProductTagsVO> getTagsByParentId(Integer parentId);
+
+    /**
+     * 获取所有标签列表（用于下拉选择）
+     *
+     * @return 标签列表
+     */
+    List<ProductTagsVO> getAllTags();
 
 }

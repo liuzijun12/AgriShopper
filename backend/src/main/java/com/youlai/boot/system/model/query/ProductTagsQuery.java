@@ -16,4 +16,10 @@ import lombok.Setter;
 @Setter
 public class ProductTagsQuery extends BasePageQuery {
 
+    @Schema(description = "标签名称")
+    private String name;
+
+    @Schema(description = "父级标签ID")
+    private Integer parentId;
+
 }

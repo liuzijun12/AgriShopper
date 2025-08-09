@@ -2,10 +2,10 @@ import request from "@/utils/request";
 
 const IDTAGS_BASE_URL = "/api/v1/id-tags";
 
-const IdTagsAPI = {
+const idTagsApi = {
   /** 获取标签关联表分页数据 */
-  getPage(queryParams?: IdTagsPageQuery) {
-    return request<any, PageResult<IdTagsPageVO[]>>({
+  getPage(queryParams?: idTagsPageQuery) {
+    return request<any, PageResult<idTagsPageVO[]>>({
       url: `${IDTAGS_BASE_URL}/page`,
       method: "get",
       params: queryParams,
@@ -18,7 +18,7 @@ const IdTagsAPI = {
    * @returns 标签关联表表单数据
    */
   getFormData(id: number) {
-    return request<any, IdTagsForm>({
+    return request<any, idTagsForm>({
       url: `${IDTAGS_BASE_URL}/${id}/form`,
       method: "get",
     });
@@ -29,7 +29,7 @@ const IdTagsAPI = {
    *
    *  @param data 标签关联表表单数据
    */
-  add(data: IdTagsForm) {
+  add(data: idTagsForm) {
     return request({
       url: `${IDTAGS_BASE_URL}`,
       method: "post",
@@ -43,7 +43,7 @@ const IdTagsAPI = {
    * @param id 标签关联表ID
    * @param data 标签关联表表单数据
    */
-  update(id: number, data: IdTagsForm) {
+  update(id: number, data: idTagsForm) {
     return request({
       url: `${IDTAGS_BASE_URL}/${id}`,
       method: "put",
@@ -64,21 +64,21 @@ const IdTagsAPI = {
   }
 }
 
-export default IdTagsAPI;
+export default idTagsApi;
 
 /** 标签关联表分页查询参数 */
-export interface IdTagsPageQuery extends PageQuery {
+export interface idTagsPageQuery extends PageQuery {
 }
 
 /** 标签关联表表单对象 */
-export interface IdTagsForm {
+export interface idTagsForm {
   id?:  number;
   productId?:  number;
   tagsId?:  number;
 }
 
 /** 标签关联表分页对象 */
-export interface IdTagsPageVO {
+export interface idTagsPageVO {
   id?: number;
   productId?: number;
   tagsId?: number;

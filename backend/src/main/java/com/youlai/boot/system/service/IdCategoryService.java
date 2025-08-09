@@ -6,6 +6,7 @@ import com.youlai.boot.system.model.query.IdCategoryQuery;
 import com.youlai.boot.system.model.vo.IdCategoryVO;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import java.util.List;
 
 /**
  * 分类关联服务类
@@ -54,5 +55,46 @@ public interface IdCategoryService extends IService<IdCategory> {
      * @return 是否删除成功
      */
     boolean deleteIdCategorys(String ids);
+
+    /**
+     * 批量保存商品分类关联
+     *
+     * @param productId 商品ID
+     * @param categoryIds 分类ID列表
+     * @return 是否保存成功
+     */
+    boolean saveProductCategories(Integer productId, List<Integer> categoryIds);
+
+    /**
+     * 根据商品ID删除分类关联
+     *
+     * @param productId 商品ID
+     * @return 是否删除成功
+     */
+    boolean deleteByProductId(Integer productId);
+
+    /**
+     * 根据分类ID删除关联
+     *
+     * @param categoryId 分类ID
+     * @return 是否删除成功
+     */
+    boolean deleteByCategoryId(Integer categoryId);
+
+    /**
+     * 根据商品ID获取关联的分类ID列表
+     *
+     * @param productId 商品ID
+     * @return 分类ID列表
+     */
+    List<Integer> getCategoryIdsByProductId(Integer productId);
+
+    /**
+     * 根据分类ID获取关联的商品ID列表
+     *
+     * @param categoryId 分类ID
+     * @return 商品ID列表
+     */
+    List<Integer> getProductIdsByCategoryId(Integer categoryId);
 
 }

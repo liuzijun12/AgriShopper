@@ -5,23 +5,117 @@
     <!-- 获取商品表分页列表 -->
     <select id="getProductPage" resultType="com.youlai.boot.system.model.vo.ProductVO">
         SELECT
-        id,
-        name,
-        images,
-        description,
-        price,
-        has_discount,
-        discount_price,
-        sales,
-        tags,
-        origin,
-        is_hot,
-        created_at,
-        updated_at
+        p.id,
+        p.name,
+        p.images,
+        p.description,
+        p.price,
+        p.has_discount,
+        p.discount_price,
+        p.sales,
+        p.virtual_sales,
+        p.stock,
+        p.origin,
+        p.is_hot,
+        p.is_online,
+        p.create_time,
+        p.update_time,
+        GROUP_CONCAT(DISTINCT pt.name) as tagNames,
+        GROUP_CONCAT(DISTINCT pc.name) as categoryNames
         FROM
-        product
+        product p
+        LEFT JOIN id_tags it ON p.id = it.product_id
+        LEFT JOIN product_tags pt ON it.tags_id = pt.id
+        LEFT JOIN id_category ic ON p.id = ic.product_id
+        LEFT JOIN product_category pc ON ic.category_id = pc.id
         <where>
         </where>
+        GROUP BY p.id, p.name, p.images, p.description, p.price, p.has_discount, p.discount_price, p.sales, p.virtual_sales, p.stock, p.origin, p.is_hot, p.is_online, p.create_time, p.update_time
+    </select>
+
+    <!-- 通过商品ID获取标签列表 -->
+    <select id="getTagsByProductId" resultType="com.youlai.boot.system.model.vo.TagVO">
+        SELECT
+        pt.id,
+        pt.name,
+        '#1890ff' as color
+        FROM
+        product_tags pt
+        INNER JOIN id_tags it ON pt.id = it.tags_id
+        WHERE
+        it.product_id = #{productId}
+    </select>
+
+    <!-- 获取商品详情（包含标签） -->
+    <select id="getProductWithTags" resultType="com.youlai.boot.system.model.vo.ProductVO">
+        SELECT
+        p.id,
+        p.name,
+        p.images,
+        p.description,
+        p.price,
+        p.has_discount,
+        p.discount_price,
+        p.sales,
+        p.virtual_sales,
+        p.stock,
+        p.origin,
+        p.is_hot,
+        p.is_online,
+        p.create_time,
+        p.update_time,
+        GROUP_CONCAT(pt.name) as tagNames
+        FROM
+        product p
+        LEFT JOIN id_tags it ON p.id = it.product_id
+        LEFT JOIN product_tags pt ON it.tags_id = pt.id
+        WHERE
+        p.id = #{id}
+        GROUP BY p.id
+    </select>
+
+    <!-- 通过商品ID获取分类列表 -->
+    <select id="getCategoriesByProductId" resultType="com.youlai.boot.system.model.vo.ProductCategoryVO">
+        SELECT
+        pc.id,
+        pc.name,
+        pc.icon,
+        pc.parent_id as parentId,
+        pc.create_time as createTime,
+        pc.update_time as updateTime
+        FROM
+        product_category pc
+        INNER JOIN id_category ic ON pc.id = ic.category_id
+        WHERE
+        ic.product_id = #{productId}
+    </select>
+
+    <!-- 获取商品详情（包含分类） -->
+    <select id="getProductWithCategories" resultType="com.youlai.boot.system.model.vo.ProductVO">
+        SELECT
+        p.id,
+        p.name,
+        p.images,
+        p.description,
+        p.price,
+        p.has_discount,
+        p.discount_price,
+        p.sales,
+        p.virtual_sales,
+        p.stock,
+        p.origin,
+        p.is_hot,
+        p.is_online,
+        p.create_time,
+        p.update_time,
+        GROUP_CONCAT(pc.name) as categoryNames
+        FROM
+        product p
+        LEFT JOIN id_category ic ON p.id = ic.product_id
+        LEFT JOIN product_category pc ON ic.category_id = pc.id
+        WHERE
+        p.id = #{id}
+        GROUP BY p.id
     </select>
 
 </mapper>

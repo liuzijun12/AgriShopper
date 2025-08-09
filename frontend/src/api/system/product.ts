@@ -88,28 +88,29 @@ export interface ProductForm {
     discountPrice?:  number;
     /** 销量 */
     sales?:  number;
-    /** 标签，多个标签用逗号分隔 */
-    tags?:  string;
+
     /** 产地 */
     origin?:  string;
     /** 是否为热门推荐商品 */
     isHot?:  number;
     /** 创建时间 */
-    createdAt?:  ${fieldConfig.tsType};
+    createTime?:  string;
     /** 更新时间 */
-    updatedAt?:  ${fieldConfig.tsType};
-    /** 虚拟销量
- */
+    updateTime?:  string;
+    /** 虚拟销量 */
     virtualSales?:  number;
     /** 库存 */
     stock?:  number;
-    /** 是否上架
- */
+    /** 是否上架 */
     isOnline?:  number;
     /** 规格 */
     type?:  string;
     /** 视频 */
     vedio?:  string;
+    /** 分类ID列表 */
+    categoryIds?: number[];
+    /** 标签ID列表 */
+    tagIds?: number[];
 }
 
 /** 商品表分页对象 */
@@ -130,14 +131,13 @@ export interface ProductPageVO {
     discountPrice?: number;
     /** 销量 */
     sales?: number;
-    /** 标签，多个标签用逗号分隔 */
-    tags?: string;
+
     /** 产地 */
     origin?: string;
     /** 是否为热门推荐商品 */
     isHot?: number;
     /** 创建时间 */
-    createdAt?: ${fieldConfig.tsType};
+    createTime?: string;
     /** 更新时间 */
-    updatedAt?: ${fieldConfig.tsType};
+    updateTime?: string;
 }

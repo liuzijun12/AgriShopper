@@ -2,6 +2,15 @@
   <div class="app-container">
     <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
+        <el-form-item label="分类名称" prop="name">
+          <el-input
+            v-model="queryParams.name"
+            placeholder="请输入分类名称"
+            clearable
+            style="width: 200px"
+            @keyup.enter="handleQuery"
+          />
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">
             <template #icon><Search /></template>
@@ -47,9 +56,9 @@
         <el-table-column type="selection" width="55" align="center" />
         <el-table-column
           key="id"
-          label=""
+          label="分类ID"
           prop="id"
-          min-width="150"
+          width="80"
           align="center"
         />
         <el-table-column
@@ -61,16 +70,35 @@
         />
         <el-table-column
           key="icon"
-          label="分类图释"
+          label="分类图标"
           prop="icon"
-          min-width="150"
+          width="120"
           align="center"
-        />
+        >
+          <template #default="scope">
+            <el-icon v-if="scope.row.icon" size="20">
+              <component :is="scope.row.icon" />
+            </el-icon>
+            <span v-else class="text-gray-400">无图标</span>
+          </template>
+        </el-table-column>
         <el-table-column
           key="parentId"
-          label="一级id"
+          label="父级分类"
           prop="parentId"
-          min-width="150"
+          width="120"
+          align="center"
+        >
+          <template #default="scope">
+            <span v-if="scope.row.parentId === 0 || !scope.row.parentId">根分类</span>
+            <span v-else>{{ scope.row.parentId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          key="createTime"
+          label="创建时间"
+          prop="createTime"
+          width="180"
           align="center"
         />
         <el-table-column fixed="right" label="操作" width="220">
@@ -116,32 +144,46 @@
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="" prop="id">
-          <el-input
-            v-model="formData.id"
-            placeholder=""
-          />
-        </el-form-item>
-
         <el-form-item label="分类名称" prop="name">
           <el-input
             v-model="formData.name"
-            placeholder="分类名称"
+            placeholder="请输入分类名称"
+            maxlength="50"
+            show-word-limit
           />
         </el-form-item>
 
-        <el-form-item label="分类图释" prop="icon">
+        <el-form-item label="分类图标" prop="icon">
           <el-input
             v-model="formData.icon"
-            placeholder="分类图释"
-          />
+            placeholder="请输入图标名称（如：Folder、Document等）"
+            maxlength="50"
+          >
+            <template #prepend>
+              <el-icon v-if="formData.icon" size="16">
+                <component :is="formData.icon" />
+              </el-icon>
+              <span v-else>图标</span>
+            </template>
+          </el-input>
         </el-form-item>
 
-        <el-form-item label="一级id" prop="parentId">
-          <el-input
+        <el-form-item label="父级分类" prop="parentId">
+          <el-select
             v-model="formData.parentId"
-            placeholder="一级id"
-          />
+            placeholder="请选择父级分类"
+            clearable
+            style="width: 100%"
+          >
+            <el-option label="根分类" :value="0" />
+            <el-option
+              v-for="category in parentCategoryOptions"
+              :key="category.id"
+              :label="category.name"
+              :value="category.id"
+              :disabled="category.id === formData.id"
+            />
+          </el-select>
         </el-form-item>
 
       </el-form>
@@ -187,9 +229,12 @@ const dialog = reactive({
 // 分类表单数据
 const formData = reactive<ProductCategoryForm>({});
 
+// 父级分类选项
+const parentCategoryOptions = ref<ProductCategoryPageVO[]>([]);
+
 // 分类表单校验规则
 const rules = reactive({
-  id: [{ required: true, message: "请输入", trigger: "blur" }],
+  name: [{ required: true, message: "请输入分类名称", trigger: "blur" }],
 });
 
 /** 查询分类 */
@@ -217,9 +262,21 @@ function handleSelectionChange(selection: any) {
   removeIds.value = selection.map((item: any) => item.id);
 }
 
+/** 获取父级分类选项 */
+function getParentCategoryOptions() {
+  ProductCategoryAPI.getPage({ pageNum: 1, pageSize: 1000 })
+    .then((data) => {
+      parentCategoryOptions.value = data.list;
+    })
+    .catch(() => {
+      ElMessage.error("获取父级分类列表失败");
+    });
+}
+
 /** 打开分类弹窗 */
 function handleOpenDialog(id?: number) {
   dialog.visible = true;
+  getParentCategoryOptions();
   if (id) {
     dialog.title = "修改分类";
     ProductCategoryAPI.getFormData(id).then((data) => {
@@ -262,7 +319,7 @@ function handleCloseDialog() {
   dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
-  formData.id = undefined;
+  Object.assign(formData, {});
 }
 
 /** 删除分类 */
@@ -297,3 +354,44 @@ onMounted(() => {
   handleQuery();
 });
 </script>
+
+<style lang="scss" scoped>
+.search-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.category-tree-wrapper {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+:deep(.el-table) {
+  .el-table__header {
+    th {
+      background-color: #fafafa;
+      color: #606266;
+      font-weight: 600;
+    }
+  }
+}
+
+:deep(.el-dialog__title) {
+  color: #303133;
+  font-weight: 600;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: #606266;
+}
+
+.text-gray-400 {
+  color: #9ca3af;
+}
+</style>

@@ -100,4 +100,37 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
         return this.removeByIds(idList);
     }
 
+    /**
+     * 获取分类树形结构
+     *
+     * @return 分类树形结构列表
+     */
+    @Override
+    public List<ProductCategoryVO> getCategoryTree() {
+        List<ProductCategoryVO> allCategories = this.baseMapper.getAllCategories();
+        return buildCategoryTree(allCategories, null);
+    }
+
+    /**
+     * 构建分类树形结构
+     *
+     * @param allCategories 所有分类列表
+     * @param parentId 父级ID
+     * @return 树形结构列表
+     */
+    private List<ProductCategoryVO> buildCategoryTree(List<ProductCategoryVO> allCategories, Long parentId) {
+        return allCategories.stream()
+                .filter(category -> {
+                    if (parentId == null) {
+                        return category.getParentId() == null || category.getParentId() == 0;
+                    }
+                    return parentId.equals(category.getParentId());
+                })
+                .map(category -> {
+                    category.setChildren(buildCategoryTree(allCategories, category.getId()));
+                    return category;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

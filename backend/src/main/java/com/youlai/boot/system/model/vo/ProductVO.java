@@ -38,14 +38,22 @@ public class ProductVO implements Serializable {
     private BigDecimal discountPrice;
     @Schema(description = "销量")
     private Integer sales;
-    @Schema(description = "标签，多个标签用逗号分隔")
-    private String tags;
+    @Schema(description = "标签名称，多个标签用逗号分隔")
+    private String tagNames;
+    @Schema(description = "分类名称，多个分类用逗号分隔")
+    private String categoryNames;
     @Schema(description = "产地")
     private String origin;
     @Schema(description = "是否为热门推荐商品")
     private Integer isHot;
+    @Schema(description = "虚拟销量")
+    private Integer virtualSales;
+    @Schema(description = "库存")
+    private Long stock;
+    @Schema(description = "是否上架")
+    private Integer isOnline;
     @Schema(description = "创建时间")
-    private LocalDateTime createdAt;
+    private LocalDateTime createTime;
     @Schema(description = "更新时间")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updateTime;
 }
