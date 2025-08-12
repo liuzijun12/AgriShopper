@@ -580,27 +580,15 @@
               <el-col :span="24">
                 <el-form-item label="商品图片" prop="images">
                   <div class="upload-wrapper">
-                    <el-upload
-                      class="image-upload"
-                      :auto-upload="false"
-                      :on-change="handleImageChange"
-                      :on-preview="handlePreview"
-                      :on-remove="handleRemove"
-                      :before-remove="beforeRemove"
-                      multiple
+                    <multi-image-upload
+                      v-model="formData.images"
                       :limit="5"
-                      :on-exceed="handleExceed"
-                      :file-list="fileList"
-                      list-type="picture-card"
-                      accept="image/*"
-                    >
-                      <el-icon class="upload-icon"><Plus /></el-icon>
-                      <template #tip>
-                        <div class="upload-tip">
-                          支持 JPG/PNG 格式，单张不超过 500KB，最多上传 5 张
-                        </div>
-                      </template>
-                    </el-upload>
+                      :maxFileSize="0.5"
+                      accept=".jpg,.jpeg,.png"
+                    />
+                    <div class="upload-tip">
+                      支持 JPG/PNG 格式，单张不超过 500KB，最多上传 5 张
+                    </div>
                   </div>
                 </el-form-item>
               </el-col>
@@ -610,26 +598,11 @@
               <el-col :span="24">
                 <el-form-item label="商品视频" prop="vedio">
                   <div class="upload-wrapper">
-                    <el-upload
-                      class="video-upload"
-                      :auto-upload="false"
-                      :on-change="handleVideoChange"
-                      :on-preview="handleVideoPreview"
-                      :on-remove="handleVideoRemove"
-                      :before-remove="beforeVideoRemove"
-                      :limit="1"
-                      :on-exceed="handleVideoExceed"
-                      :file-list="videoFileList"
-                      list-type="picture-card"
-                      accept="video/*"
-                    >
-                      <el-icon class="upload-icon"><VideoCamera /></el-icon>
-                      <template #tip>
-                        <div class="upload-tip">
-                          支持 MP4 格式，不超过 50MB，最多上传 1 个
-                        </div>
-                      </template>
-                    </el-upload>
+                    <video-upload
+                      v-model="formData.vedio"
+                      :maxFileSize="50"
+                      accept=".mp4,.webm,.ogg"
+                    />
                   </div>
                 </el-form-item>
               </el-col>
@@ -710,6 +683,9 @@ import {
   Close, 
   Check 
 } from '@element-plus/icons-vue'
+import { Auth } from '@/utils/auth'
+import MultiImageUpload from '@/components/Upload/MultiImageUpload.vue'
+import VideoUpload from '@/components/Upload/VideoUpload.vue'
 
 defineOptions({
   name: "Product",
@@ -740,7 +716,24 @@ const dialog = reactive({
 });
 
 // 商品表表单数据
-const formData = reactive<ProductForm>({});
+const formData = reactive<ProductForm>({
+  id: undefined,
+  name: '',
+  description: '',
+  images: [],
+  vedio: '',
+  origin: '',
+  price: 0,
+  discountPrice: 0,
+  stock: 0,
+  sales: 0,
+  virtualSales: 0,
+  isHot: 0,
+  isOnline: 0,
+  type: '',
+  tagIds: [],
+  categoryIds: []
+});
 
 // 文件上传列表
 const fileList = ref([]);
@@ -784,6 +777,12 @@ function handleQuery() {
       loading.value = false;
     });
 }
+
+
+
+
+
+
 
 /** 获取标签选项列表 */
 function getTagOptions() {
@@ -1035,7 +1034,25 @@ function handleOpenDialog(id?: number) {
   if (id) {
     dialog.title = "修改商品表";
     ProductAPI.getFormData(id).then((data) => {
-      Object.assign(formData, data);
+      // 确保数值类型字段的正确初始化
+      const numericFields = ['price', 'discountPrice', 'sales', 'virtualSales', 'stock'];
+      const processedData = { ...data };
+      numericFields.forEach(field => {
+        if (processedData[field]) {
+          processedData[field] = Number(processedData[field]);
+        }
+      });
+      // 确保 images 是数组
+      if (typeof processedData.images === 'string') {
+        try {
+          processedData.images = JSON.parse(processedData.images);
+        } catch (e) {
+          processedData.images = processedData.images ? [processedData.images] : [];
+        }
+      } else if (!Array.isArray(processedData.images)) {
+        processedData.images = [];
+      }
+      Object.assign(formData, processedData);
       // 设置树形复选框的选中状态
       nextTick(() => {
         if (tagTreeRef.value && formData.tagIds) {
@@ -1072,6 +1089,9 @@ function handleOpenDialog(id?: number) {
     dialog.title = "新增商品表";
     // 重置规格价格列表
     specPriceList.value = [{ spec: '', price: 0 }];
+    // 重置表单数据
+    formData.images = [];
+    formData.vedio = '';
     // 清空树形复选框选中状态
     nextTick(() => {
       if (tagTreeRef.value) {
@@ -1096,6 +1116,16 @@ function handleSubmit() {
       loading.value = true;
       // 将规格价格列表转换为JSON格式
       formData.type = convertSpecPriceToJson();
+      // 确保 images 是 JSON 字符串
+      if (Array.isArray(formData.images)) {
+        formData.images = JSON.stringify(formData.images);
+      }
+      // 处理 vedio 字段，空字符串时设为 null
+      if (!formData.vedio) {
+        formData.vedio = null;
+      } else {
+        formData.vedio = JSON.stringify(formData.vedio);
+      }
       
       const id = formData.id;
       if (id) {
@@ -1126,9 +1156,14 @@ function handleCloseDialog() {
   dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
-  // 重置表单数据为空对象
+  // 重置表单数据
+  const numericFields = ['price', 'discountPrice', 'sales', 'virtualSales', 'stock'];
   Object.keys(formData).forEach(key => {
-    delete formData[key];
+    if (numericFields.includes(key)) {
+      formData[key] = 0;
+    } else {
+      delete formData[key];
+    }
   });
   // 重置文件列表
   fileList.value = [];
@@ -1174,89 +1209,9 @@ function handleDelete(id?: number) {
   );
 }
 
-// 上传组件相关方法
-function handleImageChange(file: any, fileList: any) {
-  console.log('图片文件变化:', file, fileList);
-  // 这里可以添加图片上传到服务器的逻辑
-  // 暂时将文件信息存储到formData中
-  const imageUrls = fileList.map((item: any) => {
-    return item.url || URL.createObjectURL(item.raw);
-  });
-  formData.images = JSON.stringify(imageUrls);
-}
 
-function handlePreview(file: any) {
-  console.log('预览文件:', file);
-  // 可以在这里添加图片预览逻辑
-}
 
-function handleRemove(file: any, fileList: any) {
-  console.log('移除文件:', file, fileList);
-  // 更新formData中的图片信息
-  const imageUrls = fileList.map((item: any) => {
-    return item.url || URL.createObjectURL(item.raw);
-  });
-  formData.images = JSON.stringify(imageUrls);
-}
 
-function beforeRemove(file: any) {
-  return ElMessageBox.confirm(
-    `确定移除 ${file.name}？`
-  ).then(
-    () => true,
-    () => false
-  );
-}
-
-function handleExceed(files: any, fileList: any) {
-  ElMessage.warning(
-    `当前限制选择 5 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
-  );
-}
-
-// 视频上传相关方法
-function handleVideoChange(file: any, fileList: any) {
-  console.log('视频文件变化:', file, fileList);
-  // 这里可以添加视频上传到服务器的逻辑
-  // 暂时将文件信息存储到formData中
-  if (fileList.length > 0) {
-    const videoFile = fileList[0];
-    formData.vedio = videoFile.url || URL.createObjectURL(videoFile.raw);
-  } else {
-    formData.vedio = '';
-  }
-}
-
-function handleVideoPreview(file: any) {
-  console.log('预览视频:', file);
-  // 可以在这里添加视频预览逻辑
-}
-
-function handleVideoRemove(file: any, fileList: any) {
-  console.log('移除视频:', file, fileList);
-  // 更新formData中的视频信息
-  if (fileList.length > 0) {
-    const videoFile = fileList[0];
-    formData.vedio = videoFile.url || URL.createObjectURL(videoFile.raw);
-  } else {
-    formData.vedio = '';
-  }
-}
-
-function beforeVideoRemove(file: any) {
-  return ElMessageBox.confirm(
-    `确定移除 ${file.name}？`
-  ).then(
-    () => true,
-    () => false
-  );
-}
-
-function handleVideoExceed(files: any, fileList: any) {
-  ElMessage.warning(
-    `当前限制选择 1 个视频文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`
-  );
-}
 
 // 规格价格相关方法
 function addSpecPrice() {

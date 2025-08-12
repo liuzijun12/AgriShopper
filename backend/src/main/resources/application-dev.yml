@@ -109,9 +109,9 @@ oss:
     # 凭据密钥
     secret-key: minioadmin
     # 存储桶名称
-    bucket-name: youlai
+    bucket-name: agrishopper
     # (可选) 自定义域名：配置后，文件 URL 会使用该域名格式
-    custom-domain:
+    custom-domain: http://localhost:9000
   # 阿里云OSS对象存储服务
   aliyun:
     # 服务Endpoint
@@ -121,7 +121,7 @@ oss:
     # 凭据密钥
     access-key-secret: your-access-key-secret
     # 存储桶名称
-    bucket-name: default
+    bucket-name: agrishopper
   # 本地存储
   local:
     # 文件存储路径 请注意下，mac用户请使用 /Users/your-username/your-path/，否则会有权限问题，windows用户请使用 D:/your-path/

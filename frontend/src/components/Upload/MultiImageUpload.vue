@@ -181,7 +181,17 @@ const handleSuccess = (fileInfo: FileInfo, uploadFile: UploadUserFile) => {
   if (index !== -1) {
     fileList.value[index].url = fileInfo.url;
     fileList.value[index].status = "success";
-    modelValue.value[index] = fileInfo.url;
+    // 确保 modelValue.value 是数组
+    if (!Array.isArray(modelValue.value)) {
+      modelValue.value = [];
+    }
+    // 如果是新增图片，将 URL 添加到数组末尾
+    if (index >= modelValue.value.length) {
+      modelValue.value.push(fileInfo.url);
+    } else {
+      // 如果是替换已有图片，更新对应位置的 URL
+      modelValue.value[index] = fileInfo.url;
+    }
   }
 };
 
