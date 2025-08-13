@@ -1,6 +1,7 @@
 <template>
-  <div class="app-container">
-    <div class="search-container">
+  <div class="page-wrapper">
+    <div class="app-container">
+      <div class="search-container">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item label="分类名称" prop="name">
           <el-input
@@ -126,7 +127,10 @@
           </template>
         </el-table-column>
       </el-table>
+    </el-card>
+    </div>
 
+    <div class="pagination-wrapper">
       <pagination
         v-if="total > 0"
         v-model:total="total"
@@ -134,7 +138,7 @@
         v-model:limit="queryParams.pageSize"
         @pagination="handleQuery()"
       />
-    </el-card>
+    </div>
 
     <!-- 分类表单弹窗 -->
     <el-dialog
@@ -393,5 +397,28 @@ onMounted(() => {
 
 .text-gray-400 {
   color: #9ca3af;
+}
+
+.page-wrapper {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-container {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.pagination-wrapper {
+  flex-shrink: 0;
+  padding: 20px 0;
+  border-top: 1px solid #ebeef5;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
 }
 </style>

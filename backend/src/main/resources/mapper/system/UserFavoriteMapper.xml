@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.system.mapper.UserFavoriteMapper">
+
+    <!-- 获取收藏分页列表 -->
+    <select id="getUserFavoritePage" resultType="com.youlai.boot.system.model.vo.UserFavoriteVO">
+        SELECT
+                uf.id,
+                uf.user_id,
+                uf.product_id,
+                uf.is_deleted,
+                uf.create_time,
+                uf.update_time,
+                uf.delete_time,
+                u.nickname as userName,
+                p.name as productName,
+                p.images as productImages,
+                p.price as productPrice
+        FROM
+            user_favorite uf
+            LEFT JOIN user u ON uf.user_id = u.id
+            LEFT JOIN product p ON uf.product_id = p.id
+        <where>
+            uf.is_deleted = 0
+            <if test="queryParams.userId != null">
+                AND uf.user_id = #{queryParams.userId}
+            </if>
+            <if test="queryParams.productId != null">
+                AND uf.product_id = #{queryParams.productId}
+            </if>
+            <if test="queryParams.userName != null and queryParams.userName != ''">
+                AND u.nickname LIKE CONCAT('%', #{queryParams.userName}, '%')
+            </if>
+            <if test="queryParams.productName != null and queryParams.productName != ''">
+                AND p.name LIKE CONCAT('%', #{queryParams.productName}, '%')
+            </if>
+            <if test="queryParams.createTime != null and queryParams.createTime.size() > 0">
+                <if test="queryParams.createTime[0] != null and queryParams.createTime[0] != ''">
+                    AND uf.create_time &gt;= #{queryParams.createTime[0]}
+                </if>
+                <if test="queryParams.createTime[1] != null and queryParams.createTime[1] != ''">
+                    AND uf.create_time &lt;= #{queryParams.createTime[1]}
+                </if>
+            </if>
+        </where>
+        ORDER BY uf.create_time DESC
+    </select>
+
+</mapper>

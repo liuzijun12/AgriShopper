@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.youlai.boot.system.mapper.ProductCartMapper">
+
+    <!-- 获取购物车分页列表 -->
+    <select id="getProductCartPage" resultType="com.youlai.boot.system.model.vo.ProductCartVO">
+        SELECT
+            pc.id,
+            pc.user_id,
+            pc.product_id,
+            pc.product_type,
+            pc.product_count,
+            pc.is_deleted,
+            pc.product_price,
+            pc.create_time,
+            pc.update_time,
+            pc.delete_time,
+            u.nickname as userName,
+            p.name as productName,
+            p.images as productImages
+        FROM
+            product_cart pc
+            LEFT JOIN user u ON pc.user_id = u.id
+            LEFT JOIN product p ON pc.product_id = p.id
+        <where>
+            pc.is_deleted = 0
+            <if test="queryParams.userId != null">
+                AND pc.user_id = #{queryParams.userId}
+            </if>
+            <if test="queryParams.productId != null">
+                AND pc.product_id = #{queryParams.productId}
+            </if>
+            <if test="queryParams.userName != null and queryParams.userName != ''">
+                AND u.nickname LIKE CONCAT('%', #{queryParams.userName}, '%')
+            </if>
+            <if test="queryParams.productName != null and queryParams.productName != ''">
+                AND p.name LIKE CONCAT('%', #{queryParams.productName}, '%')
+            </if>
+            <if test="queryParams.productType != null and queryParams.productType != ''">
+                AND pc.product_type LIKE CONCAT('%', #{queryParams.productType}, '%')
+            </if>
+            <if test="queryParams.createTime != null and queryParams.createTime.size() > 0">
+                <if test="queryParams.createTime[0] != null and queryParams.createTime[0] != ''">
+                    AND pc.create_time &gt;= #{queryParams.createTime[0]}
+                </if>
+                <if test="queryParams.createTime[1] != null and queryParams.createTime[1] != ''">
+                    AND pc.create_time &lt;= #{queryParams.createTime[1]}
+                </if>
+            </if>
+        </where>
+        ORDER BY pc.create_time DESC
+    </select>
+
+</mapper>

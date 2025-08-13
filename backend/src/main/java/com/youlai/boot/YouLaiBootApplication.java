@@ -1,5 +1,6 @@
 package com.youlai.boot;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
@@ -12,6 +13,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan // 开启配置属性绑定
+@MapperScan("com.youlai.boot.**.mapper") // 扫描Mapper接口
 public class YouLaiBootApplication {
 
     public static void main(String[] args) {
