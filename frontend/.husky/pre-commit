@@ -1,2 +1,1 @@
-echo "Running pre-commit hook..."
-#pnpm run lint:lint-staged
+npm run lint:lint-staged

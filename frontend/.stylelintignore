@@ -1,5 +1,11 @@
-
-*.min.js
 dist
-public
 node_modules
+public
+.husky
+.vscode
+.idea
+*.sh
+*.md
+
+src/assets
+stats.html

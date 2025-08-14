@@ -1,5 +1,5 @@
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
-import { getAccessToken } from "@/utils/auth";
+import { Auth } from "@/utils/auth";
 
 export interface UseStompOptions {
   /** WebSocket 地址，不传时使用 VITE_APP_WS_ENDPOINT 环境变量 */
@@ -65,16 +65,16 @@ export function useStomp(options: UseStompOptions = {}) {
 
     // 检查WebSocket端点是否配置
     if (!brokerURL.value) {
-      console.error("WebSocket连接失败: 未配置WebSocket端点URL");
+      console.warn("WebSocket连接失败: 未配置WebSocket端点URL");
       return;
     }
 
     // 每次连接前重新获取最新令牌，不依赖之前的token值
-    const currentToken = getAccessToken();
+    const currentToken = Auth.getAccessToken();
 
     // 检查令牌是否为空，如果为空则不进行连接
     if (!currentToken) {
-      console.error("WebSocket连接失败：授权令牌为空，请先登录");
+      console.warn("WebSocket连接失败：授权令牌为空，请先登录");
       return;
     }
 
@@ -123,7 +123,7 @@ export function useStomp(options: UseStompOptions = {}) {
     };
 
     // 设置 Web Socket 关闭监听器
-    client.value.onWebSocketClose = (event: CloseEvent) => {
+    client.value.onWebSocketClose = (event) => {
       isConnected.value = false;
       isConnecting = false;
       console.log(`WebSocket已关闭: ${event?.code} ${event?.reason}`);
@@ -147,7 +147,7 @@ export function useStomp(options: UseStompOptions = {}) {
     };
 
     // 设置错误监听器
-    client.value.onStompError = (frame: any) => {
+    client.value.onStompError = (frame) => {
       console.error("STOMP错误:", frame.headers, frame.body);
       isConnecting = false;
 
