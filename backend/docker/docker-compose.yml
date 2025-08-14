@@ -67,3 +67,15 @@ services:
       - 8080:8080
     networks:
       - youlai-boot
+
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
+    ports:
+      - 7070:8080
+    networks:
+      - youlai-boot # 加入 "youlai-boot" 网络，可以通过容器名 "mysql" 访问数据库
