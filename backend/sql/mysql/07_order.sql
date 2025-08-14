@@ -1,3 +1,12 @@
+CREATE DATABASE IF NOT EXISTS youlai_boot CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci;
+
+
+-- ----------------------------
+-- 2. 创建表 && 数据初始化
+-- ----------------------------
+use youlai_boot;
+
+SET NAMES utf8mb4;  # 设置字符集
 SET FOREIGN_KEY_CHECKS = 0;
 
 CREATE TABLE IF NOT EXISTS `orders` (
