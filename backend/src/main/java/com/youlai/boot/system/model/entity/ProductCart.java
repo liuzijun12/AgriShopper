@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.youlai.boot.common.base.BaseEntity;
+import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
+import com.baomidou.mybatisplus.annotation.TableField;
 
 /**
  * 购物车实体对象
@@ -15,7 +17,7 @@ import com.youlai.boot.common.base.BaseEntity;
  */
 @Getter
 @Setter
-@TableName("product_cart")
+@TableName(value = "product_cart", autoResultMap = true)
 public class ProductCart extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
@@ -31,7 +33,8 @@ public class ProductCart extends BaseEntity {
     /**
      * 选择商品的规格
      */
-    private String productType;
+    @TableField(typeHandler = JacksonTypeHandler.class)
+    private Object productType;
     /**
      * 商品的数量
      */

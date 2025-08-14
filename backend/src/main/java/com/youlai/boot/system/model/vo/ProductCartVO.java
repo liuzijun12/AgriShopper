@@ -29,7 +29,7 @@ public class ProductCartVO implements Serializable {
     @Schema(description = "商品ID")
     private Integer productId;
     @Schema(description = "选择商品的规格")
-    private String productType;
+    private Object productType;
     @Schema(description = "商品的数量")
     private Integer productCount;
     @Schema(description = "是否软删除")

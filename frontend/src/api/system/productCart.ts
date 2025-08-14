@@ -5,7 +5,7 @@ const PRODUCTCART_BASE_URL = "/api/v1/productCart";
 const ProductCartAPI = {
     /** 获取购物车分页数据 */
     getPage(queryParams?: ProductCartPageQuery) {
-        return request<any, PageResult<ProductCartPageVO[]>>({
+        return request<any, PageResult<ProductCartPageVO[]>>({ 
             url: `${PRODUCTCART_BASE_URL}/page`,
             method: "get",
             params: queryParams,
@@ -68,6 +68,8 @@ export default ProductCartAPI;
 
 /** 购物车分页查询参数 */
 export interface ProductCartPageQuery extends PageQuery {
+    /** 商品ID */
+    productId?: number;
 }
 
 /** 购物车表单对象 */
@@ -78,7 +80,7 @@ export interface ProductCartForm {
     /** 商品ID */
     productId?:  number;
     /** 选择商品的规格 */
-    productType?:  string;
+    productType?:  any;
     /** 商品的数量 */
     productCount?:  number;
     /** 是否软删除 */
@@ -101,7 +103,7 @@ export interface ProductCartPageVO {
     /** 商品ID */
     productId?: number;
     /** 选择商品的规格 */
-    productType?: string;
+    productType?: any;
     /** 商品的数量 */
     productCount?: number;
     /** 是否软删除 */
@@ -115,4 +117,3 @@ export interface ProductCartPageVO {
     /** 删除时间 */
     deleteTime?: Date;
 }
-

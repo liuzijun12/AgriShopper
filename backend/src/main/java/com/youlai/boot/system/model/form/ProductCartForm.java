@@ -35,8 +35,7 @@ public class ProductCartForm implements Serializable {
     private Integer productId;
 
     @Schema(description = "选择商品的规格")
-    @Size(max=255, message="商品规格长度不能超过255个字符")
-    private String productType;
+    private Object productType;
 
     @Schema(description = "商品的数量")
     @NotNull(message = "商品数量不能为空")
@@ -60,6 +59,5 @@ public class ProductCartForm implements Serializable {
     @Schema(description = "删除时间")
     @JsonFormat(timezone = "GMT+8", pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deleteTime;
-
 
 }

@@ -32,9 +32,8 @@ public class ProductCartQuery extends BasePageQuery {
     private String productName;
     
     @Schema(description = "商品规格")
-    private String productType;
+    private Object productType;
     
     @Schema(description = "创建时间范围")
     private List<String> createTime;
-
 }
