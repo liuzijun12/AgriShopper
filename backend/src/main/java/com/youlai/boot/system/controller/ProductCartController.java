@@ -26,7 +26,7 @@ import jakarta.validation.Valid;
  */
 @Tag(name = "购物车接口")
 @RestController
-@RequestMapping("/api/v1/product-cart")
+@RequestMapping("/api/v1/productCart")
 @RequiredArgsConstructor
 public class ProductCartController  {
 
@@ -34,7 +34,7 @@ public class ProductCartController  {
 
     @Operation(summary = "购物车分页列表")
     @GetMapping("/page")
-    @PreAuthorize("@ss.hasPerm('system:product-cart:query')")
+    @PreAuthorize("@ss.hasPerm('system:productCart:query')")
     public PageResult<ProductCartVO> getProductCartPage(ProductCartQuery queryParams ) {
         IPage<ProductCartVO> result = productCartService.getProductCartPage(queryParams);
         return PageResult.success(result);
@@ -42,7 +42,7 @@ public class ProductCartController  {
 
     @Operation(summary = "新增购物车")
     @PostMapping
-    @PreAuthorize("@ss.hasPerm('system:product-cart:add')")
+    @PreAuthorize("@ss.hasPerm('system:productCart:add')")
     public Result<Void> saveProductCart(@RequestBody @Valid ProductCartForm formData ) {
         boolean result = productCartService.saveProductCart(formData);
         return Result.judge(result);
@@ -50,7 +50,7 @@ public class ProductCartController  {
 
     @Operation(summary = "获取购物车表单数据")
     @GetMapping("/{id}/form")
-    @PreAuthorize("@ss.hasPerm('system:product-cart:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productCart:edit')")
     public Result<ProductCartForm> getProductCartForm(
         @Parameter(description = "购物车ID") @PathVariable Long id
     ) {
@@ -60,7 +60,7 @@ public class ProductCartController  {
 
     @Operation(summary = "修改购物车")
     @PutMapping(value = "/{id}")
-    @PreAuthorize("@ss.hasPerm('system:product-cart:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productCart:edit')")
     public Result<Void> updateProductCart(
             @Parameter(description = "购物车ID") @PathVariable Long id,
             @RequestBody @Validated ProductCartForm formData
@@ -71,7 +71,7 @@ public class ProductCartController  {
 
     @Operation(summary = "删除购物车")
     @DeleteMapping("/{ids}")
-    @PreAuthorize("@ss.hasPerm('system:product-cart:delete')")
+    @PreAuthorize("@ss.hasPerm('system:productCart:delete')")
     public Result<Void> deleteProductCarts(
         @Parameter(description = "购物车ID，多个以英文逗号(,)分割") @PathVariable String ids
     ) {

@@ -27,7 +27,7 @@ import java.util.List;
  */
 @Tag(name = "标签接口")
 @RestController
-@RequestMapping("/api/v1/product-tags")
+@RequestMapping("/api/v1/productTags")
 @RequiredArgsConstructor
 public class ProductTagsController  {
 
@@ -35,7 +35,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "标签分页列表")
     @GetMapping("/page")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:query')")
     public PageResult<ProductTagsVO> getProductTagsPage(ProductTagsQuery queryParams ) {
         IPage<ProductTagsVO> result = productTagsService.getProductTagsPage(queryParams);
         return PageResult.success(result);
@@ -43,7 +43,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "新增标签")
     @PostMapping
-    @PreAuthorize("@ss.hasPerm('system:product-tags:add')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:add')")
     public Result<Void> saveProductTags(@RequestBody @Valid ProductTagsForm formData ) {
         boolean result = productTagsService.saveProductTags(formData);
         return Result.judge(result);
@@ -51,7 +51,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "获取标签表单数据")
     @GetMapping("/{id}/form")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:edit')")
     public Result<ProductTagsForm> getProductTagsForm(
             @Parameter(description = "标签ID") @PathVariable Long id
     ) {
@@ -61,7 +61,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "修改标签")
     @PutMapping(value = "/{id}")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:edit')")
     public Result<Void> updateProductTags(
             @Parameter(description = "标签ID") @PathVariable Long id,
             @RequestBody @Validated ProductTagsForm formData
@@ -72,7 +72,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "删除标签")
     @DeleteMapping("/{ids}")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:delete')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:delete')")
     public Result<Void> deleteProductTagss(
             @Parameter(description = "标签ID，多个以英文逗号(,)分割") @PathVariable String ids
     ) {
@@ -82,7 +82,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "获取标签树形结构")
     @GetMapping("/tree")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:query')")
     public Result<List<ProductTagsVO>> getTagTree() {
         List<ProductTagsVO> result = productTagsService.getTagTree();
         return Result.success(result);
@@ -90,7 +90,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "根据父级ID获取子标签")
     @GetMapping("/children/{parentId}")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:query')")
     public Result<List<ProductTagsVO>> getTagsByParentId(
             @Parameter(description = "父级标签ID") @PathVariable Integer parentId
     ) {
@@ -100,7 +100,7 @@ public class ProductTagsController  {
 
     @Operation(summary = "获取所有标签列表")
     @GetMapping("/all")
-    @PreAuthorize("@ss.hasPerm('system:product-tags:query')")
+    @PreAuthorize("@ss.hasPerm('system:productTags:query')")
     public Result<List<ProductTagsVO>> getAllTags() {
         List<ProductTagsVO> result = productTagsService.getAllTags();
         return Result.success(result);

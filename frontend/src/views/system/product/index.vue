@@ -666,11 +666,11 @@ import { ref, reactive, onMounted, computed, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
 import ProductAPI from '@/api/system/product'
-import ProductTagsAPI from '@/api/system/product-tags'
-import ProductCategoryAPI from '@/api/system/product-category'
+import ProductTagsAPI from '@/api/system/productTags'
+import ProductCategoryAPI from '@/api/system/productCategory'
 import type { ProductPageVO, ProductForm, ProductPageQuery } from '@/api/system/product'
-import type { ProductTagsVO } from '@/api/system/product-tags'
-import type { ProductCategoryVO } from '@/api/system/product-category'
+import type { ProductTagsVO } from '@/api/system/productTags'
+import type { ProductCategoryVO } from '@/api/system/productCategory'
 import { 
   InfoFilled, 
   Money, 

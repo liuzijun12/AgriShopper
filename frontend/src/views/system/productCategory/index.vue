@@ -28,7 +28,7 @@
     <el-card shadow="never">
       <div class="mb-10px">
         <el-button
-          v-hasPerm="['system:product-category:add']"
+          v-hasPerm="['system:productCategory:add']"
           type="success"
           @click="handleOpenDialog()"
         >
@@ -36,7 +36,7 @@
           新增
         </el-button>
         <el-button
-          v-hasPerm="['system:product-category:delete']"
+          v-hasPerm="['system:productCategory:delete']"
           type="danger"
           :disabled="removeIds.length === 0"
           @click="handleDelete()"
@@ -105,7 +105,7 @@
         <el-table-column fixed="right" label="操作" width="220">
           <template #default="scope">
             <el-button
-              v-hasPerm="['system:product-category:edit']"
+              v-hasPerm="['system:productCategory:edit']"
               type="primary"
               size="small"
               link
@@ -115,7 +115,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['system:product-category:delete']"
+              v-hasPerm="['system:productCategory:delete']"
               type="danger"
               size="small"
               link
@@ -202,12 +202,14 @@
 </template>
 
 <script setup lang="ts">
+import { ref, reactive, onMounted } from "vue";
+import { ElMessage, ElMessageBox } from "element-plus";
+import ProductCategoryAPI, { ProductCategoryPageVO, ProductCategoryForm, ProductCategoryPageQuery } from "@/api/system/productCategory";
+
 defineOptions({
   name: "ProductCategory",
   inheritAttrs: false,
 });
-
-import ProductCategoryAPI, { ProductCategoryPageVO, ProductCategoryForm, ProductCategoryPageQuery } from "@/api/system/product-category";
 
 const queryFormRef = ref();
 const dataFormRef = ref();

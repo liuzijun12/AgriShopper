@@ -27,7 +27,7 @@ import jakarta.validation.Valid;
  */
 @Tag(name = "分类接口")
 @RestController
-@RequestMapping("/api/v1/product-category")
+@RequestMapping("/api/v1/productCategory")
 @RequiredArgsConstructor
 public class ProductCategoryController  {
 
@@ -35,7 +35,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "分类分页列表")
     @GetMapping("/page")
-    @PreAuthorize("@ss.hasPerm('system:product-category:query')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:query')")
     public PageResult<ProductCategoryVO> getProductCategoryPage(ProductCategoryQuery queryParams ) {
         IPage<ProductCategoryVO> result = productCategoryService.getProductCategoryPage(queryParams);
         return PageResult.success(result);
@@ -43,7 +43,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "新增分类")
     @PostMapping
-    @PreAuthorize("@ss.hasPerm('system:product-category:add')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:add')")
     public Result<Void> saveProductCategory(@RequestBody @Valid ProductCategoryForm formData ) {
         boolean result = productCategoryService.saveProductCategory(formData);
         return Result.judge(result);
@@ -51,7 +51,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "获取分类表单数据")
     @GetMapping("/{id}/form")
-    @PreAuthorize("@ss.hasPerm('system:product-category:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:edit')")
     public Result<ProductCategoryForm> getProductCategoryForm(
             @Parameter(description = "分类ID") @PathVariable Long id
     ) {
@@ -61,7 +61,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "修改分类")
     @PutMapping(value = "/{id}")
-    @PreAuthorize("@ss.hasPerm('system:product-category:edit')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:edit')")
     public Result<Void> updateProductCategory(
             @Parameter(description = "分类ID") @PathVariable Long id,
             @RequestBody @Validated ProductCategoryForm formData
@@ -72,7 +72,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "删除分类")
     @DeleteMapping("/{ids}")
-    @PreAuthorize("@ss.hasPerm('system:product-category:delete')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:delete')")
     public Result<Void> deleteProductCategorys(
             @Parameter(description = "分类ID，多个以英文逗号(,)分割") @PathVariable String ids
     ) {
@@ -82,7 +82,7 @@ public class ProductCategoryController  {
 
     @Operation(summary = "获取分类树形结构")
     @GetMapping("/tree")
-    @PreAuthorize("@ss.hasPerm('system:product-category:query')")
+    @PreAuthorize("@ss.hasPerm('system:productCategory:query')")
     public Result<List<ProductCategoryVO>> getCategoryTree() {
         List<ProductCategoryVO> result = productCategoryService.getCategoryTree();
         return Result.success(result);
