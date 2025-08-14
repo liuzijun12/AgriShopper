@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const PRODUCTTAGS_BASE_URL = "/api/v1/product-tags";
+const PRODUCTTAGS_BASE_URL = "/api/v1/productTags";
 
 const ProductTagsAPI = {
   /** 获取标签分页数据 */
@@ -126,3 +126,4 @@ export interface ProductTagsVO {
   /** 更新时间 */
   updateTime?: string;
 }
+

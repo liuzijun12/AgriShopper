@@ -306,9 +306,11 @@
 
   import ProductCartAPI, { ProductCartPageVO, ProductCartForm, ProductCartPageQuery } from "@/api/system/productCart";
   import ProductAPI, { ProductPageVO } from "@/api/system/product";
+  import { useUserStoreHook } from "@/store/modules/user.store";
 
   const queryFormRef = ref();
   const dataFormRef = ref();
+  const userStore = useUserStoreHook();
 
   const loading = ref(false);
   const removeIds = ref<number[]>([]);
@@ -385,6 +387,8 @@
       });
     } else {
       dialog.title = "新增购物车";
+      // 清空表单数据，特别是userId
+      Object.assign(formData, { userId: undefined });
     }
   }
 
@@ -403,6 +407,14 @@
               })
               .finally(() => (loading.value = false));
         } else {
+          // 新增时设置当前用户ID
+          const userId = userStore.userInfo.userId;
+          if (!userId) {
+            ElMessage.error("请先登录");
+            loading.value = false;
+            return;
+          }
+          formData.userId = parseInt(userId);
                 ProductCartAPI.add(formData)
               .then(() => {
                 ElMessage.success("新增成功");

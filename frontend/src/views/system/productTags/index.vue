@@ -28,7 +28,7 @@
     <el-card shadow="never">
       <div class="mb-10px">
         <el-button
-          v-hasPerm="['system:product-tags:add']"
+          v-hasPerm="['system:productTags:add']"
           type="success"
           @click="handleOpenDialog()"
         >
@@ -36,7 +36,7 @@
           新增
         </el-button>
         <el-button
-          v-hasPerm="['system:product-tags:delete']"
+          v-hasPerm="['system:productTags:delete']"
           type="danger"
           :disabled="removeIds.length === 0"
           @click="handleDelete()"
@@ -91,7 +91,7 @@
         <el-table-column fixed="right" label="操作" width="220">
           <template #default="scope">
             <el-button
-              v-hasPerm="['system:product-tags:edit']"
+              v-hasPerm="['system:productTags:edit']"
               type="primary"
               size="small"
               link
@@ -101,7 +101,7 @@
               编辑
             </el-button>
             <el-button
-              v-hasPerm="['system:product-tags:delete']"
+              v-hasPerm="['system:productTags:delete']"
               type="danger"
               size="small"
               link
@@ -178,7 +178,7 @@ defineOptions({
   inheritAttrs: false,
 });
 
-import ProductTagsAPI, { ProductTagsPageVO, ProductTagsForm, ProductTagsPageQuery } from "@/api/system/product-tags";
+import ProductTagsAPI, { ProductTagsPageVO, ProductTagsForm, ProductTagsPageQuery } from "@/api/system/productTags";
 
 const queryFormRef = ref();
 const dataFormRef = ref();

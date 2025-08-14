@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const PRODUCTCART_BASE_URL = "/api/v1/product-cart";
+const PRODUCTCART_BASE_URL = "/api/v1/productCart";
 
 const ProductCartAPI = {
     /** 获取购物车分页数据 */
@@ -115,3 +115,4 @@ export interface ProductCartPageVO {
     /** 删除时间 */
     deleteTime?: Date;
 }
+

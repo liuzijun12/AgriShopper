@@ -1,6 +1,6 @@
 import request from "@/utils/request";
 
-const PRODUCTCATEGORY_BASE_URL = "/api/v1/product-category";
+const PRODUCTCATEGORY_BASE_URL = "/api/v1/productCategory";
 
 const ProductCategoryAPI = {
   /** 获取分类分页数据 */
