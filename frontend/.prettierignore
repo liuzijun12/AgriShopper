@@ -1,12 +1,6 @@
-dist
-node_modules
-public
-.husky
-.vscode
-.idea
-*.sh
-*.md
 
-src/assets
-stats.html
-pnpm-lock.yaml
+*.min.js
+dist
+public
+node_modules
+auto-imports.d.ts
