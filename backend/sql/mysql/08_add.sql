@@ -1,4 +1,13 @@
-SET NAMES utf8mb4;
+CREATE DATABASE IF NOT EXISTS youlai_boot CHARACTER SET utf8mb4 DEFAULT COLLATE utf8mb4_unicode_ci;
+
+
+-- ----------------------------
+-- 2. 创建表 && 数据初始化
+-- ----------------------------
+use youlai_boot;
+
+SET NAMES utf8mb4;  # 设置字符集
+SET FOREIGN_KEY_CHECKS = 0;
 
 INSERT INTO `sys_menu` (`id`, `parent_id`, `tree_path`, `name`, `type`, `route_name`, `route_path`, `component`, `perm`, `always_show`, `keep_alive`, `visible`, `sort`, `icon`, `redirect`, `create_time`, `update_time`, `params`) VALUES
 (149,	0,	'0',	'商品',	2,	NULL,	'/system',	'Layout',	NULL,	1,	1,	1,	3,	'el-icon-Shop',	NULL,	'2025-08-09 19:11:34',	'2025-08-13 19:56:18',	NULL),
