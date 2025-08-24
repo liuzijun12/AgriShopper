@@ -2,7 +2,7 @@ import { defineConfig, type UserConfig, type ConfigEnv, loadEnv } from "vite";
 import uni from "@dcloudio/vite-plugin-uni";
 import AutoImport from "unplugin-auto-import/vite";
 import UniLayouts from "@uni-helper/vite-plugin-uni-layouts";
-import UniPages from "@uni-helper/vite-plugin-uni-pages";
+// import UniPages from "@uni-helper/vite-plugin-uni-pages"; // 暂时禁用自动页面生成
 
 import Components from "@uni-helper/vite-plugin-uni-components";
 import { WotResolver } from "@uni-helper/vite-plugin-uni-components/resolvers";
@@ -36,7 +36,7 @@ export default defineConfig(async ({ mode }: ConfigEnv): Promise<UserConfig> => 
       // make sure put it before `Uni()`
       UnoCss(),
       UniLayouts(),
-      UniPages(),
+      // UniPages(), // 禁用自动页面生成，使用手动配置的 src/pages.json
 
       Components({
         resolvers: [WotResolver()],
