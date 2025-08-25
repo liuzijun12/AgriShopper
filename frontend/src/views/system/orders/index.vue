@@ -18,14 +18,6 @@
     <el-card shadow="never">
       <div class="mb-10px">
         <el-button
-            v-hasPerm="['system:orders:add']"
-            type="success"
-            @click="handleOpenDialog()"
-        >
-          <template #icon><Plus /></template>
-          新增
-        </el-button>
-        <el-button
             v-hasPerm="['system:orders:delete']"
             type="danger"
             :disabled="removeIds.length === 0"
@@ -153,12 +145,12 @@
     <!-- 订单表单弹窗 -->
     <el-dialog
         v-model="dialog.visible"
-        :title="dialog.title"
+        title="修改订单"
         width="500px"
         @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-                <el-form-item v-if="dialog.title === '修改订单'" label="订单ID" prop="id">
+                <el-form-item label="订单ID" prop="id">
                       <el-input
                           v-model="formData.id"
                           placeholder="订单ID"
@@ -287,7 +279,6 @@
 
   // 弹窗
   const dialog = reactive({
-    title: "",
     visible: false,
   });
 
@@ -296,15 +287,10 @@
 
   // 订单表单校验规则
   const rules = reactive({
-                      id: [{ required: true, message: "请输入", trigger: "blur" }],
                       userId: [{ required: true, message: "请输入关联用户ID", trigger: "blur" }],
-                      addressSnapshot: [{ required: true, message: "请输入完整地址快照", trigger: "blur" }],
-                      originalAddressId: [{ required: true, message: "请输入关联原始地址", trigger: "blur" }],
+                      originalAddressId: [{ required: true, message: "请选择关联地址", trigger: "blur" }],
                       status: [{ required: true, message: "请输入订单的状态", trigger: "blur" }],
                       totalAmount: [{ required: true, message: "请输入订单总金额", trigger: "blur" }],
-                      isDeleted: [{ required: true, message: "请输入是否软删除", trigger: "blur" }],
-                      createTime: [{ required: true, message: "请输入创建时间", trigger: "blur" }],
-                      updateTime: [{ required: true, message: "请输入更新时间", trigger: "blur" }],
   });
 
   /** 查询订单 */
@@ -340,24 +326,12 @@
   }
 
   /** 打开订单弹窗 */
-  function handleOpenDialog(id?: number) {
+  function handleOpenDialog(id: number) {
     dialog.visible = true;
     loadAddressOptions(); // 加载地址选项
-    if (id) {
-      dialog.title = "修改订单";
-            OrdersAPI.getFormData(id).then((data) => {
-        Object.assign(formData, data);
-      });
-    } else {
-      dialog.title = "新增订单";
-      // 设置新增订单的默认值
-      Object.assign(formData, {
-        userId: 1,
-        status: '待支付',
-        totalAmount: 0,
-        isDeleted: 0
-      });
-    }
+    OrdersAPI.getFormData(id).then((data) => {
+      Object.assign(formData, data);
+    });
   }
 
   /** 提交订单表单 */
@@ -366,23 +340,13 @@
       if (valid) {
         loading.value = true;
         const id = formData.id;
-        if (id) {
-                OrdersAPI.update(id, formData)
-              .then(() => {
-                ElMessage.success("修改成功");
-                handleCloseDialog();
-                handleResetQuery();
-              })
-              .finally(() => (loading.value = false));
-        } else {
-                OrdersAPI.add(formData)
-              .then(() => {
-                ElMessage.success("新增成功");
-                handleCloseDialog();
-                handleResetQuery();
-              })
-              .finally(() => (loading.value = false));
-        }
+        OrdersAPI.update(id, formData)
+          .then(() => {
+            ElMessage.success("修改成功");
+            handleCloseDialog();
+            handleResetQuery();
+          })
+          .finally(() => (loading.value = false));
       }
     });
   }

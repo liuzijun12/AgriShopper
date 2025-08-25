@@ -18,14 +18,6 @@
     <el-card shadow="never">
       <div class="mb-10px">
         <el-button
-            v-hasPerm="['system:address:add']"
-            type="success"
-            @click="handleOpenDialog()"
-        >
-          <template #icon><Plus /></template>
-          新增
-        </el-button>
-        <el-button
             v-hasPerm="['system:address:delete']"
             type="danger"
             :disabled="removeIds.length === 0"
@@ -181,15 +173,15 @@
     <!-- 存储用户收货地址信息表单弹窗 -->
     <el-dialog
         v-model="dialog.visible"
-        :title="dialog.title"
+        title="修改地址"
         width="500px"
         @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-                <el-form-item v-if="dialog.title === '编辑存储用户收货地址信息'" label="ID" prop="id">
+                <el-form-item label="地址ID" prop="id">
                       <el-input
                           v-model="formData.id"
-                          placeholder="ID"
+                          placeholder="地址ID"
                           readonly
                       />
                 </el-form-item>
@@ -291,19 +283,18 @@
     pageSize: 10,
   });
 
-  // 存储用户收货地址信息表格数据
+  // 地址表格数据
   const pageData = ref<AddressPageVO[]>([]);
 
   // 弹窗
   const dialog = reactive({
-    title: "",
     visible: false,
   });
 
-  // 存储用户收货地址信息表单数据
+  // 地址表单数据
   const formData = reactive<AddressForm>({});
 
-  // 存储用户收货地址信息表单校验规则
+  // 地址表单校验规则
   const rules = reactive({
                       receiverName: [{ required: true, message: "请输入收货人姓名", trigger: "blur" }],
                       phone: [{ required: true, message: "请输入联系电话", trigger: "blur" }],
@@ -311,10 +302,9 @@
                       city: [{ required: true, message: "请输入城市", trigger: "blur" }],
                       district: [{ required: true, message: "请输入区县", trigger: "blur" }],
                       detailAddress: [{ required: true, message: "请输入详细地址", trigger: "blur" }],
-                      isDefault: [{ required: true, message: "请选择是否默认地址", trigger: "change" }],
   });
 
-  /** 查询存储用户收货地址信息 */
+  /** 查询地址列表 */
   function handleQuery() {
     loading.value = true;
           AddressAPI.getPage(queryParams)
@@ -327,7 +317,7 @@
         });
   }
 
-  /** 重置存储用户收货地址信息查询 */
+  /** 重置地址查询 */
   function handleResetQuery() {
     queryFormRef.value!.resetFields();
     queryParams.pageNum = 1;
@@ -339,53 +329,32 @@
     removeIds.value = selection.map((item: any) => item.id);
   }
 
-  /** 打开存储用户收货地址信息弹窗 */
-  function handleOpenDialog(id?: number) {
+  /** 打开地址编辑弹窗 */
+  function handleOpenDialog(id: number) {
     dialog.visible = true;
-    if (id) {
-      dialog.title = "修改存储用户收货地址信息";
-            AddressAPI.getFormData(id).then((data) => {
-        Object.assign(formData, data);
-      });
-    } else {
-      dialog.title = "新增存储用户收货地址信息";
-      // 设置新增时的默认值
-      Object.assign(formData, {
-        userId: 1, // 默认用户ID
-        isDefault: 0, // 默认不是默认地址
-        isDeleted: 0, // 默认未删除
-      });
-    }
+    AddressAPI.getFormData(id).then((data) => {
+      Object.assign(formData, data);
+    });
   }
 
-  /** 提交存储用户收货地址信息表单 */
+  /** 提交地址表单 */
   function handleSubmit() {
     dataFormRef.value.validate((valid: any) => {
       if (valid) {
         loading.value = true;
         const id = formData.id;
-        if (id) {
-                AddressAPI.update(id, formData)
-              .then(() => {
-                ElMessage.success("修改成功");
-                handleCloseDialog();
-                handleResetQuery();
-              })
-              .finally(() => (loading.value = false));
-        } else {
-                AddressAPI.add(formData)
-              .then(() => {
-                ElMessage.success("新增成功");
-                handleCloseDialog();
-                handleResetQuery();
-              })
-              .finally(() => (loading.value = false));
-        }
+        AddressAPI.update(id, formData)
+          .then(() => {
+            ElMessage.success("修改成功");
+            handleCloseDialog();
+            handleResetQuery();
+          })
+          .finally(() => (loading.value = false));
       }
     });
   }
 
-  /** 关闭存储用户收货地址信息弹窗 */
+  /** 关闭地址弹窗 */
   function handleCloseDialog() {
     dialog.visible = false;
     dataFormRef.value.resetFields();
@@ -393,7 +362,7 @@
     formData.id = undefined;
   }
 
-  /** 删除存储用户收货地址信息 */
+  /** 删除地址 */
   function handleDelete(id?: number) {
     const ids = [id || removeIds.value].join(",");
     if (!ids) {

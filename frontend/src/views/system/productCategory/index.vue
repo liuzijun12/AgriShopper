@@ -290,6 +290,13 @@ function handleOpenDialog(id?: number) {
     });
   } else {
     dialog.title = "新增分类";
+    // 重置表单数据
+    Object.assign(formData, {
+      id: undefined,
+      name: "",
+      icon: "",
+      parentId: 0  // 默认为根分类
+    });
   }
 }
 
@@ -325,7 +332,13 @@ function handleCloseDialog() {
   dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
-  Object.assign(formData, {});
+  // 清空表单数据
+  Object.assign(formData, {
+    id: undefined,
+    name: undefined,
+    icon: undefined,
+    parentId: undefined
+  });
 }
 
 /** 删除分类 */

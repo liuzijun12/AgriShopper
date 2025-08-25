@@ -17,6 +17,8 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `tree_path`, `name`, `type`, `route_n
 (156,	0,	'0',	'微信用户管理',	2,	'wxUser',	'/system',	'Layout',	NULL,	1,	1,	1,	3,	'wechat',	NULL,	'2025-08-13 17:12:05',	'2025-08-13 21:21:53',	NULL),
 (157,	156,	'0,156',	'wxuser',	1,	'wxUser1',	'/system/wxuser',	'system/wxuser/index',	NULL,	0,	1,	1,	1,	'el-icon-Avatar',	NULL,	'2025-08-13 17:16:35',	'2025-08-13 20:14:29',	NULL),
 (158,	156,	'0,156',	'用户收藏查看',	1,	'userfavorite',	'/system/userFavorite',	'system/userFavorite/index',	NULL,	0,	1,	1,	1,	'el-icon-StarFilled',	NULL,	'2025-08-13 20:13:40',	'2025-08-13 21:10:44',	NULL),
-(159,	156,	'0,156',	'用户购物车查看',	1,	'productCart',	'/system/productCart',	'system/productCart/index',	NULL,	0,	1,	1,	1,	'el-icon-ShoppingCartFull',	NULL,	'2025-08-13 21:20:57',	'2025-08-13 23:41:39',	NULL);
+(159,	156,	'0,156',	'用户购物车查看',	1,	'productCart',	'/system/productCart',	'system/productCart/index',	NULL,	0,	1,	1,	1,	'el-icon-ShoppingCartFull',	NULL,	'2025-08-13 21:20:57',	'2025-08-13 23:41:39',	NULL),
+(160,	156,	'0,156',	'用户地址管理',	1,	'Address',	'/system/address',	'system/address/index',	NULL,	0,	1,	1,	1,	'el-icon-Location',	NULL,	'2025-08-25 12:00:00',	'2025-08-25 12:00:00',	NULL),
+(161,	156,	'0,156',	'用户订单表',	1,	'Orders',	'/system/orders',	'system/orders/index',	NULL,	0,	1,	1,	1,	'el-icon-Document',	NULL,	'2025-08-25 12:01:00',	'2025-08-25 12:01:00',	NULL);
 -- 2025-08-15 04:16:15 UTC
 

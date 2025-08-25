@@ -21,7 +21,7 @@ public class ProductTagsForm implements Serializable {
     @Serial
     private static final long serialVersionUID = 1L;
 
-    @NotNull(message = "不能为空")
+    @Schema(description = "标签ID（新增时无需传递）")
     private Integer id;
 
     @Schema(description = "标签名")
