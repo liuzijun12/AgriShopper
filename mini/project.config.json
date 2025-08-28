@@ -21,7 +21,23 @@
     "disableUseStrict": false,
     "condition": false,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "urlCheck": true,
+    "coverView": true,
+    "lazyloadPlaceholderEnable": false,
+    "skylineRenderEnable": false,
+    "preloadBackgroundData": false,
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "compileHotReLoad": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "useStaticServer": false,
+    "useLanDebug": false,
+    "showES6CompileOption": false,
+    "checkInvalidKey": true,
+    "ignoreDevUnusedFiles": true,
+    "bigPackageSizeSupport": false
   },
   "compileType": "miniprogram",
   "simulatorPluginLibVersion": {},
@@ -31,5 +47,6 @@
   },
   "appid": "wx1435534f5fbdbe4f",
   "editorSetting": {},
-  "libVersion": "3.9.1"
+  "libVersion": "3.9.1",
+  "projectname": "vue-uniapp-template"
 }

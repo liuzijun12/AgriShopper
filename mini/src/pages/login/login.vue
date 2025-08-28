@@ -1,154 +1,232 @@
 <template>
-  <view class="container">
-    <view class="login-form">
-      <view class="title">
-        <text class="title-text">用户登录</text>
+  <view class="login-page">
+    <!-- 简约背景 -->
+    <view class="bg-simple">
+      <!-- 简单的叶子装饰 -->
+      <view class="decoration decoration-1">🌿</view>
+      <view class="decoration decoration-2">🍃</view>
+      <view class="decoration decoration-3">🌱</view>
+      <view class="decoration decoration-4">🌿</view>
+    </view>
+    
+    <!-- 主内容 -->
+    <view class="content-wrapper">
+      <!-- Logo -->
+      <view class="logo-container">
+        <view class="logo-card">
+          <view class="logo-icon">🌿</view>
+        </view>
       </view>
       
-      <view class="form-item">
-        <text class="label">用户名</text>
-        <input 
-          class="input" 
-          v-model="username" 
-          placeholder="请输入用户名"
-          type="text"
-        />
+      <!-- 标题 -->
+      <view class="title-container">
+        <text class="app-name">田里有品</text>
+        <text class="app-desc">优质农产品 直达您餐桌</text>
       </view>
       
-      <view class="form-item">
-        <text class="label">密码</text>
-        <input 
-          class="input" 
-          v-model="password" 
-          placeholder="请输入密码"
-          type="password"
-        />
+      <!-- 登录按钮 -->
+      <view class="button-container">
+        <!-- #ifdef MP-WEIXIN -->
+        <button 
+          class="wechat-button" 
+          @click="handleWechatLogin" 
+          :disabled="wechatLoading"
+        >
+                      <view class="button-content">
+              <text class="wechat-icon">💬</text>
+              <text class="button-text">{{ wechatLoading ? '登录中...' : '微信一键登录' }}</text>
+            </view>
+        </button>
+        <!-- #endif -->
       </view>
       
-      <view class="error-msg" v-if="errorMessage">
-        <text class="error-text">{{ errorMessage }}</text>
+      <!-- 错误提示 -->
+      <view class="error-container" v-if="errorMessage">
+        <text class="error-message">{{ errorMessage }}</text>
       </view>
       
-      <button class="login-btn" @click="handleLogin" :disabled="loading">
-        {{ loading ? '登录中...' : '登录' }}
-      </button>
-      
-      <!-- 微信登录按钮 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <button class="wechat-login-btn" @click="handleWechatLogin" :disabled="wechatLoading">
-        {{ wechatLoading ? '微信登录中...' : '微信登录' }}
-      </button>
-      <!-- #endif -->
+      <!-- 协议 -->
+      <view class="agreement-container">
+        <text class="agreement-text">登录即表示同意</text>
+        <text class="agreement-link">《用户协议及隐私政策》</text>
+      </view>
     </view>
   </view>
 </template>
 
 <script>
+import AuthAPI from '@/api/auth';
+
 export default {
   data() {
     return {
-      username: '',
-      password: '',
       errorMessage: '',
-      loading: false,
       wechatLoading: false
     };
   },
   methods: {
-    handleLogin() {
-      this.errorMessage = '';
-      if (!this.username.trim() || !this.password.trim()) {
-        this.errorMessage = '请输入用户名和密码';
-        return;
-      }
-      this.loading = true;
-      
-      setTimeout(() => {
-        if (this.username === 'admin' && this.password === '123456') {
-          // 管理员登录
-          uni.showToast({ title: '登录成功', icon: 'success' });
-          uni.setStorageSync('userInfo', { username: 'admin', userType: 'merchant' });
-          
-          uni.reLaunch({
-            url: '/ubPackages_merchant/pages/index/index',
-          });
-          
-        } else if (this.username === 'user' && this.password === '123456') {
-          // 普通用户登录
-          uni.showToast({ title: '登录成功', icon: 'success' });
-          uni.setStorageSync('userInfo', { username: 'user', userType: 'user' });
-          uni.$emit('refreshTabBar');
-          
-          // 使用统一的跳转逻辑
-          uni.reLaunch({
-            url: '/pages/index/index'
-          });
-          
-        } else {
-          this.errorMessage = '用户名或密码错误';
-          this.password = '';
-        }
-        this.loading = false;
-      }, 1000);
-    },
-    
+    // --- 微信一键登录逻辑 ---
     async handleWechatLogin() {
       this.wechatLoading = true;
       this.errorMessage = '';
       
       try {
-        // 1. 获取微信登录凭证
+        console.log('=== 开始微信登录流程 ===');
+        
+        // 1. 获取微信登录凭证 (code)
         const loginRes = await this.getWxLoginCode();
-        console.log('微信登录凭证:', loginRes);
+        console.log('1. 微信登录凭证:', loginRes);
         
-        // 2. 获取用户信息
-        const userInfo = await this.getWxUserInfo();
-        console.log('微信用户信息:', userInfo);
+        // 2. 先用code进行基础登录
+        console.log('2. 开始基础登录...');
+        const backendResult = await this.callBackendWxLogin(loginRes.code, null);
+        console.log('2. 基础登录结果:', backendResult);
         
-        // 3. 发送到后端验证（这里模拟后端验证）
-        const authResult = await this.authenticateWithBackend(loginRes.code, userInfo);
-        
-        // 4. 登录成功，保存用户信息（确保格式符合验证要求）
-        const completeUserInfo = {
-          username: userInfo.userInfo.nickName || `微信用户_${authResult.openid.slice(-6)}`, // 确保username不为空
-          loginType: 'wechat',
-          userType: 'user',
-          openid: authResult.openid,
-          unionid: authResult.unionid,
-          nickName: userInfo.userInfo.nickName || '微信用户',
-          avatarUrl: userInfo.userInfo.avatarUrl || '',
-          gender: userInfo.userInfo.gender || 0,
-          province: userInfo.userInfo.province || '',
-          city: userInfo.userInfo.city || '',
-          country: userInfo.userInfo.country || '',
-          // 添加时间戳，确保数据有效性
-          loginTime: Date.now()
-        };
-        
-        uni.setStorageSync('userInfo', completeUserInfo);
-        console.log('微信登录保存的用户信息:', completeUserInfo);
-        console.log('存储验证:', uni.getStorageSync('userInfo'));
-        
-        uni.showToast({ title: '微信登录成功', icon: 'success' });
-        
-        // 确保状态同步
-        uni.$emit('refreshTabBar');
-        uni.$emit('userLoginSuccess', completeUserInfo);
-        
-        // 延迟跳转，确保状态已更新
-        setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/index/index'
-          });
-        }, 500);
+        if (backendResult && backendResult.accessToken) {
+          // 3. 基础登录成功，询问是否授权获取用户信息
+          console.log('3. 基础登录成功，询问用户授权');
+          
+          const authConfirm = await this.showAuthConfirm();
+          if (authConfirm) {
+            // 用户同意授权，获取详细信息
+            console.log('4. 用户同意授权，获取详细信息');
+            await this.getUserInfoAndUpdate(backendResult);
+          } else {
+            // 用户拒绝授权，使用基础信息登录
+            console.log('4. 用户拒绝授权，使用基础信息');
+            await this.loginWithBasicInfo(backendResult);
+          }
+        } else {
+          throw new Error('登录失败，请重试');
+        }
         
       } catch (error) {
         console.error('微信登录失败:', error);
-        this.errorMessage = error.message || '微信登录失败，请重试';
-        uni.showToast({ title: '登录失败', icon: 'none' });
+        this.errorMessage = '登录失败，请重试';
+        
+        uni.showToast({
+          title: '登录失败',
+          icon: 'error',
+          duration: 2000
+        });
       } finally {
         this.wechatLoading = false;
       }
+    },
+    
+    // 显示授权确认对话框
+    showAuthConfirm() {
+      return new Promise((resolve) => {
+        uni.showModal({
+          title: '授权提醒',
+          content: '为了提供更好的服务，是否允许获取您的微信头像和昵称？',
+          confirmText: '同意授权',
+          cancelText: '暂不授权',
+          success: (res) => {
+            resolve(res.confirm);
+          },
+          fail: () => {
+            resolve(false);
+          }
+        });
+      });
+    },
+    
+    // 获取用户信息并更新
+    async getUserInfoAndUpdate(backendResult) {
+      try {
+        const userProfile = await this.getUserProfile();
+        console.log('获取到用户详细信息:', userProfile);
+        
+        // 构建完整的用户信息
+        const completeUserInfo = {
+          username: userProfile.userInfo.nickName || '微信用户',
+          loginType: 'wechat',
+          userType: 'user',
+          accessToken: backendResult.accessToken,
+          refreshToken: backendResult.refreshToken,
+          loginTime: Date.now(),
+          // 微信用户信息
+          openid: backendResult.openid,
+          unionid: backendResult.unionid,
+          nickname: userProfile.userInfo.nickName,
+          avatar: userProfile.userInfo.avatarUrl,
+          gender: userProfile.userInfo.gender,
+          province: userProfile.userInfo.province,
+          city: userProfile.userInfo.city,
+          country: userProfile.userInfo.country
+        };
+        
+        console.log('完整用户信息:', completeUserInfo);
+        
+        // 保存用户信息
+        this.saveUserInfo(completeUserInfo);
+        
+        // 登录成功
+        this.loginSuccess('授权成功，登录完成');
+        
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        // 即使获取详细信息失败，也使用基础信息登录
+        await this.loginWithBasicInfo(backendResult);
+      }
+    },
+    
+    // 使用基础信息登录
+    async loginWithBasicInfo(backendResult) {
+      const basicUserInfo = {
+        username: '微信用户',
+        loginType: 'wechat',
+        userType: 'user',
+        accessToken: backendResult.accessToken,
+        refreshToken: backendResult.refreshToken,
+        loginTime: Date.now(),
+        // 基础微信信息
+        openid: backendResult.openid,
+        unionid: backendResult.unionid,
+        nickname: '微信用户',
+        avatar: '', // 无头像
+        gender: 0
+      };
+      
+      console.log('基础用户信息:', basicUserInfo);
+      
+      // 保存用户信息
+      this.saveUserInfo(basicUserInfo);
+      
+      // 登录成功
+      this.loginSuccess('登录成功');
+    },
+    
+    // 保存用户信息到本地
+    saveUserInfo(userInfo) {
+      try {
+        uni.setStorageSync('userInfo', userInfo);
+        uni.setStorageSync('accessToken', userInfo.accessToken);
+        if (userInfo.refreshToken) {
+          uni.setStorageSync('refreshToken', userInfo.refreshToken);
+        }
+        console.log('用户信息保存成功');
+      } catch (error) {
+        console.error('保存用户信息失败:', error);
+      }
+    },
+    
+    // 登录成功处理
+    loginSuccess(message) {
+      console.log('登录成功，准备跳转');
+      uni.showToast({
+        title: message,
+        icon: 'success',
+        duration: 1500
+      });
+      
+      // 延迟跳转，让用户看到成功提示
+      setTimeout(() => {
+        uni.reLaunch({
+          url: '/pages/index/index'
+        });
+      }, 1500);
     },
     
     // 获取微信登录凭证
@@ -156,217 +234,210 @@ export default {
       return new Promise((resolve, reject) => {
         uni.login({
           provider: 'weixin',
-          success: (res) => {
-            if (res.code) {
-              resolve(res);
-            } else {
-              reject(new Error('获取微信登录凭证失败'));
-            }
-          },
-          fail: (err) => {
-            console.error('微信登录失败:', err);
-            reject(new Error('微信登录失败'));
-          }
+          success: resolve,
+          fail: reject
         });
       });
     },
     
-    // 获取微信用户信息
-    getWxUserInfo() {
+    // 获取用户信息（新版本API）
+    getUserProfile() {
       return new Promise((resolve, reject) => {
-        // 检查是否已授权
-        uni.getSetting({
-          success: (res) => {
-            if (res.authSetting['scope.userInfo']) {
-              // 已授权，直接获取用户信息
-              this.getUserInfoDirectly(resolve, reject);
-            } else {
-              // 未授权，请求用户授权
-              uni.authorize({
-                scope: 'scope.userInfo',
-                success: () => {
-                  this.getUserInfoDirectly(resolve, reject);
-                },
-                fail: () => {
-                  // 用户拒绝授权，引导用户手动授权
-                  uni.showModal({
-                    title: '获取用户信息',
-                    content: '需要获取您的微信用户信息，请授权后继续',
-                    confirmText: '去授权',
-                    success: (modalRes) => {
-                      if (modalRes.confirm) {
-                        uni.openSetting({
-                          success: (settingRes) => {
-                            if (settingRes.authSetting['scope.userInfo']) {
-                              this.getUserInfoDirectly(resolve, reject);
-                            } else {
-                              reject(new Error('需要用户信息授权才能登录'));
-                            }
-                          }
-                        });
-                      } else {
-                        reject(new Error('需要用户信息授权才能登录'));
-                      }
-                    }
-                  });
-                }
-              });
-            }
-          },
-          fail: (err) => {
-            console.error('获取设置失败:', err);
-            reject(new Error('获取用户设置失败'));
-          }
+        uni.getUserProfile({
+          desc: '用于完善会员资料',
+          success: resolve,
+          fail: reject
         });
       });
     },
     
-    // 直接获取用户信息
-    getUserInfoDirectly(resolve, reject) {
-      uni.getUserInfo({
-        success: (res) => {
-          console.log('获取用户信息成功:', res);
-          resolve(res);
-        },
-        fail: (err) => {
-          console.error('获取用户信息失败:', err);
-          reject(new Error('获取用户信息失败'));
-        }
-      });
-    },
-    
-    // 与后端验证登录信息（模拟）
-    authenticateWithBackend(code, userInfo) {
-      return new Promise((resolve, reject) => {
-        // 这里应该调用你的后端API
-        // 发送code和userInfo到后端，后端通过code获取openid和session_key
+    // 调用后端微信登录API
+    async callBackendWxLogin(code, userProfile) {
+      try {
+        console.log('=== 开始调用后端API（兼容版本） ===');
+        console.log('传入的code:', code);
+        console.log('传入的userProfile:', userProfile);
         
-        // 模拟后端API调用
-        setTimeout(() => {
-          // 模拟成功响应
-          resolve({
-            success: true,
-            openid: 'mock_openid_' + Date.now(),
-            unionid: 'mock_unionid_' + Date.now(),
-            session_key: 'mock_session_key',
-            token: 'mock_jwt_token'
-          });
-          
-          // 如果要模拟失败，可以这样：
-          // reject(new Error('后端验证失败'));
-        }, 1500);
-      });
+        const result = await AuthAPI.loginByWxMiniAppCode(code, userProfile);
+        
+        console.log('=== 兼容版本API返回结果详情 ===');
+        console.log('result类型:', typeof result);
+        console.log('result内容:', result);
+        console.log('result.openid:', result?.openid);
+        console.log('result.accessToken:', result?.accessToken);
+        
+        return result;
+      } catch (error) {
+        console.error('后端API调用失败:', error);
+        throw error;
+      }
     },
-    
-    // 获取性别文本
-    getGenderText(gender) {
-      const genderMap = {
-        0: '未知',
-        1: '男',
-        2: '女'
-      };
-      return genderMap[gender] || '未知';
+
+    // 格式化价格，确保小数点后两位
+    formatPrice(price) {
+      if (price === null || price === undefined) {
+        return '0.00';
+      }
+      const num = parseFloat(price);
+      if (isNaN(num)) {
+        return '0.00';
+      }
+      return num.toFixed(2);
     }
   }
-};
+}
 </script>
 
 <style scoped>
-.container {
+.login-page {
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(180deg, #e8f5e8 0%, #f5f9f5 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 简约背景装饰 */
+.bg-simple {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.decoration {
+  position: absolute;
+  font-size: 30rpx;
+  opacity: 0.2;
+}
+
+.decoration-1 { top: 15%; left: 20%; }
+.decoration-2 { top: 25%; right: 25%; }
+.decoration-3 { top: 70%; left: 15%; }
+.decoration-4 { top: 80%; right: 20%; }
+
+/* 主内容 */
+.content-wrapper {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  min-height: 100vh;
-  background-color: #f5f5f5;
-  padding: 40rpx;
+  justify-content: center;
+  padding: 0 60rpx;
 }
 
-.login-form {
-  background-color: #fff;
-  border-radius: 16rpx;
-  padding: 60rpx 40rpx;
-  width: 100%;
-  max-width: 600rpx;
-  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.1);
-}
-
-.title {
-  text-align: center;
+/* Logo */
+.logo-container {
   margin-bottom: 60rpx;
 }
 
-.title-text {
-  font-size: 48rpx;
-  font-weight: bold;
-  color: #333;
+.logo-card {
+  width: 140rpx;
+  height: 140rpx;
+  background: #ffffff;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.08);
 }
 
-.form-item {
-  margin-bottom: 40rpx;
+.logo-icon {
+  font-size: 70rpx;
 }
 
-.label {
+/* 标题 */
+.title-container {
+  text-align: center;
+  margin-bottom: 100rpx;
+}
+
+.app-name {
   display: block;
-  font-size: 28rpx;
-  color: #666;
+  font-size: 56rpx;
+  font-weight: bold;
+  color: #333333;
   margin-bottom: 16rpx;
 }
 
-.input {
+.app-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+/* 按钮 */
+.button-container {
   width: 100%;
-  height: 88rpx;
-  border: 2rpx solid #e0e0e0;
-  border-radius: 8rpx;
-  padding: 0 24rpx;
+  margin-bottom: 40rpx;
+}
+
+.wechat-button {
+  width: 100%;
+  height: 96rpx;
+  background: #07c160;
+  border: none;
+  border-radius: 48rpx;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(7, 193, 96, 0.2);
+}
+
+.wechat-button:disabled {
+  background: #b0b0b0;
+  box-shadow: none;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wechat-icon {
+  font-size: 40rpx;
+  margin-right: 16rpx;
+}
+
+.button-text {
   font-size: 32rpx;
-  background-color: #fafafa;
+  color: #ffffff;
+  font-weight: 500;
 }
 
-.input:focus {
-  border-color: #007aff;
-  background-color: #fff;
+/* 错误信息 */
+.error-container {
+  margin-bottom: 30rpx;
 }
 
-.error-msg {
-  margin-bottom: 20rpx;
-}
-
-.error-text {
-  color: #ff4757;
+.error-message {
   font-size: 26rpx;
+  color: #ff4757;
+  text-align: center;
 }
 
-.login-btn {
-  width: 100%;
-  height: 88rpx;
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 8rpx;
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-top: 40rpx;
+/* 协议 */
+.agreement-container {
+  position: absolute;
+  bottom: 80rpx;
+  left: 0;
+  right: 0;
+  text-align: center;
 }
 
-.login-btn:disabled {
-  background-color: #ccc;
+.agreement-text {
+  font-size: 22rpx;
+  color: #999999;
 }
 
-/* 微信登录按钮 */
-.wechat-login-btn {
-  width: 100%;
-  height: 88rpx;
-  background-color: #07c160;
-  color: white;
-  border: none;
-  border-radius: 8rpx;
-  font-size: 32rpx;
-  font-weight: bold;
-  margin-top: 20rpx;
-}
-
-.wechat-login-btn:disabled {
-  background-color: #a8d8b8;
+.agreement-link {
+  font-size: 22rpx;
+  color: #07c160;
 }
 </style>

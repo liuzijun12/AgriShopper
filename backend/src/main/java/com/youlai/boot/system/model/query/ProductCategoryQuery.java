@@ -16,4 +16,12 @@ import lombok.Setter;
 @Setter
 public class ProductCategoryQuery extends BasePageQuery {
 
+    @Schema(description = "分类名称")
+    private String name;
+
+    @Schema(description = "父级分类ID")
+    private Long parentId;
+
+    @Schema(description = "是否启用")
+    private Integer isEnabled;
 }

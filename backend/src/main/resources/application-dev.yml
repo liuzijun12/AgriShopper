@@ -14,7 +14,7 @@ spring:
       host: localhost
       port: 6379
       # 如果Redis 服务未设置密码，需要将password删掉或注释，而不是设置为空字符串
-      # password: 123456  # 本地Redis无密码，注释掉
+      password: 123456  # Docker Redis密码
       timeout: 10s
       lettuce:
         pool:
@@ -70,6 +70,12 @@ mybatis-plus:
     # 这个配置会将执行的sql打印出来，在开发或测试的时候可以用
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
+# 微信小程序配置
+wx:
+  miniapp:
+    app-id: wx1435534f5fbdbe4f  # 你的小程序AppID
+    app-secret: 61cf2865175800d005dd702afed0fe2e  # 你的小程序AppSecret
+
 # 安全配置
 security:
   session:
@@ -77,7 +83,7 @@ security:
     access-token-time-to-live: 7200   # 访问令牌 有效期(单位：秒)，默认 2 小时，-1 表示永不过期
     refresh-token-time-to-live: 604800 # 刷新令牌有效期(单位：秒)，默认 7 天，-1 表示永不过期
     jwt:
-      secret-key: SecretKey012345678901234567890123456789012345678901234567890123456789 # JWT密钥(HS256算法至少32字符)
+      secret-key: AgriShopper2024!@#$%^&*()_+QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm1234567890  # 安全的JWT密钥
     redis-token:
       allow-multi-login: true # 是否允许多设备登录
   # 安全白名单路径，仅跳过 AuthorizationFilter 过滤器，还是会走 Spring Security 的其他过滤器(CSRF、CORS等)
@@ -86,6 +92,9 @@ security:
     - /api/v1/auth/captcha        # 验证码获取接口
     - /api/v1/auth/refresh-token  # 刷新令牌接口
     - /api/v1/auth/logout         # 开放退出登录
+    - /api/v1/auth/wx/**          # 微信小程序登录接口
+    - /api/v1/product/public/**   # 公开商品接口
+    - /api/v1/productCategory/public/** # 公开分类接口
     - /ws/**                      # WebSocket接口
   # 非安全端点路径，完全绕过 Spring Security 的安全控制
   unsecured-urls:
@@ -217,8 +226,4 @@ captcha:
   # 验证码有效期(秒)
   expire-seconds: 120
 
-# 微信小程配置
-wx:
-  miniapp:
-    app-id: xxxxxx
-    app-secret: xxxxxx
+

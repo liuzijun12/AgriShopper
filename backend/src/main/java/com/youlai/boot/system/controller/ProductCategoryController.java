@@ -87,4 +87,31 @@ public class ProductCategoryController  {
         List<ProductCategoryVO> result = productCategoryService.getCategoryTree();
         return Result.success(result);
     }
+
+    @Operation(summary = "公开分类列表（无需认证）")
+    @GetMapping("/public/list")
+    public Result<List<ProductCategoryVO>> getPublicCategoryList() {
+        ProductCategoryQuery query = new ProductCategoryQuery();
+        query.setPageNum(1);
+        query.setPageSize(100); // 获取所有分类
+        query.setIsEnabled(1); // 只获取启用的分类
+        
+        IPage<ProductCategoryVO> result = productCategoryService.getProductCategoryPage(query);
+        return Result.success(result.getRecords());
+    }
+
+    @Operation(summary = "公开分类详情（无需认证）")
+    @GetMapping("/public/{id}")
+    public Result<ProductCategoryVO> getPublicCategoryById(
+            @Parameter(description = "分类ID") @PathVariable Long id
+    ) {
+        ProductCategoryForm formData = productCategoryService.getProductCategoryFormData(id);
+        // 转换为VO格式
+        ProductCategoryVO vo = new ProductCategoryVO();
+        vo.setId(formData.getId().longValue());
+        vo.setName(formData.getName());
+        vo.setIcon(formData.getIcon());
+        vo.setParentId(formData.getParentId().longValue());
+        return Result.success(vo);
+    }
 }

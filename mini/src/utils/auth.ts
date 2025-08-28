@@ -20,4 +20,6 @@ export function getUserInfo(): any {
  */
 export function logout(): void {
   uni.removeStorageSync('userInfo');
+  uni.removeStorageSync('accessToken');
+  uni.removeStorageSync('refreshToken');
 }

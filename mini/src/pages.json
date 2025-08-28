@@ -2,25 +2,34 @@
   "pages": [
     {
       "path": "pages/index/index",
-      "type": "home"
+      "style": {
+        "navigationBarTitleText": "田里有品",
+        "navigationBarLeftButtonTextStyle": "#333",
+        "navigationBarLeftButtonTextSize": "14px"
+        
+      }
     },
     {
       "path": "pages/login/login",
-      "type": "page"
+      "style": {
+        "navigationBarTitleText": "登录"
+      }
     },
     {
       "path": "pages/mine/profile",
-      "type": "page"
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
     }
   ],
   "globalStyle": {
-    "navigationBarBackgroundColor": "@navBgColor",
-    "navigationBarTextStyle": "@navTxtStyle",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
     "navigationBarTitleText": "Wot-Demo",
-    "backgroundColor": "@bgColor",
-    "backgroundTextStyle": "@bgTxtStyle",
-    "backgroundColorTop": "@bgColorTop",
-    "backgroundColorBottom": "@bgColorBottom",
+    "backgroundColor": "#f8f8f8",
+    "backgroundTextStyle": "light",
+    "backgroundColorTop": "#f8f8f8",
+    "backgroundColorBottom": "#f8f8f8",
     "enablePullDownRefresh": false,
     "onReachBottomDistance": 50,
     "animationType": "pop-in",
@@ -28,19 +37,18 @@
   },
   "tabBar": {
     "custom": true,
-    "customize": true,
-    "overlay": true,
-    "height": "0",
-    "color": "@tabColor",
-    "selectedColor": "@tabSelectedColor",
-    "backgroundColor": "@tabBgColor",
-    "borderStyle": "@tabBorderStyle",
+    "color": "#7A7E83",
+    "selectedColor": "#3cc51f",
+    "borderStyle": "black",
+    "backgroundColor": "#ffffff",
     "list": [
       {
-        "pagePath": "pages/index/index"
+        "pagePath": "pages/index/index",
+        "text": "首页"
       },
       {
-        "pagePath": "pages/mine/profile"
+        "pagePath": "pages/mine/profile",
+        "text": "我的"
       }
     ]
   },
@@ -104,4 +112,4 @@
       ]
     }
   ]
-}
+} 

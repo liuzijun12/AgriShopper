@@ -4,7 +4,7 @@
       <view class="header">
         <text class="title">我的</text>
       </view>
-      
+
       <!-- 用户信息区域 -->
       <view class="user-info-section">
         <view class="avatar-section">
@@ -12,7 +12,7 @@
           <text class="username">{{ getUserDisplayName() }}</text>
           <text class="user-type">{{ getUserTypeText() }}</text>
         </view>
-        
+
         <view class="user-details">
           <view class="detail-item" v-if="userInfo.loginType === 'wechat'">
             <text class="label">登录方式：</text>
@@ -24,7 +24,7 @@
           </view>
         </view>
       </view>
-      
+
       <!-- 功能菜单 -->
       <view class="menu-section">
         <view class="menu-item" @click="handleOrderClick">
@@ -32,26 +32,26 @@
           <text class="menu-text">我的订单</text>
           <text class="arrow">></text>
         </view>
-        
+
         <view class="menu-item" @click="handleAddressClick">
           <image class="menu-icon" src="/static/images/logistics.png"></image>
           <text class="menu-text">收货地址</text>
           <text class="arrow">></text>
         </view>
-        
+
         <view class="menu-item" @click="handleSettingsClick">
           <image class="menu-icon" src="/static/images/my.png"></image>
           <text class="menu-text">设置</text>
           <text class="arrow">></text>
         </view>
       </view>
-      
+
       <!-- 退出登录按钮 -->
       <view class="logout-section">
         <button class="logout-btn" @click="handleLogout">退出登录</button>
       </view>
     </view>
-    
+
     <!-- 底部导航栏 -->
     <TabBar :currentPath="currentPath" />
   </view>
@@ -74,18 +74,18 @@ export default {
   onLoad() {
     this.loadUserInfo()
   },
-  
+
   onShow() {
     this.loadUserInfo()
   },
-  
+
   methods: {
     // 加载用户信息
     loadUserInfo() {
       this.userInfo = getUserInfo() || {}
       console.log('用户端我的页面 - 用户信息:', this.userInfo)
     },
-    
+
     // 获取用户显示名称
     getUserDisplayName() {
       if (this.userInfo.username) {
@@ -95,7 +95,7 @@ export default {
       }
       return '用户'
     },
-    
+
     // 获取用户类型文本
     getUserTypeText() {
       switch (this.userInfo.userType) {
@@ -107,7 +107,7 @@ export default {
           return '用户'
       }
     },
-    
+
     // 我的订单
     handleOrderClick() {
       uni.showToast({
@@ -115,7 +115,7 @@ export default {
         icon: 'none'
       })
     },
-    
+
     // 收货地址
     handleAddressClick() {
       uni.showToast({
@@ -123,7 +123,7 @@ export default {
         icon: 'none'
       })
     },
-    
+
     // 设置
     handleSettingsClick() {
       uni.showToast({
@@ -131,7 +131,7 @@ export default {
         icon: 'none'
       })
     },
-    
+
     // 退出登录
     handleLogout() {
       uni.showModal({
@@ -141,12 +141,12 @@ export default {
           if (res.confirm) {
             // 清除登录状态
             logout()
-            
+
             uni.showToast({
               title: '已退出登录',
               icon: 'success'
             })
-            
+
             // 立即跳转到主包首页，清空页面栈
             uni.reLaunch({
               url: '/pages/index/index'

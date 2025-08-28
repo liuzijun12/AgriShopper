@@ -9,7 +9,12 @@ import com.youlai.boot.auth.enums.CaptchaTypeEnum;
 import com.youlai.boot.auth.model.CaptchaInfo;
 import com.youlai.boot.auth.model.dto.WxMiniAppCodeLoginDTO;
 import com.youlai.boot.auth.model.dto.WxMiniAppPhoneLoginDTO;
+import com.youlai.boot.auth.model.dto.WxLoginResponseDTO;
+import com.youlai.boot.auth.model.dto.WxUserInfoUpdateDTO;
 import com.youlai.boot.auth.service.AuthService;
+import com.youlai.boot.core.security.model.WxUserDetails;
+import com.youlai.boot.system.model.entity.WxUser;
+import com.youlai.boot.system.service.WxUserService;
 import com.youlai.boot.common.constant.RedisConstants;
 import com.youlai.boot.common.constant.SecurityConstants;
 import com.youlai.boot.config.property.CaptchaProperties;
@@ -45,6 +50,8 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 @Slf4j
 public class AuthServiceImpl implements AuthService {
+
+    private final WxUserService wxUserService;
 
     private final AuthenticationManager authenticationManager;
     private final TokenManager tokenManager;
@@ -228,9 +235,12 @@ public class AuthServiceImpl implements AuthService {
      * @return 访问令牌
      */
     @Override
-    public AuthenticationToken loginByWxMiniAppCode(WxMiniAppCodeLoginDTO loginDTO) {
-        // 1. 创建微信小程序认证令牌（未认证）
-        WxMiniAppCodeAuthenticationToken authenticationToken = new WxMiniAppCodeAuthenticationToken(loginDTO.getCode());
+    public WxLoginResponseDTO loginByWxMiniAppCode(WxMiniAppCodeLoginDTO loginDTO) {
+        // 1. 创建微信小程序认证令牌（未认证），传递用户信息
+        WxMiniAppCodeAuthenticationToken authenticationToken = new WxMiniAppCodeAuthenticationToken(
+            loginDTO.getCode(), 
+            loginDTO.getUserInfo()
+        );
 
         // 2. 执行认证（认证中）
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
@@ -239,7 +249,25 @@ public class AuthServiceImpl implements AuthService {
         AuthenticationToken token = tokenManager.generateToken(authentication);
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        return token;
+        // 4. 获取用户详情信息
+        WxUserDetails userDetails = (WxUserDetails) authentication.getPrincipal();
+        WxUser wxUser = userDetails.getWxUser();
+
+        // 5. 构建响应对象
+        return WxLoginResponseDTO.builder()
+                .tokenType(token.getTokenType())
+                .accessToken(token.getAccessToken())
+                .refreshToken(token.getRefreshToken())
+                .expiresIn(token.getExpiresIn())
+                .openid(wxUser.getOpenid())
+                .unionid(wxUser.getUnionid())
+                .nickname(wxUser.getNickname())
+                .avatar(wxUser.getAvatar())
+                .gender(wxUser.getGender())
+                .province(wxUser.getProvince())
+                .city(wxUser.getCity())
+                .country("中国") // 默认设置为中国
+                .build();
     }
 
     /**
@@ -265,6 +293,17 @@ public class AuthServiceImpl implements AuthService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         return token;
+    }
+
+    /**
+     * 更新微信用户信息
+     *
+     * @param updateDTO 更新参数
+     */
+    @Override
+    public void updateWxUserInfo(WxUserInfoUpdateDTO updateDTO) {
+        // 调用微信用户服务更新用户信息
+        wxUserService.updateWxUserInfo(updateDTO.getOpenid(), updateDTO.getUserInfo());
     }
 
 }

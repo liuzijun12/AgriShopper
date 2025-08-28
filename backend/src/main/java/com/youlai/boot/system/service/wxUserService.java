@@ -1,58 +1,37 @@
 package com.youlai.boot.system.service;
 
-import com.youlai.boot.system.model.entity.wxUser;
-import com.youlai.boot.system.model.form.wxUserForm;
-import com.youlai.boot.system.model.query.wxUserQuery;
-import com.youlai.boot.system.model.vo.wxUserVO;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.youlai.boot.system.model.entity.WxUser;
 
 /**
- * 用户服务类
- *
- * @author liuzijun
- * @since 2025-08-13 15:03
+ * 微信用户服务接口
  */
-public interface wxUserService extends IService<wxUser> {
+public interface WxUserService extends IService<WxUser> {
 
     /**
-     *用户分页列表
+     * 根据OpenID获取微信用户
      *
-     * @return {@link IPage<wxUserVO>} 用户分页列表
+     * @param openId 微信OpenID
+     * @return 微信用户信息
      */
-    IPage<wxUserVO> getwxUserPage(wxUserQuery queryParams);
+    WxUser getByOpenId(String openId);
 
     /**
-     * 获取用户表单数据
+     * 注册或更新微信用户
      *
-     * @param id 用户ID
-     * @return 用户表单数据
+     * @param openId 微信OpenID
+     * @param unionId 微信UnionID
+     * @param userInfo 用户信息
+     * @return 是否成功
      */
-     wxUserForm getwxUserFormData(Long id);
+    boolean registerOrUpdateWxUser(String openId, String unionId, Object userInfo);
 
     /**
-     * 新增用户
+     * 更新微信用户信息
      *
-     * @param formData 用户表单对象
-     * @return 是否新增成功
+     * @param openId 微信OpenID
+     * @param userInfo 用户信息
+     * @return 是否成功
      */
-    boolean savewxUser(wxUserForm formData);
-
-    /**
-     * 修改用户
-     *
-     * @param id   用户ID
-     * @param formData 用户表单对象
-     * @return 是否修改成功
-     */
-    boolean updatewxUser(Long id, wxUserForm formData);
-
-    /**
-     * 删除用户
-     *
-     * @param ids 用户ID，多个以英文逗号(,)分割
-     * @return 是否删除成功
-     */
-    boolean deletewxUsers(String ids);
-
-}
+    boolean updateWxUserInfo(String openId, Object userInfo);
+} 

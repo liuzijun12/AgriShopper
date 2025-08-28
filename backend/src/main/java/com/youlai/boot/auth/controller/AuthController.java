@@ -6,6 +6,8 @@ import com.youlai.boot.common.enums.LogModuleEnum;
 import com.youlai.boot.common.result.Result;
 import com.youlai.boot.auth.service.AuthService;
 import com.youlai.boot.auth.model.dto.WxMiniAppCodeLoginDTO;
+import com.youlai.boot.auth.model.dto.WxLoginResponseDTO;
+import com.youlai.boot.auth.model.dto.WxUserInfoUpdateDTO;
 import com.youlai.boot.core.security.model.AuthenticationToken;
 import com.youlai.boot.common.annotation.Log;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,9 +84,9 @@ public class AuthController {
 
     @Operation(summary = "微信小程序登录(Code)")
     @PostMapping("/wx/miniapp/code-login")
-    public Result<AuthenticationToken> loginByWxMiniAppCode(@RequestBody @Valid WxMiniAppCodeLoginDTO loginDTO) {
-        AuthenticationToken token = authService.loginByWxMiniAppCode(loginDTO);
-        return Result.success(token);
+    public Result<WxLoginResponseDTO> loginByWxMiniAppCode(@RequestBody @Valid WxMiniAppCodeLoginDTO loginDTO) {
+        WxLoginResponseDTO response = authService.loginByWxMiniAppCode(loginDTO);
+        return Result.success(response);
     }
 
     @Operation(summary = "微信小程序登录(手机号)")
@@ -92,6 +94,13 @@ public class AuthController {
     public Result<AuthenticationToken> loginByWxMiniAppPhone(@RequestBody @Valid WxMiniAppPhoneLoginDTO loginDTO) {
         AuthenticationToken token = authService.loginByWxMiniAppPhone(loginDTO);
         return Result.success(token);
+    }
+
+    @Operation(summary = "更新微信用户信息")
+    @PostMapping("/wx/update-user-info")
+    public Result<Void> updateWxUserInfo(@RequestBody @Valid WxUserInfoUpdateDTO updateDTO) {
+        authService.updateWxUserInfo(updateDTO);
+        return Result.success();
     }
 
 

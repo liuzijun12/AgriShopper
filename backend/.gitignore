@@ -16,3 +16,10 @@ logs
 docker/*/data/
 docker/minio/config
 docker/xxljob/logs
+
+# 环境变量文件
+.env
+.env.local
+.env.dev
+.env.prod
+application-local.yml
