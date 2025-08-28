@@ -11,9 +11,103 @@ import parserTypeScript from "@typescript-eslint/parser"; // TypeScript 解析�
 import configPrettier from "eslint-config-prettier"; // 禁用与 Prettier 冲突的规则
 import pluginPrettier from "eslint-plugin-prettier"; // 运行 Prettier 规则
 
-// 解析自动导入配置
-import fs from "fs";
-const autoImportConfig = JSON.parse(fs.readFileSync(".eslintrc-auto-import.json", "utf-8"));
+// 自动导入的全局变量配置
+const autoImportGlobals = {
+  Component: true,
+  ComponentPublicInstance: true,
+  ComputedRef: true,
+  EffectScope: true,
+  ExtractDefaultPropTypes: true,
+  ExtractPropTypes: true,
+  ExtractPublicPropTypes: true,
+  InjectionKey: true,
+  PropType: true,
+  Ref: true,
+  VNode: true,
+  WritableComputedRef: true,
+  computed: true,
+  createApp: true,
+  customRef: true,
+  defineAsyncComponent: true,
+  defineComponent: true,
+  effectScope: true,
+  getCurrentInstance: true,
+  getCurrentScope: true,
+  h: true,
+  inject: true,
+  isProxy: true,
+  isReactive: true,
+  isReadonly: true,
+  isRef: true,
+  markRaw: true,
+  nextTick: true,
+  onActivated: true,
+  onAddToFavorites: true,
+  onBackPress: true,
+  onBeforeMount: true,
+  onBeforeUnmount: true,
+  onBeforeUpdate: true,
+  onDeactivated: true,
+  onError: true,
+  onErrorCaptured: true,
+  onHide: true,
+  onLaunch: true,
+  onLoad: true,
+  onMounted: true,
+  onNavigationBarButtonTap: true,
+  onNavigationBarSearchInputChanged: true,
+  onNavigationBarSearchInputClicked: true,
+  onNavigationBarSearchInputConfirmed: true,
+  onNavigationBarSearchInputFocusChanged: true,
+  onPageNotFound: true,
+  onPageScroll: true,
+  onPullDownRefresh: true,
+  onReachBottom: true,
+  onReady: true,
+  onRenderTracked: true,
+  onRenderTriggered: true,
+  onResize: true,
+  onScopeDispose: true,
+  onServerPrefetch: true,
+  onShareAppMessage: true,
+  onShareTimeline: true,
+  onShow: true,
+  onTabItemTap: true,
+  onThemeChange: true,
+  onUnhandledRejection: true,
+  onUnload: true,
+  onUnmounted: true,
+  onUpdated: true,
+  onWatcherCleanup: true,
+  provide: true,
+  reactive: true,
+  readonly: true,
+  ref: true,
+  resolveComponent: true,
+  shallowReactive: true,
+  shallowReadonly: true,
+  shallowRef: true,
+  toRaw: true,
+  toRef: true,
+  toRefs: true,
+  toValue: true,
+  triggerRef: true,
+  unref: true,
+  useAttrs: true,
+  useCssModule: true,
+  useCssVars: true,
+  useId: true,
+  useModel: true,
+  useSlots: true,
+  useTemplateRef: true,
+  watch: true,
+  watchEffect: true,
+  watchPostEffect: true,
+  watchSyncEffect: true,
+  DirectiveBinding: true,
+  MaybeRef: true,
+  MaybeRefOrGetter: true
+};
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
@@ -39,7 +133,7 @@ export default [
       globals: {
         ...globals.browser,
         ...globals.node,
-        ...autoImportConfig.globals,
+        ...autoImportGlobals,
         ...{
           uni: "readonly", // uni-app 全局对象
           UniApp: "readonly", // uni-app 全局对象
@@ -55,7 +149,29 @@ export default [
     rules: {
       ...configPrettier.rules, // 关闭与 Prettier 冲突的规则
       ...pluginPrettier.configs.recommended.rules, // 启用 Prettier 规则
-      "prettier/prettier": "error", // 强制 Prettier 格式化
+      "prettier/prettier": ["error", {
+        // Prettier 配置 (与 .editorconfig 保持一致)
+        arrowParens: "always",
+        bracketSameLine: false,
+        bracketSpacing: true,
+        embeddedLanguageFormatting: "auto",
+        htmlWhitespaceSensitivity: "ignore",
+        insertPragma: false,
+        jsxSingleQuote: false,
+        printWidth: 100,
+        proseWrap: "preserve",
+        quoteProps: "as-needed",
+        requirePragma: false,
+        semi: true,
+        singleQuote: false,
+        tabWidth: 2,
+        trailingComma: "es5",
+        useTabs: false,
+        vueIndentScriptAndStyle: false,
+        endOfLine: "lf", // 与 .editorconfig 保持一致
+        insertFinalNewline: true, // 与 .editorconfig 保持一致
+        charset: "utf-8" // 与 .editorconfig 保持一致
+      }],
       "no-unused-vars": [
         "error",
         {

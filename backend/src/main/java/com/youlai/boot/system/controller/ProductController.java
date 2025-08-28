@@ -131,4 +131,35 @@ public class ProductController  {
         List<ProductCategoryVO> categories = productService.getCategoriesByProductId(id);
         return Result.success(categories);
     }
+
+    @Operation(summary = "公开商品分页列表（无需认证）")
+    @GetMapping("/public/page")
+    public PageResult<ProductVO> getPublicProductPage(ProductQuery queryParams) {
+        IPage<ProductVO> result = productService.getProductPage(queryParams);
+        return PageResult.success(result);
+    }
+
+    @Operation(summary = "公开热门商品列表（无需认证）")
+    @GetMapping("/public/hot")
+    public Result<List<ProductVO>> getPublicHotProducts(
+            @Parameter(description = "数量限制") @RequestParam(defaultValue = "10") Integer limit
+    ) {
+        ProductQuery query = new ProductQuery();
+        query.setPageNum(1);
+        query.setPageSize(limit);
+        query.setIsHot(1);
+        query.setIsOnline(1);
+        
+        IPage<ProductVO> result = productService.getProductPage(query);
+        return Result.success(result.getRecords());
+    }
+
+    @Operation(summary = "公开商品详情（无需认证）")
+    @GetMapping("/public/{id}")
+    public Result<ProductVO> getPublicProductById(
+            @Parameter(description = "商品ID") @PathVariable Long id
+    ) {
+        ProductVO product = productService.getProductById(id);
+        return Result.success(product);
+    }
 }

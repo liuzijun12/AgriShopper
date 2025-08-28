@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
+import java.util.Map;
 
 /**
  * 微信小程序Code登录请求参数
@@ -18,5 +19,8 @@ public class WxMiniAppCodeLoginDTO {
     @Schema(description = "微信小程序登录时获取的code", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "code不能为空")
     private String code;
+
+    @Schema(description = "微信用户信息（可选）")
+    private Map<String, Object> userInfo;
 
 } 

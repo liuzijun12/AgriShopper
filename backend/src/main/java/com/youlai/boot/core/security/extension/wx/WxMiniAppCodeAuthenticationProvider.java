@@ -4,9 +4,9 @@ import cn.binarywang.wx.miniapp.api.WxMaService;
 import cn.binarywang.wx.miniapp.bean.WxMaJscode2SessionResult;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
-import com.youlai.boot.core.security.model.SysUserDetails;
-import com.youlai.boot.core.security.model.UserAuthCredentials;
-import com.youlai.boot.system.service.UserService;
+import com.youlai.boot.system.model.entity.WxUser;
+import com.youlai.boot.system.service.WxUserService;
+import com.youlai.boot.core.security.model.WxUserDetails;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -26,12 +26,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 @Slf4j
 public class WxMiniAppCodeAuthenticationProvider implements AuthenticationProvider {
 
-    private final UserService userService;
+    private final WxUserService wxUserService;
     private final WxMaService wxMaService;
 
 
-    public WxMiniAppCodeAuthenticationProvider(UserService userService, WxMaService wxMaService) {
-        this.userService = userService;
+    public WxMiniAppCodeAuthenticationProvider(WxUserService wxUserService, WxMaService wxMaService) {
+        this.wxUserService = wxUserService;
         this.wxMaService = wxMaService;
     }
 
@@ -46,7 +46,9 @@ public class WxMiniAppCodeAuthenticationProvider implements AuthenticationProvid
      */
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        String code = (String) authentication.getPrincipal();
+        WxMiniAppCodeAuthenticationToken authenticationToken = (WxMiniAppCodeAuthenticationToken) authentication;
+        String code = (String) authenticationToken.getPrincipal();
+        Object userInfo = authenticationToken.getUserInfo(); // 获取用户信息
 
         // 通过微信服务端验证 code 并获取用户会话信息
         WxMaJscode2SessionResult sessionInfo;
@@ -57,31 +59,40 @@ public class WxMiniAppCodeAuthenticationProvider implements AuthenticationProvid
         }
 
         String openId = sessionInfo.getOpenid();
+        String unionId = sessionInfo.getUnionid();
         if (StrUtil.isBlank(openId)) {
             throw new UsernameNotFoundException("未能获取到微信 OpenID，请稍后重试");
         }
 
         // 根据微信 OpenID 查询用户信息
-        UserAuthCredentials userAuthCredentials = userService.getAuthCredentialsByOpenId(openId);
+        WxUser wxUser = wxUserService.getByOpenId(openId);
 
-        if (userAuthCredentials == null) {
-            // 用户不存在则注册
-            userService.registerOrBindWechatUser(openId);
-
-            // 再次查询用户信息，确保用户注册成功
-            userAuthCredentials = userService.getAuthCredentialsByOpenId(openId);
-            if (userAuthCredentials == null) {
+        if (wxUser == null) {
+            // 用户不存在则注册，传递用户信息
+            boolean registered = wxUserService.registerOrUpdateWxUser(openId, unionId, userInfo);
+            if (!registered) {
                 throw new UsernameNotFoundException("用户注册失败，请稍后重试");
             }
+            
+            // 再次查询用户信息，确保用户注册成功
+            wxUser = wxUserService.getByOpenId(openId);
+            if (wxUser == null) {
+                throw new UsernameNotFoundException("用户注册失败，请稍后重试");
+            }
+        } else if (userInfo != null) {
+            // 用户存在且有用户信息，更新用户信息
+            wxUserService.updateWxUserInfo(openId, userInfo);
+            // 重新查询用户信息
+            wxUser = wxUserService.getByOpenId(openId);
         }
 
         // 检查用户状态是否有效
-        if (ObjectUtil.notEqual(userAuthCredentials.getStatus(), 1)) {
-            throw new DisabledException("用户已被禁用");
+        if (ObjectUtil.notEqual(wxUser.getIsDeleted(), 0)) {
+            throw new DisabledException("用户已被删除");
         }
 
         // 构建认证后的用户详情信息
-        SysUserDetails userDetails = new SysUserDetails(userAuthCredentials);
+        WxUserDetails userDetails = new WxUserDetails(wxUser);
 
         // 创建已认证的Token
         return WxMiniAppCodeAuthenticationToken.authenticated(

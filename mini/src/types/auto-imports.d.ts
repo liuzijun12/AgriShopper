@@ -13,6 +13,7 @@ declare global {
   const applyThemeOnPageShow: typeof import('../utils/theme')['applyThemeOnPageShow']
   const applyThemeToMiniProgram: typeof import('../utils/theme')['applyThemeToMiniProgram']
   const auth: typeof import('../api/auth')['default']
+  const category: typeof import('../api/category')['default']
   const checkLogin: typeof import('../utils/auth')['checkLogin']
   const clearAll: typeof import('../utils/storage')['clearAll']
   const clearTokens: typeof import('../utils/auth')['clearTokens']
@@ -93,6 +94,7 @@ declare global {
   const onUnmounted: typeof import('vue')['onUnmounted']
   const onUpdated: typeof import('vue')['onUpdated']
   const onWatcherCleanup: typeof import('vue')['onWatcherCleanup']
+  const product: typeof import('../api/product')['default']
   const provide: typeof import('vue')['provide']
   const publicRequest: typeof import('../utils/request')['publicRequest']
   const reactive: typeof import('vue')['reactive']
@@ -201,6 +203,7 @@ declare module 'vue' {
     readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
     readonly acceptHMRUpdate: UnwrapRef<typeof import('pinia')['acceptHMRUpdate']>
     readonly auth: UnwrapRef<typeof import('../api/auth')['default']>
+    readonly category: UnwrapRef<typeof import('../api/category')['default']>
     readonly computed: UnwrapRef<typeof import('vue')['computed']>
     readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
     readonly createPinia: UnwrapRef<typeof import('pinia')['createPinia']>
@@ -268,6 +271,7 @@ declare module 'vue' {
     readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
     readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
     readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly product: UnwrapRef<typeof import('../api/product')['default']>
     readonly provide: UnwrapRef<typeof import('vue')['provide']>
     readonly publicRequest: UnwrapRef<typeof import('../utils/request')['publicRequest']>
     readonly reactive: UnwrapRef<typeof import('vue')['reactive']>

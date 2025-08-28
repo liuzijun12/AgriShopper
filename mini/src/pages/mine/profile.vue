@@ -1,47 +1,117 @@
 <template>
   <view class="page">
-    <view class="content">
-      <view class="header">
-        <text class="title">我的</text>
+    <!-- 已登录状态 -->
+    <view v-if="isLoggedIn" class="profile-page">
+      <!-- 页面标题 -->
+      <view class="page-header">
+        <text class="page-title">我的</text>
       </view>
       
-      <!-- 未登录状态 -->
-      <view v-if="!isLoggedIn" class="profile-content">
-        <view class="avatar-section">
-          <image class="avatar" src="/static/images/default-avatar.png" mode="aspectFill"></image>
-          <text class="welcome-text">欢迎使用</text>
+      <!-- 用户信息卡片 -->
+      <view class="user-card">
+        <view class="user-info">
+          <!-- 头像 -->
+          <view class="avatar-container">
+            <image class="avatar" :src="userInfo.avatar || '/static/images/default-avatar.png'" mode="aspectFill"></image>
+            <view class="online-dot"></view>
+          </view>
+          
+          <!-- 用户基本信息 -->
+          <view class="user-details">
+            <text class="username">{{ getUserDisplayName() }}</text>
+            <text class="phone-number">138****8888</text>
+            <view class="user-badge">
+              <text class="badge-text">编辑资料</text>
+            </view>
+          </view>
+          
+          <!-- 右侧功能 -->
+          <view class="user-actions">
+            <view class="action-item">
+              <text class="action-label">地址</text>
+              <text class="action-label">管理</text>
+              <view class="red-dot"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <!-- 功能按钮区域 -->
+      <view class="function-buttons">
+        <view class="function-item" @click="handleBalance">
+          <text class="amount">¥ 0.00</text>
+          <text class="function-label">余额</text>
+        </view>
+        <view class="function-item" @click="handleFavorites">
+          <text class="icon">♡</text>
+          <text class="function-label">收藏</text>
+        </view>
+        <view class="function-item" @click="handleHistory">
+          <text class="icon">↻</text>
+          <text class="function-label">浏览记录</text>
+        </view>
+      </view>
+      
+      <!-- 服务项目 -->
+      <view class="service-section">
+        <!-- 优惠券 -->
+        <view class="service-item" @click="handleCoupons">
+          <view class="service-icon coupon-icon">
+            <text class="icon-text">券</text>
+          </view>
+          <text class="service-label">优惠券</text>
+          <text class="arrow">></text>
+        </view>
+        
+        <!-- 客服 -->
+        <view class="service-item" @click="handleCustomerService">
+          <view class="service-icon cs-icon">
+            <text class="icon-text">👩</text>
+          </view>
+          <text class="service-label">客服</text>
+          <text class="arrow">></text>
+        </view>
+        
+        <!-- 退出登录 -->
+        <view class="service-item logout-item" @click="handleLogout">
+          <view class="service-icon logout-icon">
+            <text class="icon-text">⚠</text>
+          </view>
+          <text class="service-label">退出登录</text>
+          <text class="arrow">></text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 未登录状态 -->
+    <view v-else class="unlogged-container">
+      <!-- 背景装饰 -->
+      <view class="bg-decoration">
+        <view class="decoration decoration-1">🌿</view>
+        <view class="decoration decoration-2">🍃</view>
+        <view class="decoration decoration-3">🌱</view>
+      </view>
+      
+      <!-- 主内容 -->
+      <view class="main-content">
+        <!-- 头像区域 -->
+        <view class="avatar-container">
+          <view class="avatar-wrapper">
+            <view class="default-avatar">👤</view>
+          </view>
+        </view>
+        
+        <!-- 欢迎文字 -->
+        <view class="welcome-container">
+          <text class="welcome-title">我的</text>
+          <text class="welcome-desc">欢迎使用</text>
         </view>
         
         <!-- 登录按钮 -->
-        <view class="login-section">
-          <button class="login-btn" @click="goToLogin">登录</button>
-        </view>
-      </view>
-      
-      <!-- 已登录状态 -->
-      <view v-else class="profile-content">
-        <view class="user-info-section">
-          <view class="avatar-section">
-            <image class="avatar" :src="userInfo.avatar || '/static/images/default-avatar.png'" mode="aspectFill"></image>
-            <text class="username">{{ getUserDisplayName() }}</text>
-            <text class="user-type">{{ getUserTypeText() }}</text>
-          </view>
-          
-          <view class="user-details">
-            <view class="detail-item" v-if="userInfo.loginType === 'wechat'">
-              <text class="label">登录方式：</text>
-              <text class="value">微信登录</text>
-            </view>
-            <view class="detail-item" v-if="userInfo.userType">
-              <text class="label">用户类型：</text>
-              <text class="value">{{ getUserTypeText() }}</text>
-            </view>
-          </view>
-        </view>
-        
-        <!-- 退出登录按钮 -->
-        <view class="logout-section">
-          <button class="logout-btn" @click="handleLogout">退出登录</button>
+        <view class="action-container">
+          <button class="login-button" @click="goToLogin">
+            <text class="login-text">登录</text>
+          </button>
         </view>
       </view>
     </view>
@@ -113,6 +183,46 @@ export default {
       })
     },
     
+    // 余额管理
+    handleBalance() {
+      uni.showToast({
+        title: '余额功能开发中',
+        icon: 'none'
+      })
+    },
+    
+    // 收藏管理
+    handleFavorites() {
+      uni.showToast({
+        title: '收藏功能开发中',
+        icon: 'none'
+      })
+    },
+    
+    // 浏览记录
+    handleHistory() {
+      uni.showToast({
+        title: '浏览记录功能开发中',
+        icon: 'none'
+      })
+    },
+    
+    // 优惠券
+    handleCoupons() {
+      uni.showToast({
+        title: '优惠券功能开发中',
+        icon: 'none'
+      })
+    },
+    
+    // 客服
+    handleCustomerService() {
+      uni.showToast({
+        title: '客服功能开发中',
+        icon: 'none'
+      })
+    },
+    
     // 退出登录
     handleLogout() {
       uni.showModal({
@@ -151,128 +261,313 @@ export default {
   padding-bottom: calc(100rpx + env(safe-area-inset-bottom));
 }
 
-.content {
-  padding: 40rpx 20rpx;
+/* 未登录状态样式 */
+.unlogged-container {
+  width: 100vw;
+  height: calc(100vh - 100rpx);
+  background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-.header {
+/* 背景装饰 */
+.bg-decoration {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.decoration {
+  position: absolute;
+  font-size: 30rpx;
+  opacity: 0.15;
+}
+
+.decoration-1 { top: 20%; left: 15%; }
+.decoration-2 { top: 30%; right: 20%; }
+.decoration-3 { top: 75%; left: 25%; }
+
+/* 主内容 */
+.main-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 60rpx;
+}
+
+/* 头像容器 */
+.avatar-container {
+  margin-bottom: 50rpx;
+}
+
+.avatar-wrapper {
+  width: 160rpx;
+  height: 160rpx;
+  background: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
+
+.default-avatar {
+  font-size: 80rpx;
+  color: #cccccc;
+}
+
+/* 欢迎文字 */
+.welcome-container {
   text-align: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 80rpx;
 }
 
-.title {
+.welcome-title {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.welcome-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #666666;
+}
+
+/* 登录按钮 */
+.action-container {
+  width: 100%;
+}
+
+.login-button {
+  width: 100%;
+  height: 88rpx;
+  background: #007aff;
+  border: none;
+  border-radius: 44rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 16rpx rgba(0, 122, 255, 0.2);
+}
+
+.login-text {
+  font-size: 32rpx;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+/* 已登录状态样式 */
+.profile-page {
+  padding: 40rpx 20rpx;
+  background-color: #f5f5f5;
+}
+
+.page-header {
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.page-title {
   font-size: 36rpx;
   color: #333;
   font-weight: bold;
 }
 
-.profile-content {
-  text-align: center;
-  margin-top: 60rpx;
+.user-card {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
-/* 头像区域 */
-.avatar-section {
+.user-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-bottom: 40rpx;
+  justify-content: space-between;
+}
+
+.avatar-container {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 20rpx;
 }
 
 .avatar {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: 60rpx;
-  margin-bottom: 20rpx;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
 }
 
-.welcome-text {
-  font-size: 28rpx;
-  color: #666;
-}
-
-.username {
-  font-size: 32rpx;
-  color: #333;
-  font-weight: bold;
-  margin-bottom: 10rpx;
-}
-
-.user-type {
-  font-size: 24rpx;
-  color: #999;
-  background-color: #f0f0f0;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-}
-
-/* 用户详情 */
-.user-info-section {
-  margin-bottom: 60rpx;
+.online-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 20rpx;
+  height: 20rpx;
+  background-color: #4caf50;
+  border-radius: 50%;
+  border: 2rpx solid #fff;
 }
 
 .user-details {
-  margin-top: 40rpx;
-  text-align: left;
-  max-width: 500rpx;
-  margin-left: auto;
-  margin-right: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-.detail-item {
+.username {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.phone-number {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 10rpx;
+}
+
+.user-badge {
+  background-color: #ffece6;
+  border: 1rpx solid #ffd7c1;
+  border-radius: 8rpx;
+  padding: 4rpx 12rpx;
+  display: inline-block;
+}
+
+.badge-text {
+  font-size: 22rpx;
+  color: #ff6b00;
+  font-weight: bold;
+}
+
+.user-actions {
   display: flex;
   align-items: center;
+  margin-top: 20rpx;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  margin-right: 30rpx;
+}
+
+.action-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-left: 10rpx;
+}
+
+.red-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background-color: #ff4757;
+  border-radius: 50%;
+  margin-left: 10rpx;
+}
+
+.function-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 30rpx;
+}
+
+.function-item {
+  text-align: center;
+  padding: 20rpx 0;
+}
+
+.amount {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #ff6b00;
+  margin-bottom: 8rpx;
+}
+
+.function-label {
+  font-size: 24rpx;
+  color: #666;
+}
+
+.icon {
+  font-size: 40rpx;
+  color: #ff6b00;
+  margin-bottom: 8rpx;
+}
+
+.service-section {
+  background-color: #fff;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20rpx 0;
   border-bottom: 1rpx solid #f0f0f0;
 }
 
-.detail-item:last-child {
+.service-item:last-child {
   border-bottom: none;
 }
 
-.label {
-  font-size: 28rpx;
-  color: #666;
-  width: 160rpx;
+.service-icon {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background-color: #ffece6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15rpx;
 }
 
-.value {
-  font-size: 28rpx;
+.coupon-icon .icon-text {
+  font-size: 36rpx;
+  color: #ff6b00;
+}
+
+.cs-icon .icon-text {
+  font-size: 36rpx;
+  color: #007aff;
+}
+
+.logout-icon .icon-text {
+  font-size: 36rpx;
+  color: #ff4757;
+}
+
+.service-label {
+  font-size: 32rpx;
   color: #333;
+  font-weight: 500;
   flex: 1;
+  text-align: left;
 }
 
-/* 登录按钮 */
-.login-section {
-  margin-top: 60rpx;
-}
-
-.login-btn {
-  background-color: #007aff;
-  color: white;
-  border-radius: 8rpx;
-  padding: 24rpx 60rpx;
-  font-size: 32rpx;
-  border: none;
-  margin: 0 auto;
-  display: block;
-  width: 300rpx;
-}
-
-/* 退出登录按钮 */
-.logout-section {
-  margin-top: 40rpx;
-}
-
-.logout-btn {
-  background-color: #ff4757;
-  color: white;
-  border-radius: 8rpx;
-  padding: 24rpx 60rpx;
-  font-size: 32rpx;
-  border: none;
-  margin: 0 auto;
-  display: block;
-  width: 300rpx;
+.arrow {
+  font-size: 36rpx;
+  color: #ccc;
+  margin-left: 15rpx;
 }
 </style>

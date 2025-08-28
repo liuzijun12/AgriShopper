@@ -27,7 +27,7 @@ export const useUserStore = defineStore("user", () => {
   // 微信基础授权登录
   const loginWithWxCode = (code: string) => {
     return new Promise((resolve, reject) => {
-      AuthAPI.loginByWxMiniAppCode(code)
+      AuthAPI.loginByWxMiniAppNew(code)
         .then((data) => {
           setAccessToken(data.accessToken);
           resolve(data);

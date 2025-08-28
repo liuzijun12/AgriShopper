@@ -20,9 +20,10 @@ function request<T = any>(options: RequestOptions): Promise<T> {
 
     // 检查是否需要添加认证令牌
     if (!options.skipAuth) {
-      const userInfo = getUserInfo();
-      if (userInfo && userInfo.username) {
-        header["Authorization"] = `Bearer ${userInfo.username}`;
+      // 🔥 修复：直接使用 accessToken 而不是 userInfo.username
+      const accessToken = uni.getStorageSync('accessToken');
+      if (accessToken) {
+        header["Authorization"] = `Bearer ${accessToken}`;
       } else {
         // 需要认证但没有令牌，跳转到登录页
         uni.navigateTo({
@@ -34,14 +35,18 @@ function request<T = any>(options: RequestOptions): Promise<T> {
 
     // 根据平台决定URL前缀
     let requestUrl = options.url;
+    
+    // 强制使用本地开发地址
+    const apiUrl = 'http://localhost:8989';
+    
     // #ifdef MP-WEIXIN
     // 微信小程序环境，使用完整URL
-    requestUrl = `${import.meta.env.VITE_APP_API_URL}${options.url}`;
+    requestUrl = `${apiUrl}${options.url}`;
     // #endif
 
     // #ifndef MP-WEIXIN
     // 非微信小程序环境，使用代理前缀
-    requestUrl = `${import.meta.env.VITE_APP_BASE_API}${options.url}`;
+    requestUrl = `${apiUrl}${options.url}`;
     // #endif
 
     // 统一处理请求
@@ -53,9 +58,24 @@ function request<T = any>(options: RequestOptions): Promise<T> {
       timeout: options.timeout || 30000,
       responseType: options.responseType,
       success: (res: any) => {
+        // 🔥 强制调试：检查响应数据结构
+        console.log('🔥 强制调试 - 原始响应数据:', JSON.stringify(res.data, null, 2));
+        console.log('🔥 强制调试 - res.data.data是否存在:', res.data.data !== undefined);
+        console.log('🔥 强制调试 - res.data.data内容:', res.data.data);
+        
         // 请求成功
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data.data);
+          // 检查后端返回的数据结构
+          // 如果res.data.data存在，说明数据被包装在data字段中
+          // 否则直接使用res.data
+          const responseData = res.data.data !== undefined ? res.data.data : res.data;
+          
+          // 🔥 强制调试：检查最终返回的数据
+          console.log('🔥 强制调试 - 最终返回的数据:', JSON.stringify(responseData, null, 2));
+          console.log('🔥 强制调试 - responseData.openid:', responseData?.openid);
+          console.log('🔥 强制调试 - responseData.unionid:', responseData?.unionid);
+          
+          resolve(responseData);
         }
         // 未授权错误
         else if (res.statusCode === 401) {

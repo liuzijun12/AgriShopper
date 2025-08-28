@@ -17,6 +17,7 @@ import com.youlai.boot.config.property.SecurityProperties;
 import com.youlai.boot.core.security.model.AuthenticationToken;
 import org.apache.commons.lang3.StringUtils;
 import com.youlai.boot.core.security.model.SysUserDetails;
+import com.youlai.boot.core.security.model.WxUserDetails;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -87,19 +88,30 @@ public class JwtTokenManager implements TokenManager {
 
         JWT jwt = JWTUtil.parseToken(token);
         JSONObject payloads = jwt.getPayloads();
-        SysUserDetails userDetails = new SysUserDetails();
-        userDetails.setUserId(payloads.getLong(JwtClaimConstants.USER_ID)); // 用户ID
-        userDetails.setDeptId(payloads.getLong(JwtClaimConstants.DEPT_ID)); // 部门ID
-        userDetails.setDataScope(payloads.getInt(JwtClaimConstants.DATA_SCOPE)); // 数据权限范围
+        
+        // 检查是否是微信用户token
+        Long deptId = payloads.getLong(JwtClaimConstants.DEPT_ID);
+        if (deptId != null && deptId == 0L) {
+            // 这是微信用户token
+            // 这里需要根据用户ID重新查询微信用户信息
+            // 暂时返回null，让调用方处理
+            return null;
+        } else {
+            // 这是系统用户token
+            SysUserDetails userDetails = new SysUserDetails();
+            userDetails.setUserId(payloads.getLong(JwtClaimConstants.USER_ID)); // 用户ID
+            userDetails.setDeptId(payloads.getLong(JwtClaimConstants.DEPT_ID)); // 部门ID
+            userDetails.setDataScope(payloads.getInt(JwtClaimConstants.DATA_SCOPE)); // 数据权限范围
 
-        userDetails.setUsername(payloads.getStr(JWTPayload.SUBJECT)); // 用户名
-        // 角色集合
-        Set<SimpleGrantedAuthority> authorities = payloads.getJSONArray(JwtClaimConstants.AUTHORITIES)
-                .stream()
-                .map(authority -> new SimpleGrantedAuthority(Convert.toStr(authority)))
-                .collect(Collectors.toSet());
+            userDetails.setUsername(payloads.getStr(JWTPayload.SUBJECT)); // 用户名
+            // 角色集合
+            Set<SimpleGrantedAuthority> authorities = payloads.getJSONArray(JwtClaimConstants.AUTHORITIES)
+                    .stream()
+                    .map(authority -> new SimpleGrantedAuthority(Convert.toStr(authority)))
+                    .collect(Collectors.toSet());
 
-        return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+            return new UsernamePasswordAuthenticationToken(userDetails, "", authorities);
+        }
     }
 
     /**
@@ -240,11 +252,22 @@ public class JwtTokenManager implements TokenManager {
      * @return JWT Token
      */
     private String generateToken(Authentication authentication, int ttl, boolean isRefreshToken) {
-        SysUserDetails userDetails = (SysUserDetails) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
         Map<String, Object> payload = new HashMap<>();
-        payload.put(JwtClaimConstants.USER_ID, userDetails.getUserId()); // 用户ID
-        payload.put(JwtClaimConstants.DEPT_ID, userDetails.getDeptId()); // 部门ID
-        payload.put(JwtClaimConstants.DATA_SCOPE, userDetails.getDataScope()); // 数据权限范围
+        
+        if (principal instanceof SysUserDetails) {
+            SysUserDetails userDetails = (SysUserDetails) principal;
+            payload.put(JwtClaimConstants.USER_ID, userDetails.getUserId()); // 用户ID
+            payload.put(JwtClaimConstants.DEPT_ID, userDetails.getDeptId()); // 部门ID
+            payload.put(JwtClaimConstants.DATA_SCOPE, userDetails.getDataScope()); // 数据权限范围
+        } else if (principal instanceof WxUserDetails) {
+            WxUserDetails wxUserDetails = (WxUserDetails) principal;
+            payload.put(JwtClaimConstants.USER_ID, wxUserDetails.getWxUser().getId()); // 微信用户ID
+            payload.put(JwtClaimConstants.DEPT_ID, 0L); // 微信用户没有部门
+            payload.put(JwtClaimConstants.DATA_SCOPE, 1); // 微信用户数据权限范围
+        } else {
+            throw new IllegalArgumentException("Unsupported principal type: " + principal.getClass());
+        }
 
         // claims 中添加角色信息
         Set<String> roles = authentication.getAuthorities().stream()

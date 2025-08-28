@@ -16,6 +16,7 @@ import com.youlai.boot.core.security.token.TokenManager;
 import com.youlai.boot.core.security.service.SysUserDetailsService;
 import com.youlai.boot.system.service.ConfigService;
 import com.youlai.boot.system.service.UserService;
+import com.youlai.boot.system.service.WxUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,6 +53,7 @@ public class SecurityConfig {
     private final TokenManager tokenManager;
     private final WxMaService wxMaService;
     private final UserService userService;
+    private final WxUserService wxUserService;
     private final SysUserDetailsService userDetailsService;
 
     private final CodeGenerator codeGenerator;
@@ -130,7 +132,7 @@ public class SecurityConfig {
      */
     @Bean
     public WxMiniAppCodeAuthenticationProvider wxMiniAppCodeAuthenticationProvider() {
-        return new WxMiniAppCodeAuthenticationProvider(userService, wxMaService);
+        return new WxMiniAppCodeAuthenticationProvider(wxUserService, wxMaService);
     }
 
     /**

@@ -94,28 +94,28 @@ export default {
         {
           id: 1,
           name: `精选${this.categoryName}商品1`,
-          price: '12.8',
+          price: '12.80',
           image: '/static/logo.png',
           badge: '热销'
         },
         {
           id: 2,
           name: `新鲜${this.categoryName}商品2`,
-          price: '15.6',
+          price: '15.60',
           image: '/static/logo.png',
           badge: '新品'
         },
         {
           id: 3,
           name: `优质${this.categoryName}商品3`,
-          price: '28.0',
+          price: '28.00',
           image: '/static/logo.png',
           badge: null
         },
         {
           id: 4,
           name: `特价${this.categoryName}商品4`,
-          price: '18.8',
+          price: '18.80',
           image: '/static/logo.png',
           badge: '特价'
         }
@@ -142,6 +142,18 @@ export default {
         icon: 'success',
         duration: 1500
       })
+    },
+
+    // 格式化价格，确保小数点后两位
+    formatPrice(price) {
+      if (price === null || price === undefined) {
+        return '0.00';
+      }
+      const num = parseFloat(price);
+      if (isNaN(num)) {
+        return '0.00';
+      }
+      return num.toFixed(2);
     }
   }
 }

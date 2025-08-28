@@ -98,6 +98,8 @@
 <script>
 import TabBar from '@/components/TabBar.vue'
 import FloatingCart from '@/components/FloatingCart.vue'
+import ProductAPI from '@/api/product'
+import CategoryAPI from '@/api/category'
 
 export default {
   components: {
@@ -164,37 +166,7 @@ export default {
         { id: 12, name: '保健品', icon: '/static/images/category.png' }
       ],
       // 后台提供的商品数据（精选推荐4个）
-      productList: [
-        {
-          id: 1,
-          name: '有机新鲜番茄',
-          price: '12.8',
-          image: '/static/images/product1.png',
-          badge: '惊爆价'
-        },
-        {
-          id: 2,
-          name: '精选苹果',
-          price: '15.6',
-          image: '/static/images/product2.png',
-          badge: '新品'
-        },
-        {
-          id: 3,
-          name: '优质大米',
-          price: '28.0',
-          image: '/static/images/product3.png',
-          badge: null
-        },
-        {
-          id: 4,
-          name: '新鲜鸡蛋',
-          price: '18.8',
-          image: '/static/images/product4.png',
-          badge: '热销'
-        }
-
-      ]
+      productList: []
     }
   },
   computed: {
@@ -218,7 +190,10 @@ export default {
     }
   },
   onLoad() {
-
+    // 页面加载时获取数据
+    this.getProductList()
+    this.getCategoryList()
+    this.getBannerList()
   },
   
   onShow() {
@@ -226,6 +201,11 @@ export default {
     this.cleanInvalidUserData()
     // 检查用户登录状态和类型
     this.checkUserTypeAndRedirect()
+    
+    // 获取页面数据
+    this.getProductList()
+    this.getCategoryList()
+    this.getBannerList()
   },
   methods: {
     // 处理分类点击
@@ -285,17 +265,53 @@ export default {
       // })
     },
     
-    // 获取分类数据（模拟接口调用）
+    // 获取分类数据（调用真实API接口）
     async getCategoryList() {
       try {
-        // 这里应该调用实际的API接口
-        // const res = await api.getCategoryList()
-        // this.categoryList = res.data
+        console.log('开始获取分类数据...')
         
-        // 目前使用模拟数据
-        console.log('获取分类数据')
+        // 调用真实API获取启用的分类
+        const result = await CategoryAPI.getEnabledCategories()
+        
+        if (result && result.length > 0) {
+          // 转换数据格式以适配前端显示
+          this.categoryList = result.map(item => {
+            return {
+              id: item.id,
+              name: item.name,
+              icon: item.icon || '/static/images/category.png', // 默认图标
+              description: item.description
+            }
+          })
+          
+          console.log('获取分类数据成功:', this.categoryList)
+        } else {
+          console.warn('分类数据为空，使用默认数据')
+          // 如果API返回空数据，使用默认数据
+          this.categoryList = [
+            { id: 1, name: '蔬菜', icon: '/static/images/vegetables.png' },
+            { id: 2, name: '水果', icon: '/static/images/fruits.png' },
+            { id: 3, name: '粮油', icon: '/static/images/grains.png' },
+            { id: 4, name: '肉禽蛋', icon: '/static/images/meat.png' },
+            { id: 5, name: '水产', icon: '/static/images/seafood.png' },
+            { id: 6, name: '蘑菇', icon: '/static/images/mushroom.png' },
+            { id: 7, name: '豆制品', icon: '/static/images/tofu.png' },
+            { id: 8, name: '调料', icon: '/static/images/category.png' }
+          ]
+        }
       } catch (error) {
         console.error('获取分类数据失败:', error)
+        // 出错时使用默认数据
+        this.categoryList = [
+          { id: 1, name: '蔬菜', icon: '/static/images/vegetables.png' },
+          { id: 2, name: '水果', icon: '/static/images/fruits.png' },
+          { id: 3, name: '粮油', icon: '/static/images/grains.png' },
+          { id: 4, name: '肉禽蛋', icon: '/static/images/meat.png' },
+          { id: 5, name: '水产', icon: '/static/images/seafood.png' },
+          { id: 6, name: '蘑菇', icon: '/static/images/mushroom.png' },
+          { id: 7, name: '豆制品', icon: '/static/images/tofu.png' },
+          { id: 8, name: '调料', icon: '/static/images/category.png' }
+        ]
       }
     },
     
@@ -363,17 +379,119 @@ export default {
       }
     },
     
-    // 获取商品数据（模拟接口调用）
+    // 获取商品数据（调用真实API接口）
     async getProductList() {
       try {
-        // 这里应该调用实际的API接口
-        // const res = await api.getProductList()
-        // this.productList = res.data
+        console.log('开始获取商品数据...')
         
-        // 目前使用模拟数据
-        console.log('获取商品数据')
+        // 调用真实API获取热门商品
+        const result = await ProductAPI.getHotProducts(4)
+        
+        if (result && result.length > 0) {
+          // 转换数据格式以适配前端显示
+          this.productList = result.map(item => {
+            // 解析图片JSON数组，取第一张图片
+            let imageUrl = '/static/images/product1.png' // 默认图片
+            try {
+              if (item.images) {
+                const images = JSON.parse(item.images)
+                if (images && images.length > 0) {
+                  imageUrl = images[0]
+                }
+              }
+            } catch (e) {
+              console.warn('解析商品图片失败:', e)
+            }
+            
+            // 确定角标
+            let badge = null
+            if (item.hasDiscount === 1) {
+              badge = '特价'
+            } else if (item.isHot === 1) {
+              badge = '热销'
+            }
+            
+            return {
+              id: item.id,
+              name: item.name,
+              price: this.formatPrice(item.price),
+              image: imageUrl,
+              badge: badge,
+              description: item.description,
+              sales: item.sales,
+              stock: item.stock,
+              origin: item.origin
+            }
+          })
+          
+          console.log('获取商品数据成功:', this.productList)
+        } else {
+          console.warn('商品数据为空，使用默认数据')
+          // 如果API返回空数据，使用默认数据
+          this.productList = [
+            {
+              id: 1,
+              name: '有机新鲜番茄',
+              price: '12.80',
+              image: '/static/images/product1.png',
+              badge: '惊爆价'
+            },
+            {
+              id: 2,
+              name: '精选苹果',
+              price: '15.60',
+              image: '/static/images/product2.png',
+              badge: '新品'
+            },
+            {
+              id: 3,
+              name: '优质大米',
+              price: '28.00',
+              image: '/static/images/product3.png',
+              badge: null
+            },
+            {
+              id: 4,
+              name: '新鲜鸡蛋',
+              price: '18.80',
+              image: '/static/images/product4.png',
+              badge: '热销'
+            }
+          ]
+        }
       } catch (error) {
         console.error('获取商品数据失败:', error)
+        // 出错时使用默认数据
+        this.productList = [
+          {
+            id: 1,
+            name: '有机新鲜番茄',
+            price: '12.80',
+            image: '/static/images/product1.png',
+            badge: '惊爆价'
+          },
+          {
+            id: 2,
+            name: '精选苹果',
+            price: '15.60',
+            image: '/static/images/product2.png',
+            badge: '新品'
+          },
+          {
+            id: 3,
+            name: '优质大米',
+            price: '28.00',
+            image: '/static/images/product3.png',
+            badge: null
+          },
+          {
+            id: 4,
+            name: '新鲜鸡蛋',
+            price: '18.80',
+            image: '/static/images/product4.png',
+            badge: '热销'
+          }
+        ]
       }
     },
     
@@ -441,6 +559,18 @@ export default {
       } catch (error) {
         console.error('清理用户数据失败:', error)
       }
+    },
+
+    // 格式化价格，确保小数点后两位
+    formatPrice(price) {
+      if (price === null || price === undefined) {
+        return '0.00';
+      }
+      const num = parseFloat(price);
+      if (isNaN(num)) {
+        return '0.00';
+      }
+      return num.toFixed(2);
     }
   },
   
