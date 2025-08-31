@@ -149,12 +149,12 @@ export default {
           // 微信用户信息
           openid: backendResult.openid,
           unionid: backendResult.unionid,
-          nickname: userProfile.userInfo.nickName,
-          avatar: userProfile.userInfo.avatarUrl,
-          gender: userProfile.userInfo.gender,
-          province: userProfile.userInfo.province,
-          city: userProfile.userInfo.city,
-          country: userProfile.userInfo.country
+          nickname: userProfile.userInfo.nickName || '微信用户',
+          avatar: userProfile.userInfo.avatarUrl || '',
+          gender: userProfile.userInfo.gender || 0,
+          province: userProfile.userInfo.province || '',
+          city: userProfile.userInfo.city || '',
+          country: userProfile.userInfo.country || ''
         };
         
         console.log('完整用户信息:', completeUserInfo);
@@ -271,18 +271,6 @@ export default {
         console.error('后端API调用失败:', error);
         throw error;
       }
-    },
-
-    // 格式化价格，确保小数点后两位
-    formatPrice(price) {
-      if (price === null || price === undefined) {
-        return '0.00';
-      }
-      const num = parseFloat(price);
-      if (isNaN(num)) {
-        return '0.00';
-      }
-      return num.toFixed(2);
     }
   }
 }
